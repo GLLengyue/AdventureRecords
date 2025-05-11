@@ -10,6 +10,10 @@ import SwiftUI
 @main
 struct AdventureRecordsApp: App {
     let persistenceController = CoreDataManager.shared
+    @StateObject private var characterViewModel = CharacterViewModel()
+    @StateObject private var sceneViewModel = SceneViewModel()
+    @StateObject private var noteViewModel = NoteViewModel()
+    @StateObject private var audioViewModel = AudioViewModel()
     
     init() {
         // 检查并初始化示例数据
@@ -20,6 +24,10 @@ struct AdventureRecordsApp: App {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.viewContext)
+                .environmentObject(characterViewModel)
+                .environmentObject(sceneViewModel)
+                .environmentObject(noteViewModel)
+                .environmentObject(audioViewModel)
         }
     }
 }
