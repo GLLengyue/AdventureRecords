@@ -75,6 +75,12 @@ struct SceneView: View {
                     Label("新建场景", systemImage: "plus")
                 }
             }
+            .onChange(of: selectedScene) {
+                // 当 selectedScene 发生变化时，触发刷新动作
+                if selectedScene != nil {
+                    showDetail = true
+                }
+            }
             .sheet(isPresented: $showDetail) {
                 if let scene = selectedScene {
                     SceneDetailView(AdventureScene: scene)

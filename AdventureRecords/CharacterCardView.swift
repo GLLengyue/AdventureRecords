@@ -65,6 +65,11 @@ struct CharacterCardView: View {
                     Label("新建角色", systemImage: "plus")
                 }
             }
+            .onChange(of: selectedCard) {
+                if selectedCard != nil {
+                    showDetail = true
+                }
+            }
             .sheet(isPresented: $showDetail) {
                 if let card = selectedCard {
                     CharacterDetailView(card: card)

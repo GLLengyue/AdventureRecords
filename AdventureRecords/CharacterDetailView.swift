@@ -15,16 +15,18 @@ struct CharacterDetailView: View {
     @State private var showSceneDetail = false
     @State private var selectedScene: AdventureScene? = nil
 
-    // 示例数据，实际应用中应从数据存储中获取
-    @State private var relatedNotes: [NoteBlock] = [
-        NoteBlock(id: UUID(), title: "初遇", content: "主角在酒馆邂逅神秘人。", relatedCharacterIDs: [], relatedSceneIDs: [], date: Date()),
-        NoteBlock(id: UUID(), title: "遗迹探索", content: "队伍进入古老遗迹，发现线索。", relatedCharacterIDs: [], relatedSceneIDs: [], date: Date())
-    ]
+    // 移除硬编码的示例数据
+    private var relatedNotes: [NoteBlock] {
+        DataModule.notes.filter { note in
+            note.relatedCharacterIDs.contains(card.id)
+        }
+    }
 
-    @State private var relatedScenes: [AdventureScene] = [
-        AdventureScene(id: UUID(), title: "古老遗迹", description: "充满谜团的遗迹遗址。", relatedCharacterIDs: [], relatedNoteIDs: []),
-        AdventureScene(id: UUID(), title: "王都广场", description: "热闹非凡的城市中心。", relatedCharacterIDs: [], relatedNoteIDs: [])
-    ]
+    private var relatedScenes: [AdventureScene] {
+        DataModule.availableScenes.filter { scene in
+            scene.relatedCharacterIDs.contains(card.id)
+        }
+    }
 
     var body: some View {
         ScrollView {
@@ -169,7 +171,12 @@ struct CharacterDetailView: View {
                 showNoteDetail = true
             }
         }
-
+        .onChange(of: selectedScene) {
+            // 当 selectedScene 发生变化时，触发刷新动作
+            if selectedScene != nil {
+                showSceneDetail = true
+            }
+        }
         .sheet(isPresented: $showSceneDetail) {
             if let scene = selectedScene {
                 SceneDetailView(AdventureScene: scene)

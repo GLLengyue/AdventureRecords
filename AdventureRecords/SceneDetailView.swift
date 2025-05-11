@@ -189,6 +189,12 @@ struct SceneDetailView: View {
                 }
             }
         }
+        .onChange(of: selectedCharacter) {
+            // 当 selectedCharacter 发生变化时，触发刷新动作
+            if selectedCharacter != nil {
+                showCharacterDetail = true
+            }
+        }
         .sheet(isPresented: $showCharacterDetail) {
             if let character = selectedCharacter {
                 NavigationStack {
