@@ -18,6 +18,9 @@ struct CharacterCardView: View {
                         }
                 }
             }
+            .refreshable {
+                viewModel.loadCharacters()
+            }
             .navigationTitle("角色卡")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

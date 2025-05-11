@@ -18,6 +18,9 @@ struct SceneView: View {
                         }
                 }
             }
+            .refreshable {
+                viewModel.loadScenes()
+            }
             .navigationTitle("场景")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

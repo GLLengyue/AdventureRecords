@@ -20,6 +20,9 @@ struct NoteBlockView: View {
                         }
                 }
             }
+            .refreshable {
+                viewModel.loadNotes()
+            }
             .navigationTitle("笔记")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
