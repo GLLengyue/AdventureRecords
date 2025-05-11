@@ -11,7 +11,6 @@ struct SceneDetailView: View {
     @State private var selectedAudioURL: URL?
     @State private var showNoteEditor = false
     @State private var selectedNote: NoteBlock? = nil
-    @State private var showCharacterDetail = false
     @State private var selectedCharacter: CharacterCard? = nil
     
     private var relatedCharacters: [CharacterCard] {
@@ -44,6 +43,13 @@ struct SceneDetailView: View {
                         showImageViewer = true
                     }
                 
+                // 新增播放音频按钮
+                Button("播放场景音频 (占位符)") {
+                    selectedAudioURL = URL(string: "https://example.com/placeholder_audio.mp3") // 示例 URL
+                    showAudioPlayer = true
+                }
+                .padding(.top)
+                
                 // 相关角色
                 if !relatedCharacters.isEmpty {
                     VStack(alignment: .leading) {
@@ -55,7 +61,6 @@ struct SceneDetailView: View {
                                         .frame(width: 200)
                                         .onTapGesture {
                                             selectedCharacter = character
-                                            showCharacterDetail = true
                                         }
                                 }
                             }
@@ -92,16 +97,45 @@ struct SceneDetailView: View {
                 }
             }
         }
+        .sheet(isPresented: $showImageViewer) {
+            VStack {
+                Text("图片查看器占位符")
+                    .font(.title)
+                Text("这里将来会显示场景图片")
+                Button("关闭") {
+                    showImageViewer = false
+                }
+                .padding()
+            }
+        }
+        .sheet(isPresented: $showAudioPlayer) {
+            VStack {
+                if let url = selectedAudioURL {
+                    Text("音频播放器占位符")
+                        .font(.title)
+                    Text("播放: \(url.absoluteString)")
+                } else {
+                    Text("未选择音频")
+                }
+                Button("关闭") {
+                    showAudioPlayer = false
+                }
+                .padding()
+            }
+        }
         .sheet(isPresented: $showNoteEditor) {
             NavigationStack {
                 NoteEditorView()
             }
         }
-        .sheet(isPresented: $showCharacterDetail) {
-            if let character = selectedCharacter {
-                NavigationStack {
-                    CharacterDetailView(card: character)
-                }
+        .sheet(item: $selectedCharacter) { characterItem in
+            NavigationStack {
+                CharacterDetailView(card: characterItem)
+            }
+        }
+        .sheet(item: $selectedNote) { noteItem in
+            NavigationStack {
+                NoteBlockDetailView(noteBlock: noteItem)
             }
         }
         .onAppear {

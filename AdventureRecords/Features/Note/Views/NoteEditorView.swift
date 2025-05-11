@@ -42,6 +42,9 @@ struct NoteEditorView: View {
                 Button(action: { showScenePicker = true }) {
                     Label("选择场景", systemImage: "map.badge.plus")
                 }
+                Button(action: { showCreateScene = true }) {
+                    Label("创建新场景", systemImage: "plus.circle.fill")
+                }
             }
         }
         .navigationTitle(note == nil ? "新建笔记" : "编辑笔记")
@@ -63,6 +66,16 @@ struct NoteEditorView: View {
         }
         .sheet(isPresented: $showScenePicker) {
             ScenePickerView(selectedSceneIDs: $selectedSceneIDs)
+        }
+        .sheet(isPresented: $showCreateScene) {
+            SceneCreationView {
+                newScene in
+                // TODO: 在这里处理新创建的场景
+                // 例如: sceneViewModel.addScene(newScene)
+                //       selectedSceneIDs.append(newScene.id)
+                // 当前 NoteViewModel 没有直接添加场景的方法，这里仅关闭 sheet
+                // showCreateScene = false // sheet 会自动处理
+            }
         }
         .onAppear {
             if let note = note {

@@ -11,9 +11,7 @@ struct CharacterDetailView: View {
     let card: CharacterCard
     @StateObject private var viewModel = CharacterViewModel()
     @State private var showNoteEditor = false
-    @State private var showNoteDetail = false
     @State private var selectedNote: NoteBlock? = nil
-    @State private var showSceneDetail = false
     @State private var selectedScene: AdventureScene? = nil
     
     private var relatedNotes: [NoteBlock] {
@@ -93,7 +91,6 @@ struct CharacterDetailView: View {
                                     .cornerRadius(10)
                                     .onTapGesture {
                                         selectedNote = note
-                                        showNoteDetail = true
                                     }
                                 }
                             }
@@ -125,7 +122,6 @@ struct CharacterDetailView: View {
                                     .cornerRadius(10)
                                     .onTapGesture {
                                         selectedScene = scene
-                                        showSceneDetail = true
                                     }
                                 }
                             }
@@ -149,18 +145,14 @@ struct CharacterDetailView: View {
                 NoteEditorView(preselectedCharacterID: card.id)
             }
         }
-        .sheet(isPresented: $showNoteDetail) {
-            if let note = selectedNote {
-                NavigationStack {
-                    NoteBlockDetailView(noteBlock: note)
-                }
+        .sheet(item: $selectedNote) { noteItem in
+            NavigationStack {
+                NoteBlockDetailView(noteBlock: noteItem)
             }
         }
-        .sheet(isPresented: $showSceneDetail) {
-            if let scene = selectedScene {
-                NavigationStack {
-                    SceneDetailView(scene: scene)
-                }
+        .sheet(item: $selectedScene) { sceneItem in
+            NavigationStack {
+                SceneDetailView(scene: sceneItem)
             }
         }
         .onAppear {

@@ -13,7 +13,6 @@ struct CharacterEditorView: View {
     @State private var description: String
     @State private var tags: [String]
     @State private var avatar: UIImage?
-    @State private var showImagePicker: Bool
     @State private var selectedItem: PhotosPickerItem?
     @State private var audioRecordings: [AudioRecording]
     @State private var showRecordingSheet: Bool
@@ -30,7 +29,6 @@ struct CharacterEditorView: View {
         self._description = State(initialValue: "")
         self._tags = State(initialValue: [])
         self._avatar = State(initialValue: nil)
-        self._showImagePicker = State(initialValue: false)
         self._selectedItem = State(initialValue: nil)
         self._audioRecordings = State(initialValue: [])
         self._showRecordingSheet = State(initialValue: false)
@@ -44,7 +42,6 @@ struct CharacterEditorView: View {
         self._description = State(initialValue: card.description)
         self._tags = State(initialValue: card.tags)
         self._avatar = State(initialValue: card.avatar)
-        self._showImagePicker = State(initialValue: false)
         self._selectedItem = State(initialValue: nil)
         self._audioRecordings = State(initialValue: card.audioRecordings ?? [])
         self._showRecordingSheet = State(initialValue: false)

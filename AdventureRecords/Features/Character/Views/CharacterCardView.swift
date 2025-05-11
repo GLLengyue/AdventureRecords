@@ -6,7 +6,6 @@ import SwiftUI
 struct CharacterCardView: View {
     @StateObject private var viewModel = CharacterViewModel()
     @State private var showEditor = false
-    @State private var showDetail = false
     @State private var selectedCharacter: CharacterCard? = nil
     
     var body: some View {
@@ -16,7 +15,6 @@ struct CharacterCardView: View {
                     CharacterCardRow(character: character)
                         .onTapGesture {
                             selectedCharacter = character
-                            showDetail = true
                         }
                 }
             }
@@ -37,11 +35,9 @@ struct CharacterCardView: View {
                     })
                 }
             }
-            .sheet(isPresented: $showDetail) {
-                if let character = selectedCharacter {
-                    NavigationStack {
-                        CharacterDetailView(card: character)
-                    }
+            .sheet(item: $selectedCharacter) { characterItem in
+                NavigationStack {
+                    CharacterDetailView(card: characterItem)
                 }
             }
             .onAppear {

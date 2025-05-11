@@ -23,6 +23,52 @@ struct CharacterCardRow: View {
             VStack(alignment: .leading) {
                 Text(character.name).font(.headline)
                 Text(character.description).font(.subheadline).foregroundColor(.secondary)
+
+                // Display related notes
+                if !character.noteIDs.isEmpty {
+                    let relatedNotes = viewModel.getRelatedNotes(for: character)
+                    if !relatedNotes.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                Text("笔记:")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                ForEach(relatedNotes, id: \.id) { note in
+                                    Text(note.title)
+                                        .font(.caption)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(Color.orange.opacity(0.1))
+                                        .cornerRadius(12)
+                                }
+                            }
+                        }
+                        .padding(.top, 4)
+                    }
+                }
+
+                // Display related scenes
+                if !character.sceneIDs.isEmpty {
+                    let relatedScenes = viewModel.getRelatedScenes(for: character)
+                    if !relatedScenes.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                Text("场景:")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                ForEach(relatedScenes, id: \.id) { scene in
+                                    Text(scene.title)
+                                        .font(.caption)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(Color.green.opacity(0.1))
+                                        .cornerRadius(12)
+                                }
+                            }
+                        }
+                        .padding(.top, 4)
+                    }
+                }
             }
         }
         .swipeActions {
