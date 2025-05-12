@@ -20,12 +20,33 @@ class SceneViewModel: ObservableObject {
     
     func addScene(_ scene: AdventureScene) {
         coreDataManager.saveScene(scene)
+        updateRelatedEntities(for: scene)
         loadScenes()
     }
     
     func updateScene(_ scene: AdventureScene) {
-        coreDataManager.saveScene(scene)
+        coreDataManager.updateScene(scene)
+        updateRelatedEntities(for: scene)
         loadScenes()
+    }
+    
+    func updateRelatedEntities(for scene: AdventureScene) {
+        let characters = coreDataManager.fetchCharacters(for: scene.relatedCharacterIDs)
+        for var character in characters {
+            print("Updating character: \(character.name)")
+            if !character.sceneIDs.contains(scene.id) {
+                character.sceneIDs.append(scene.id)
+                coreDataManager.updateCharacter(character)
+            }
+        }
+        let notes = coreDataManager.fetchNotes(for: scene.relatedNoteIDs)
+        for var note in notes {
+            print("Updating note: \(note.title)")
+            if !note.relatedSceneIDs.contains(scene.id) {
+                note.relatedSceneIDs.append(scene.id)
+                coreDataManager.updateNote(note)
+            }
+        }
     }
     
     func deleteScene(_ scene: AdventureScene) {

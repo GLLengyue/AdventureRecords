@@ -55,7 +55,7 @@ struct CharacterCardView: View {
             .sheet(isPresented: $showEditor) {
                 NavigationStack {
                     CharacterEditorView(onSave: { updatedCard in
-                        viewModel.updateCharacter(updatedCard)
+                        viewModel.addCharacter(updatedCard)
                     }, onCancel: {
                         showEditor = false
                     })

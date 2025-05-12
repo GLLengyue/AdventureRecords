@@ -20,12 +20,33 @@ class CharacterViewModel: ObservableObject {
     
     func addCharacter(_ character: CharacterCard) {
         coreDataManager.saveCharacter(character)
+        updateRelatedEntities(for: character)
         loadCharacters()
     }
     
     func updateCharacter(_ character: CharacterCard) {
-        coreDataManager.saveCharacter(character)
+        coreDataManager.updateCharacter(character)
+        updateRelatedEntities(for: character)
         loadCharacters()
+    }
+    
+    func updateRelatedEntities(for character: CharacterCard) {
+        let notes = coreDataManager.fetchNotes(for: character.noteIDs)
+        for var note in notes {
+            print("Updating note: \(note.title)")
+            if !note.relatedCharacterIDs.contains(character.id) {
+                note.relatedCharacterIDs.append(character.id)
+                coreDataManager.updateNote(note)
+            }
+        }
+        let scenes = coreDataManager.fetchScenes(for: character.sceneIDs)
+        for var scene in scenes {
+            print("Updating scene: \(scene.title)")
+            if !scene.relatedCharacterIDs.contains(character.id) {
+                scene.relatedCharacterIDs.append(character.id)
+                coreDataManager.updateScene(scene)
+            }
+        }
     }
     
     func deleteCharacter(_ character: CharacterCard) {

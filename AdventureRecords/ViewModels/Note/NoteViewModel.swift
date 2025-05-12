@@ -25,7 +25,7 @@ class NoteViewModel: ObservableObject {
     }
     
     func updateNote(_ note: NoteBlock) {
-        coreDataManager.saveNote(note)
+        coreDataManager.updateNote(note)
         updateRelatedEntities(for: note)
         loadNotes()
     }
@@ -53,8 +53,8 @@ class NoteViewModel: ObservableObject {
             print("Updating character: \(character.name)")
             if !character.noteIDs.contains(note.id) {
                 character.noteIDs.append(note.id)
-                // 保存更新后的角色卡
-                coreDataManager.saveCharacter(character)
+                // 更新角色卡
+                coreDataManager.updateCharacter(character)
             }
         }
         let scenes = coreDataManager.fetchScenes(for: note.relatedSceneIDs)
@@ -62,7 +62,7 @@ class NoteViewModel: ObservableObject {
             print("Updating scene: \(scene.title)")
             if !scene.relatedNoteIDs.contains(note.id) {
                 scene.relatedNoteIDs.append(note.id)
-                coreDataManager.saveScene(scene)
+                coreDataManager.updateScene(scene)
             }
         }
     }
