@@ -9,24 +9,28 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var selectedTab = 0
+    
     var body: some View {
-        TabView(selection: $selectedTab) {
-            CharacterCardView()
-                .tabItem {
-                    Label("角色卡", systemImage: "person.3")
-                }.tag(0)
-            NoteBlockView()
-                .tabItem {
-                    Label("笔记块", systemImage: "note.text")
-                }.tag(1)
-            SceneView()
-                .tabItem {
-                    Label("场景", systemImage: "map")
-                }.tag(2)
-            ImmersiveModeView(content: "沉浸模式示例内容")
-                .tabItem {
-                    Label("沉浸模式", systemImage: "eye")
-                }.tag(3)
+        VStack(spacing: 0) {
+            // 根据选中的标签显示不同的内容
+            if selectedTab == 0 {
+                ListContainer(module: .character, title: "角色卡", addAction: {}) {
+                    CharacterView()
+                }
+            } else if selectedTab == 1 {
+                ListContainer(module: .note, title: "笔记块", addAction: {}) {
+                    NoteBlockView()
+                }
+            } else if selectedTab == 2 {
+                ListContainer(module: .scene, title: "场景", addAction: {}) {
+                    SceneView()
+                }
+            } else {
+                ImmersiveModeView(content: "沉浸模式示例内容")
+            }
+            
+            // 使用自定义底部标签栏
+            ModuleTabBar(selectedTab: $selectedTab)
         }
     }
 }

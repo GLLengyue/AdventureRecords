@@ -1,9 +1,9 @@
-//  CharacterCardView.swift
+//  CharacterView.swift
 //  AdventureRecords
 //  角色卡列表视图
 import SwiftUI
 
-struct CharacterCardView: View {
+struct CharacterView: View {
     @EnvironmentObject var viewModel: CharacterViewModel
     @State private var showEditor = false
     @State private var selectedCharacter: CharacterCard? = nil
@@ -74,6 +74,6 @@ struct CharacterCardView: View {
 }
 
 #Preview {
-    CharacterCardView()
+    CharacterView()
         .environmentObject(CharacterViewModel())
 }

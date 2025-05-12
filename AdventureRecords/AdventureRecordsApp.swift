@@ -15,9 +15,15 @@ struct AdventureRecordsApp: App {
     @StateObject private var noteViewModel = NoteViewModel()
     @StateObject private var audioViewModel = AudioViewModel()
     
+    // 初始化主题管理器
+    @StateObject private var themeManager = ThemeManager.shared
+    
     init() {
         // 检查并初始化示例数据
         SampleDataGenerator.checkAndInitializeIfNeeded()
+        
+        // 打印组件库信息
+        ComponentLibrary.printInfo()
     }
     
     var body: some Scene {
