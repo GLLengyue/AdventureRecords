@@ -77,6 +77,18 @@ struct NoteBlockRow: View {
             }
             .tint(.blue)
         }
+        .contextMenu {
+            Button {
+                showEditor = true
+            } label: {
+                Label("编辑", systemImage: "pencil")
+            }
+            Button(role: .destructive) {
+                onDelete()
+            } label: {
+                Label("删除", systemImage: "trash")
+            }
+        }
         .sheet(isPresented: $showEditor) {
             NoteEditorView(note: note, onSave: { updatedNote in
                 onEdit(updatedNote)

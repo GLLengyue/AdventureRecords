@@ -84,6 +84,18 @@ struct CharacterCardRow: View {
             }
             .tint(.blue)
         }
+        .contextMenu {
+            Button {
+                self.showEditor = true
+            } label: {
+                Label("编辑", systemImage: "pencil")
+            }
+            Button(role: .destructive) {
+                onDelete()
+            }label: {
+                Label("删除", systemImage: "trash")
+            }
+        }
         .sheet(isPresented: $showEditor) {
             CharacterEditorView(card: character, onSave: { updatedCard in
                 onEdit(updatedCard)

@@ -8,6 +8,7 @@ struct CharacterListView: View {
     @State private var showingCharacterEditor = false
     @State private var characterToEdit: CharacterCard? = nil
     @State private var searchText: String = ""
+    @State private var stagingSearchText: String = ""
     @State private var sortOrder: SortOrder = .nameAscending
 
     enum SortOrder: String, CaseIterable, Identifiable {
@@ -32,72 +33,108 @@ struct CharacterListView: View {
 
     var body: some View {
         NavigationView {
-            List {
-                ForEach(filteredAndSortedCharacters) { character in // 使用 filteredAndSortedCharacters
-                    NavigationLink(destination: CharacterDetailView(card: character)) {
-                        CharacterCardRow(
-                            character: character,
-                            onDelete: {
-                                characterViewModel.deleteCharacter(character)
-                            },
-                            onEdit: { editableCharacter in
-                                self.characterToEdit = editableCharacter
-                                self.showingCharacterEditor = true
-                            },
-                            getRelatedNotes: {
-                                return characterViewModel.getRelatedNotes(for: character)
-                            },
-                            getRelatedScenes: {
-                                return characterViewModel.getRelatedScenes(for: character)
-                            }
-                        )
+            if filteredAndSortedCharacters.isEmpty {
+                VStack {
+                    Image(systemName: "person.3.fill") // 示例图标
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 80, height: 80)
+                        .foregroundColor(.gray.opacity(0.5))
+                        .padding(.bottom)
+                    Text(searchText.isEmpty ? "还没有角色呢" : "没有找到符合条件的角色")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    Text(searchText.isEmpty ? "点击右上方 \"+\" 添加一个新角色吧！" : "尝试修改你的搜索词，或者清除搜索。")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+                .searchable(text: $stagingSearchText, prompt: "搜索角色") // 添加 searchable 修饰符
+                .onSubmit(of: .search) {
+                    searchText = stagingSearchText
+                }
+                .onChange(of: stagingSearchText) {
+                    if stagingSearchText.isEmpty {
+                        searchText = ""
                     }
                 }
-                .onDelete(perform: deleteCharacters)
-            }
-            .refreshable {
-                characterViewModel.loadCharacters()
-            }
-            .navigationTitle("角色卡")
-            .toolbar {
-                ToolbarItemGroup(placement: .navigationBarLeading) {
-                    EditButton()
-                    Menu {
-                        Picker("排序方式", selection: $sortOrder) {
-                            ForEach(SortOrder.allCases, id: \.self) { order in
-                                Text(order.rawValue).tag(order)
-                            }
+                .frame(maxWidth: .infinity, maxHeight: .infinity) // 居中内容
+            } else {
+                List {
+                    ForEach(filteredAndSortedCharacters) { character in // 使用 filteredAndSortedCharacters
+                        NavigationLink(destination: CharacterDetailView(card: character)) {
+                            CharacterCardRow(
+                                character: character,
+                                onDelete: {
+                                    characterViewModel.deleteCharacter(character)
+                                },
+                                onEdit: { editableCharacter in
+                                    self.characterToEdit = editableCharacter
+                                    self.showingCharacterEditor = true
+                                },
+                                getRelatedNotes: {
+                                    return characterViewModel.getRelatedNotes(for: character)
+                                },
+                                getRelatedScenes: {
+                                    return characterViewModel.getRelatedScenes(for: character)
+                                }
+                            )
                         }
-                    } label: {
-                        Label("排序", systemImage: "arrow.up.arrow.down.circle")
                     }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        self.characterToEdit = nil // Ensure we are creating a new one
-                        self.showingCharacterEditor = true
-                    } label: {
-                        Label("添加角色", systemImage: "plus.circle.fill")
+                .refreshable {
+                    characterViewModel.loadCharacters()
+                }
+                .navigationTitle("角色卡")
+                .toolbar {
+                    ToolbarItemGroup(placement: .navigationBarLeading) {
+                        EditButton()
+                        Menu {
+                            Picker("排序方式", selection: $sortOrder) {
+                                ForEach(SortOrder.allCases, id: \.self) { order in
+                                    Text(order.rawValue).tag(order)
+                                }
+                            }
+                        } label: {
+                            Label("排序", systemImage: "arrow.up.arrow.down.circle")
+                        }
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            self.characterToEdit = nil // Ensure we are creating a new one
+                            self.showingCharacterEditor = true
+                        } label: {
+                            Label("添加角色", systemImage: "plus.circle.fill")
+                        }
                     }
                 }
-            }
-            .searchable(text: $searchText, prompt: "搜索角色") // 添加 searchable 修饰符
-             .sheet(isPresented: $showingCharacterEditor) {
-                 CharacterEditorView(
-                     card: characterToEdit, // Pass nil for new, or existing card for edit
-                     onSave: { savedCard in
-                         if let index = characterViewModel.characters.firstIndex(where: { $0.id == savedCard.id }) {
-                             characterViewModel.updateCharacter(savedCard)
-                         } else {
-                             characterViewModel.addCharacter(savedCard)
-                         }
-                         showingCharacterEditor = false
-                     },
-                     onCancel: {
-                         showingCharacterEditor = false
-                     }
-                 )
-             }
+                .searchable(text: $stagingSearchText, prompt: "搜索角色") // 添加 searchable 修饰符
+                .onSubmit(of: .search) {
+                    searchText = stagingSearchText
+                }
+                .onChange(of: stagingSearchText) {
+                    if stagingSearchText.isEmpty {
+                        searchText = ""
+                    }
+                }
+                .sheet(isPresented: $showingCharacterEditor) {
+                    CharacterEditorView(
+                        card: characterToEdit, // Pass nil for new, or existing card for edit
+                        onSave: { savedCard in
+                            if let index = characterViewModel.characters.firstIndex(where: { $0.id == savedCard.id }) {
+                                characterViewModel.updateCharacter(savedCard)
+                            } else {
+                                characterViewModel.addCharacter(savedCard)
+                            }
+                            showingCharacterEditor = false
+                        },
+                        onCancel: {
+                            showingCharacterEditor = false
+                        }
+                    )
+                }
+            } // 关闭 else 代码块
         }
     }
 
