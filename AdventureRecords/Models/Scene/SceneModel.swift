@@ -17,5 +17,11 @@ struct AdventureScene: Identifiable, Hashable {
     
     mutating func addRelatedNoteID(_ noteID: UUID) {
         relatedNoteIDs.append(noteID)
+        relatedNoteIDs = Array(Set(relatedNoteIDs))
+    }
+
+    mutating func addRelatedCharacterIDs(_ characterIDs: [UUID]) {
+        relatedCharacterIDs.append(contentsOf: characterIDs)
+        relatedCharacterIDs = Array(Set(relatedCharacterIDs))
     }
 }

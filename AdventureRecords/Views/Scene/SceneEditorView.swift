@@ -29,15 +29,15 @@ struct SceneEditorView: View {
     }
     
     // 编辑现有场景
-    init(scene: AdventureScene, onSave: @escaping (AdventureScene) -> Void, onCancel: @escaping () -> Void) {
-        self._title = State(initialValue: scene.title)
-        self._description = State(initialValue: scene.description)
-        self._relatedCharacterIDs = State(initialValue: scene.relatedCharacterIDs)
-        self._relatedNoteIDs = State(initialValue: scene.relatedNoteIDs)
+    init(scene: AdventureScene?, onSave: @escaping (AdventureScene) -> Void, onCancel: @escaping () -> Void) {
+        self._title = State(initialValue: scene?.title ?? "")
+        self._description = State(initialValue: scene?.description ?? "")
+        self._relatedCharacterIDs = State(initialValue: scene?.relatedCharacterIDs ?? [])
+        self._relatedNoteIDs = State(initialValue: scene?.relatedNoteIDs ?? [])
         self.onSave = onSave
         self.onCancel = onCancel
         self.isEditing = true
-        self.existingSceneID = scene.id
+        self.existingSceneID = scene?.id
     }
     
     var body: some View {

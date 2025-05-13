@@ -49,21 +49,19 @@ class NoteViewModel: ObservableObject {
 
     func updateRelatedEntities(for note: NoteBlock) {
         let characters = coreDataManager.fetchCharacters(for: note.relatedCharacterIDs)
+        let scenes = coreDataManager.fetchScenes(for: note.relatedSceneIDs)
+
         for var character in characters {
             print("Updating character: \(character.name)")
-            if !character.noteIDs.contains(note.id) {
-                character.noteIDs.append(note.id)
-                // 更新角色卡
-                coreDataManager.updateCharacter(character)
-            }
+            character.addNoteID(note.id)
+            character.addSceneIDs(scenes.map { $0.id })
+            coreDataManager.updateCharacter(character)
         }
-        let scenes = coreDataManager.fetchScenes(for: note.relatedSceneIDs)
-        for var scene in scenes {
+        for var scene : AdventureScene in scenes {
             print("Updating scene: \(scene.title)")
-            if !scene.relatedNoteIDs.contains(note.id) {
-                scene.relatedNoteIDs.append(note.id)
-                coreDataManager.updateScene(scene)
-            }
+            scene.addRelatedNoteID(note.id)
+            scene.addRelatedCharacterIDs(characters.map { $0.id })
+            coreDataManager.updateScene(scene)
         }
     }
 

@@ -15,7 +15,7 @@ public class ThemeManager: ObservableObject {
     // MARK: - 颜色方案
     
     // 主色调
-    public let primaryColor = Color("PrimaryColor")
+    public let themeColor = Color("PrimaryColor")
     
     // 模块强调色
     public let characterAccentColor = Color.purple

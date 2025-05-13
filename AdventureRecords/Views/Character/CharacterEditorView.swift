@@ -39,17 +39,17 @@ struct CharacterEditorView: View {
     }
     
     // 编辑现有角色卡
-    init(card: CharacterCard, onSave: @escaping (CharacterCard) -> Void, onCancel: @escaping () -> Void) {
+    init(card: CharacterCard?, onSave: @escaping (CharacterCard) -> Void, onCancel: @escaping () -> Void) {
         self.onSave = onSave
         self.onCancel = onCancel
-        self._name = State(initialValue: card.name)
-        self._description = State(initialValue: card.description)
-        self._tags = State(initialValue: card.tags)
-        self._avatar = State(initialValue: card.avatar)
+        self._name = State(initialValue: card?.name ?? "")
+        self._description = State(initialValue: card?.description ?? "")
+        self._tags = State(initialValue: card?.tags ?? [])
+        self._avatar = State(initialValue: card?.avatar ?? UIImage(named: "default_avatar"))
         self._selectedItem = State(initialValue: nil)
-        self._audioRecordings = State(initialValue: card.audioRecordings ?? [])
+        self._audioRecordings = State(initialValue: card?.audioRecordings ?? [])
         self._showRecordingSheet = State(initialValue: false)
-        self.existingCharacterID = card.id
+        self.existingCharacterID = card?.id
     }
     
     var body: some View {

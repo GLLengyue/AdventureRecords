@@ -34,18 +34,18 @@ struct NoteEditorView: View {
         self.isEditing = false
     }
     
-    init(note: NoteBlock, preselectedCharacterID: UUID? = nil, onSave: @escaping (NoteBlock) -> Void, onCancel: @escaping () -> Void) {
-        self._title = State(initialValue: note.title)
-        self._content = State(initialValue: note.content)
-        var initialCharIDs = note.relatedCharacterIDs
+    init(note: NoteBlock?, preselectedCharacterID: UUID? = nil, onSave: @escaping (NoteBlock) -> Void, onCancel: @escaping () -> Void) {
+        self._title = State(initialValue: note?.title ?? "")
+        self._content = State(initialValue: note?.content ?? "")
+        var initialCharIDs = note?.relatedCharacterIDs ?? []
         if let preID = preselectedCharacterID, !initialCharIDs.contains(preID) {
             initialCharIDs.append(preID)
         }
         self._selectedCharacterIDs = State(initialValue: initialCharIDs)
-        self._selectedSceneIDs = State(initialValue: note.relatedSceneIDs)
+        self._selectedSceneIDs = State(initialValue: note?.relatedSceneIDs ?? [])
         self.onSave = onSave
         self.onCancel = onCancel
-        self.existingNoteID = note.id
+        self.existingNoteID = note?.id
         self.isEditing = true
     }
     

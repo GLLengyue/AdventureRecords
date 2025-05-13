@@ -21,5 +21,11 @@ struct CharacterCard: Identifiable, Hashable {
     
     mutating func addNoteID(_ noteID: UUID) {
         noteIDs.append(noteID)
+        noteIDs = Array(Set(noteIDs))
+    }
+
+    mutating func addSceneIDs(_ SceneIDs: [UUID]) {
+        sceneIDs.append(contentsOf: SceneIDs)
+        sceneIDs = Array(Set(sceneIDs))
     }
 }
