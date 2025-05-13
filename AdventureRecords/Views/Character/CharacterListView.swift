@@ -46,6 +46,38 @@ struct CharacterListView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
+                .toolbar {
+                    ToolbarItemGroup(placement: .navigationBarLeading) {
+                        EditButton()
+                        Menu {
+                            Picker("排序方式", selection: $sortOrder) {
+                                ForEach(SortOrder.allCases, id: \.self) { order in
+                                    Text(order.rawValue).tag(order)
+                                }
+                            }
+                        } label: {
+                            Label("排序", systemImage: "arrow.up.arrow.down.circle")
+                        }
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            self.showingCharacterEditor = true
+                        } label: {
+                            Label("添加角色", systemImage: "plus.circle.fill")
+                        }
+                    }
+                }
+                .sheet(isPresented: $showingCharacterEditor) {
+                    CharacterEditorView(
+                        onSave: { savedCard in
+                                characterViewModel.addCharacter(savedCard)
+                            showingCharacterEditor = false
+                        },
+                        onCancel: {
+                            showingCharacterEditor = false
+                        }
+                    )
+                }
                 .searchable(text: $stagingSearchText, prompt: "搜索角色") // 添加 searchable 修饰符
                 .onSubmit(of: .search) {
                     searchText = stagingSearchText

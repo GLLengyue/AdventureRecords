@@ -92,6 +92,7 @@ struct NoteBlockRow: View {
         .sheet(isPresented: $showEditor) {
             NoteEditorView(note: note, onSave: { updatedNote in
                 onEdit(updatedNote)
+                showEditor = false
             }, onCancel: {
                 showEditor = false
             })

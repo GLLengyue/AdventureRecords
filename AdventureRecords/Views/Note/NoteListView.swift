@@ -4,7 +4,6 @@ struct NoteListView: View {
     @EnvironmentObject var noteViewModel: NoteViewModel
 
     @State private var showingNoteEditor = false
-    @State private var noteToEdit: NoteBlock? = nil
     @State private var searchText: String = ""
     @State private var stagingSearchText: String = ""
     @State private var sortOrder: SortOrder = .titleAscending
@@ -53,6 +52,38 @@ struct NoteListView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
+                .toolbar {
+                    ToolbarItemGroup(placement: .navigationBarLeading) {
+                        EditButton()
+                        Menu {
+                            Picker("排序方式", selection: $sortOrder) {
+                                ForEach(SortOrder.allCases, id: \.self) { order in
+                                    Text(order.rawValue).tag(order)
+                                }
+                            }
+                        } label: {
+                            Label("排序", systemImage: "arrow.up.arrow.down.circle")
+                        }
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            self.showingNoteEditor = true // This showingNoteEditor is for the ListView's sheet for NEW notes
+                        } label: {
+                            Label("添加笔记", systemImage: "plus.circle.fill")
+                        }
+                    }
+                }
+                .sheet(isPresented: $showingNoteEditor) { // This sheet is for creating NEW notes
+                    NoteEditorView(
+                        onSave: { newNote in
+                            noteViewModel.addNote(newNote)
+                            showingNoteEditor = false
+                        },
+                        onCancel: {
+                            showingNoteEditor = false
+                        }
+                    )
+                }
                 .frame(maxWidth: .infinity, maxHeight: .infinity) // 居中内容
                 .searchable(text: $stagingSearchText, prompt: "搜索笔记") // 添加 searchable 修饰符
                 .onSubmit(of: .search) {
@@ -73,8 +104,7 @@ struct NoteListView: View {
                                     noteViewModel.deleteNote(note)
                                 },
                                 onEdit: { editableNote in
-                                    self.noteToEdit = editableNote
-                                    self.showingNoteEditor = true
+                                    noteViewModel.updateNote(editableNote) // This aligns with CharacterListView patch
                                 },
                                 getRelatedCharacters: {
                                     return noteViewModel.getRelatedCharacters(for: note) // Pass the note for contex
@@ -105,8 +135,7 @@ struct NoteListView: View {
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
-                            self.noteToEdit = nil // Ensure we are creating a new one
-                            self.showingNoteEditor = true
+                            self.showingNoteEditor = true // This showingNoteEditor is for the ListView's sheet for NEW notes
                         } label: {
                             Label("添加笔记", systemImage: "plus.circle.fill")
                         }
@@ -121,15 +150,10 @@ struct NoteListView: View {
                         searchText = ""
                     }
                 }
-                .sheet(isPresented: $showingNoteEditor) {
+                .sheet(isPresented: $showingNoteEditor) { // This sheet is for creating NEW notes
                     NoteEditorView(
-                        note: noteToEdit, // Pass nil for new, or existing note for edit
-                        onSave: { savedNote in
-                            if let index = noteViewModel.notes.firstIndex(where: { $0.id == savedNote.id }) {
-                                noteViewModel.updateNote(savedNote)
-                            } else {
-                                noteViewModel.addNote(savedNote)
-                            }
+                        onSave: { newNote in
+                            noteViewModel.addNote(newNote)
                             showingNoteEditor = false
                         },
                         onCancel: {

@@ -14,7 +14,7 @@ struct SceneEditorView: View {
     private var onSave: (AdventureScene) -> Void
     private var onCancel: () -> Void
     private var isEditing: Bool
-    private var existingSceneID: UUID?
+    private var existingScene: AdventureScene?
     
     // 创建新场景
     init(onSave: @escaping (AdventureScene) -> Void, onCancel: @escaping () -> Void) {
@@ -25,19 +25,19 @@ struct SceneEditorView: View {
         self.onSave = onSave
         self.onCancel = onCancel
         self.isEditing = false
-        self.existingSceneID = nil
+        self.existingScene = nil
     }
     
     // 编辑现有场景
-    init(scene: AdventureScene?, onSave: @escaping (AdventureScene) -> Void, onCancel: @escaping () -> Void) {
-        self._title = State(initialValue: scene?.title ?? "")
-        self._description = State(initialValue: scene?.description ?? "")
-        self._relatedCharacterIDs = State(initialValue: scene?.relatedCharacterIDs ?? [])
-        self._relatedNoteIDs = State(initialValue: scene?.relatedNoteIDs ?? [])
+    init(scene: AdventureScene, onSave: @escaping (AdventureScene) -> Void, onCancel: @escaping () -> Void) {
+        self._title = State(initialValue: scene.title)
+        self._description = State(initialValue: scene.description)
+        self._relatedCharacterIDs = State(initialValue: scene.relatedCharacterIDs)
+        self._relatedNoteIDs = State(initialValue: scene.relatedNoteIDs)
         self.onSave = onSave
         self.onCancel = onCancel
         self.isEditing = true
-        self.existingSceneID = scene?.id
+        self.existingScene = scene
     }
     
     var body: some View {
@@ -94,17 +94,24 @@ struct SceneEditorView: View {
                         onCancel()
                     }
                 }
-                
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存") {
-                        let sceneToSave = AdventureScene(
-                            id: existingSceneID ?? UUID(),
-                            title: title,
-                            description: description,
-                            relatedCharacterIDs: relatedCharacterIDs,
-                            relatedNoteIDs: relatedNoteIDs
-                        )
-                        onSave(sceneToSave)
+                        if var sceneToUpdate = existingScene {
+                            sceneToUpdate.title = title
+                            sceneToUpdate.description = description
+                            sceneToUpdate.relatedCharacterIDs = relatedCharacterIDs
+                            sceneToUpdate.relatedNoteIDs = relatedNoteIDs
+                            onSave(sceneToUpdate)
+                        } else {
+                            let newScene = AdventureScene(
+                                id: UUID(),
+                                title: title,
+                                description: description,
+                                relatedCharacterIDs: relatedCharacterIDs,
+                                relatedNoteIDs: relatedNoteIDs,
+                            )
+                            onSave(newScene)
+                        }
                     }
                     .disabled(title.isEmpty)
                 }

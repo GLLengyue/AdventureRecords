@@ -4,7 +4,6 @@ struct SceneListView: View {
     @EnvironmentObject var sceneViewModel: SceneViewModel
 
     @State private var showingSceneEditor = false
-    @State private var sceneToEdit: AdventureScene? = nil
     @State private var searchText: String = ""
     @State private var stagingSearchText: String = ""
     @State private var sortOrder: SortOrder = .titleAscending
@@ -48,6 +47,38 @@ struct SceneListView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
+                .toolbar {
+                    ToolbarItemGroup(placement: .navigationBarLeading) {
+                        EditButton()
+                        Menu {
+                            Picker("排序方式", selection: $sortOrder) {
+                                ForEach(SortOrder.allCases, id: \.self) { order in
+                                    Text(order.rawValue).tag(order)
+                                }
+                            }
+                        } label: {
+                            Label("排序", systemImage: "arrow.up.arrow.down.circle")
+                        }
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            self.showingSceneEditor = true
+                            } label: {
+                                Label("添加场景", systemImage: "plus.circle.fill")
+                        }
+                    }
+                }
+                .sheet(isPresented: $showingSceneEditor) {
+                    SceneEditorView(
+                        onSave: { savedScene in
+                            sceneViewModel.addScene(savedScene)
+                            showingSceneEditor = false
+                        },
+                        onCancel: {
+                            showingSceneEditor = false
+                        }
+                    )
+                }
                 .searchable(text: $stagingSearchText, prompt: "搜索场景") // Add searchable modifier
                 .onSubmit(of: .search) {
                     searchText = stagingSearchText
@@ -68,8 +99,7 @@ struct SceneListView: View {
                                     sceneViewModel.deleteScene(scene)
                                 },
                                 onEdit: { editableScene in
-                                    self.sceneToEdit = editableScene
-                                    self.showingSceneEditor = true
+                                    sceneViewModel.updateScene(editableScene)
                                 },
                                 getRelatedCharacters: {
                                     return sceneViewModel.getRelatedCharacters(for: scene)
@@ -100,10 +130,9 @@ struct SceneListView: View {
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
-                            self.sceneToEdit = nil // Ensure we are creating a new one
                             self.showingSceneEditor = true
-                        } label: {
-                            Label("添加场景", systemImage: "plus.circle.fill")
+                            } label: {
+                                Label("添加场景", systemImage: "plus.circle.fill")
                         }
                     }
                 }
@@ -116,16 +145,10 @@ struct SceneListView: View {
                         searchText = ""
                     }
                 }
-
                 .sheet(isPresented: $showingSceneEditor) {
                     SceneEditorView(
-                        scene: sceneToEdit , // Pass nil for new, or existing scene for edit
                         onSave: { savedScene in
-                            if let index = sceneViewModel.scenes.firstIndex(where: { $0.id == savedScene.id }) {
-                                sceneViewModel.updateScene(savedScene)
-                            } else {
-                                sceneViewModel.addScene(savedScene)
-                            }
+                            sceneViewModel.addScene(savedScene)
                             showingSceneEditor = false
                         },
                         onCancel: {

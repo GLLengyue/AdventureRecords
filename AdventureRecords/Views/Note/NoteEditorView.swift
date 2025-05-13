@@ -20,7 +20,7 @@ struct NoteEditorView: View {
     
     private var onSave: (NoteBlock) -> Void
     private var onCancel: () -> Void
-    private var existingNoteID: UUID?
+    private var existingNote: NoteBlock?
     private var isEditing: Bool
     
     init(preselectedCharacterID: UUID? = nil, onSave: @escaping (NoteBlock) -> Void, onCancel: @escaping () -> Void) {
@@ -30,22 +30,23 @@ struct NoteEditorView: View {
         self._selectedSceneIDs = State(initialValue: [])
         self.onSave = onSave
         self.onCancel = onCancel
-        self.existingNoteID = nil
+        self.existingNote = nil
         self.isEditing = false
     }
     
-    init(note: NoteBlock?, preselectedCharacterID: UUID? = nil, onSave: @escaping (NoteBlock) -> Void, onCancel: @escaping () -> Void) {
-        self._title = State(initialValue: note?.title ?? "")
-        self._content = State(initialValue: note?.content ?? "")
-        var initialCharIDs = note?.relatedCharacterIDs ?? []
+    // Initializer for editing an existing note
+    init(note: NoteBlock, preselectedCharacterID: UUID? = nil, onSave: @escaping (NoteBlock) -> Void, onCancel: @escaping () -> Void) {
+        self._title = State(initialValue: note.title)
+        self._content = State(initialValue: note.content)
+        var initialCharIDs = note.relatedCharacterIDs
         if let preID = preselectedCharacterID, !initialCharIDs.contains(preID) {
             initialCharIDs.append(preID)
         }
         self._selectedCharacterIDs = State(initialValue: initialCharIDs)
-        self._selectedSceneIDs = State(initialValue: note?.relatedSceneIDs ?? [])
+        self._selectedSceneIDs = State(initialValue: note.relatedSceneIDs)
         self.onSave = onSave
         self.onCancel = onCancel
-        self.existingNoteID = note?.id
+        self.existingNote = note
         self.isEditing = true
     }
     
@@ -114,15 +115,24 @@ struct NoteEditorView: View {
     }
     
     private func saveNoteAction() {
-        let noteToSave = NoteBlock(
-            id: existingNoteID ?? UUID(),
-            title: title,
-            content: content,
-            relatedCharacterIDs: selectedCharacterIDs,
-            relatedSceneIDs: selectedSceneIDs,
-            date: Date()
-        )
-        onSave(noteToSave)
+        if var noteToUpdate = existingNote {
+            noteToUpdate.title = title
+            noteToUpdate.content = content
+            noteToUpdate.relatedCharacterIDs = selectedCharacterIDs
+            noteToUpdate.relatedSceneIDs = selectedSceneIDs
+            noteToUpdate.date = Date() // Update timestamp
+            onSave(noteToUpdate)
+        } else {
+            let newNote = NoteBlock(
+                id: UUID(),
+                title: title,
+                content: content,
+                relatedCharacterIDs: selectedCharacterIDs,
+                relatedSceneIDs: selectedSceneIDs,
+                date: Date()
+            )
+            onSave(newNote)
+        }
     }
 }
 
