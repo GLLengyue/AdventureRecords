@@ -5,11 +5,38 @@ struct NoteListView: View {
 
     @State private var showingNoteEditor = false
     @State private var noteToEdit: NoteBlock? = nil
+    @State private var searchText: String = ""
+    @State private var sortOrder: SortOrder = .titleAscending
+
+    enum SortOrder: String, CaseIterable, Identifiable {
+        case titleAscending = "标题升序"
+        case titleDescending = "标题降序"
+        case dateAscending = "创建日期升序"
+        case dateDescending = "创建日期降序"
+        var id: String { self.rawValue }
+    }
+
+    var filteredAndSortedNotes: [NoteBlock] {
+        let filtered = noteViewModel.notes.filter { note in
+            searchText.isEmpty ? true : note.title.localizedCaseInsensitiveContains(searchText) || note.content.localizedCaseInsensitiveContains(searchText)
+        }
+
+        switch sortOrder {
+        case .titleAscending:
+            return filtered.sorted { $0.title.localizedCompare($1.title) == .orderedAscending }
+        case .titleDescending:
+            return filtered.sorted { $0.title.localizedCompare($1.title) == .orderedDescending }
+        case .dateAscending:
+            return filtered.sorted { $0.date < $1.date }
+        case .dateDescending:
+            return filtered.sorted { $0.date > $1.date }
+        }
+    }
 
     var body: some View {
         NavigationView {
             List {
-                ForEach(noteViewModel.notes) { note in
+                ForEach(filteredAndSortedNotes) { note in // 使用 filteredAndSortedNotes
                     NavigationLink(destination: NoteBlockDetailView(noteBlock: note)) {
                         NoteBlockRow(
                             note: note,
@@ -36,8 +63,17 @@ struct NoteListView: View {
             }
             .navigationTitle("笔记")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItemGroup(placement: .navigationBarLeading) {
                     EditButton()
+                    Menu {
+                        Picker("排序方式", selection: $sortOrder) {
+                            ForEach(SortOrder.allCases, id: \.self) { order in
+                                Text(order.rawValue).tag(order)
+                            }
+                        }
+                    } label: {
+                        Label("排序", systemImage: "arrow.up.arrow.down.circle")
+                    }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
@@ -48,6 +84,7 @@ struct NoteListView: View {
                     }
                 }
             }
+            .searchable(text: $searchText, prompt: "搜索笔记") // 添加 searchable 修饰符
             .sheet(isPresented: $showingNoteEditor) {
                 NoteEditorView(
                     note: noteToEdit, // Pass nil for new, or existing note for edit
@@ -68,7 +105,7 @@ struct NoteListView: View {
     }
 
     private func deleteNotes(at offsets: IndexSet) {
-        offsets.map { noteViewModel.notes[$0] }.forEach {
+        offsets.map { filteredAndSortedNotes[$0] }.forEach { // 使用 filteredAndSortedNotes
             noteViewModel.deleteNote($0)
         }
     }
