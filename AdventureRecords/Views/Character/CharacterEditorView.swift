@@ -17,8 +17,8 @@ struct CharacterEditorView: View {
     @State private var audioRecordings: [AudioRecording]
     @State private var showRecordingSheet: Bool
     
-    // Original Character ID, if editing
-    private var existingCharacterID: UUID?
+    // Original Character card, if editing
+    private var existingCharacterCard: CharacterCard?
     
     // 回调闭包
     var onSave: (CharacterCard) -> Void
@@ -35,21 +35,21 @@ struct CharacterEditorView: View {
         self._selectedItem = State(initialValue: nil)
         self._audioRecordings = State(initialValue: [])
         self._showRecordingSheet = State(initialValue: false)
-        self.existingCharacterID = nil
+        self.existingCharacterCard = nil
     }
     
     // 编辑现有角色卡
-    init(card: CharacterCard?, onSave: @escaping (CharacterCard) -> Void, onCancel: @escaping () -> Void) {
+    init(card: CharacterCard!, onSave: @escaping (CharacterCard) -> Void, onCancel: @escaping () -> Void) {
         self.onSave = onSave
         self.onCancel = onCancel
-        self._name = State(initialValue: card?.name ?? "")
-        self._description = State(initialValue: card?.description ?? "")
-        self._tags = State(initialValue: card?.tags ?? [])
-        self._avatar = State(initialValue: card?.avatar ?? UIImage(named: "default_avatar"))
+        self._name = State(initialValue: card.name)
+        self._description = State(initialValue: card.description)
+        self._tags = State(initialValue: card.tags)
+        self._avatar = State(initialValue: card.avatar)
         self._selectedItem = State(initialValue: nil)
-        self._audioRecordings = State(initialValue: card?.audioRecordings ?? [])
+        self._audioRecordings = State(initialValue: card.audioRecordings ?? [])
         self._showRecordingSheet = State(initialValue: false)
-        self.existingCharacterID = card?.id
+        self.existingCharacterCard = card
     }
     
     var body: some View {
@@ -125,17 +125,28 @@ struct CharacterEditorView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("保存") {
-                        let cardToSave = CharacterCard(
-                            id: existingCharacterID ?? UUID(),
-                            name: name,
-                            description: description,
-                            avatar: avatar,
-                            audioRecordings: audioRecordings.isEmpty ? nil : audioRecordings,
-                            tags: tags,
-                            noteIDs: [],
-                            sceneIDs: []
-                        )
-                        onSave(cardToSave)
+                        if var editedCharacterCard = existingCharacterCard {
+                            editedCharacterCard.name = name
+                            editedCharacterCard.description = description
+                            editedCharacterCard.avatar = avatar
+                            editedCharacterCard.audioRecordings = audioRecordings
+                            editedCharacterCard.tags = tags
+                            onSave(editedCharacterCard)
+                        }
+                        else {
+                            let cardToSave = CharacterCard(
+                                id: UUID(),
+                                name: name,
+                                description: description,
+                                avatar: avatar,
+                                audioRecordings: audioRecordings.isEmpty ? nil : audioRecordings,
+                                tags: tags,
+                                noteIDs: [],
+                                sceneIDs: []
+                            )
+                            onSave(cardToSave)
+
+                        }
                     }
                     .disabled(name.isEmpty)
                 }

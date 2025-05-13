@@ -2,11 +2,7 @@ import SwiftUI
 
 struct CharacterListView: View {
     @EnvironmentObject var characterViewModel: CharacterViewModel
-    // @EnvironmentObject var noteViewModel: NoteViewModel
-    // @EnvironmentObject var sceneViewModel: SceneViewModel
-
     @State private var showingCharacterEditor = false
-    @State private var characterToEdit: CharacterCard? = nil
     @State private var searchText: String = ""
     @State private var stagingSearchText: String = ""
     @State private var sortOrder: SortOrder = .nameAscending
@@ -69,10 +65,7 @@ struct CharacterListView: View {
                                 onDelete: {
                                     characterViewModel.deleteCharacter(character)
                                 },
-                                onEdit: { editableCharacter in
-                                    self.characterToEdit = editableCharacter
-                                    self.showingCharacterEditor = true
-                                },
+                                onEdit: characterViewModel.updateCharacter,
                                 getRelatedNotes: {
                                     return characterViewModel.getRelatedNotes(for: character)
                                 },
@@ -102,7 +95,6 @@ struct CharacterListView: View {
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
-                            self.characterToEdit = nil // Ensure we are creating a new one
                             self.showingCharacterEditor = true
                         } label: {
                             Label("添加角色", systemImage: "plus.circle.fill")
@@ -120,13 +112,8 @@ struct CharacterListView: View {
                 }
                 .sheet(isPresented: $showingCharacterEditor) {
                     CharacterEditorView(
-                        card: characterToEdit, // Pass nil for new, or existing card for edit
                         onSave: { savedCard in
-                            if let index = characterViewModel.characters.firstIndex(where: { $0.id == savedCard.id }) {
-                                characterViewModel.updateCharacter(savedCard)
-                            } else {
                                 characterViewModel.addCharacter(savedCard)
-                            }
                             showingCharacterEditor = false
                         },
                         onCancel: {
