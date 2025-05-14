@@ -6,28 +6,69 @@ struct NoteBlockDetailView: View {
     @EnvironmentObject var characterViewModel: CharacterViewModel
     @EnvironmentObject var sceneViewModel: SceneViewModel
     @State private var showEditor = false
+    @State private var selectedCharacterForDetail: CharacterCard? = nil
+    @State private var selectedSceneForDetail: AdventureScene? = nil
+
+    private var relatedCharacters: [CharacterCard] {
+        characterViewModel.characters.filter { noteBlock.relatedCharacterIDs.contains($0.id) }
+    }
+
+    private var relatedScenes: [AdventureScene] {
+        sceneViewModel.scenes.filter { noteBlock.relatedSceneIDs.contains($0.id) }
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(noteBlock.title)
-                .font(.largeTitle)
-                .bold()
+        DetailContainer(module: .note, title: "笔记详情", backAction: { /* 通常由 NavigationView 处理 */ }, editAction: { showEditor = true }) {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(noteBlock.title)
+                    .font(.largeTitle)
+                    .bold()
+                
+                Text("创建于: \(noteBlock.date, style: .date)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
 
-            Text(noteBlock.content)
-                .font(.body)
+                if !relatedCharacters.isEmpty {
+                    Section(header: Text("关联角色").font(.headline)) {
+                        ForEach(relatedCharacters) { character in
+                            Button(action: {
+                                selectedCharacterForDetail = character
+                            }) {
+                                Text(character.name)
+                                    .padding(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                                    .background(ThemeManager.shared.accentColor(for: .character).opacity(0.2))
+                                    .cornerRadius(8)
+                                    .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                            }
+                        }
+                    }
+                }
+                
+                if !relatedScenes.isEmpty {
+                    Section(header: Text("关联场景").font(.headline)) {
+                        ForEach(relatedScenes) { scene in
+                            Button(action: {
+                                selectedSceneForDetail = scene
+                            }) {
+                                Text(scene.title)
+                                    .padding(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                                    .background(ThemeManager.shared.accentColor(for: .scene).opacity(0.2))
+                                    .cornerRadius(8)
+                                    .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                            }
+                        }
+                    }
+                }
 
-            Button(action: {
-                showEditor = true
-            }) {
-                Label("编辑笔记", systemImage: "square.and.pencil")
+                Text("笔记内容：")
+                    .font(.headline)
+                    .padding(.top)
+                Text(noteBlock.content)
+                    .font(.body)
+                
+                Spacer()
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
-
-            Spacer()
         }
-        .padding()
-        .navigationTitle("笔记详情")
         .sheet(isPresented: $showEditor) {
             NoteEditorView(
                 note: noteBlock, 
@@ -40,14 +81,21 @@ struct NoteBlockDetailView: View {
                 }
             )
         }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        NoteBlockDetailView(noteBlock: NoteBlock(id: UUID(), title: "测试笔记", content: "这是测试笔记的内容", relatedCharacterIDs: [], relatedSceneIDs: [], date: Date()))
-            .environmentObject(NoteViewModel())
-            .environmentObject(CharacterViewModel())
-            .environmentObject(SceneViewModel())
+        .sheet(item: $selectedCharacterForDetail) { characterItem in
+            NavigationStack {
+                CharacterDetailView(card: characterItem)
+                    .environmentObject(characterViewModel)
+                    .environmentObject(noteViewModel)
+                    .environmentObject(sceneViewModel)
+            }
+        }
+        .sheet(item: $selectedSceneForDetail) { sceneItem in
+            NavigationStack {
+                SceneDetailView(scene: sceneItem)
+                    .environmentObject(sceneViewModel)
+                    .environmentObject(noteViewModel)
+                    .environmentObject(characterViewModel)
+            }
+        }
     }
 }

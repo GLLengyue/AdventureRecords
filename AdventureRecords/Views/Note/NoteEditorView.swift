@@ -23,11 +23,34 @@ struct NoteEditorView: View {
     private var existingNote: NoteBlock?
     private var isEditing: Bool
     
+    init(onSave: @escaping (NoteBlock) -> Void, onCancel: @escaping () -> Void) {
+        self._title = State(initialValue: "")
+        self._content = State(initialValue: "")
+        self._selectedCharacterIDs = State(initialValue: [])
+        self._selectedSceneIDs = State(initialValue: [])
+        self.onSave = onSave
+        self.onCancel = onCancel
+        self.existingNote = nil
+        self.isEditing = false
+    }
+    
+
     init(preselectedCharacterID: UUID? = nil, onSave: @escaping (NoteBlock) -> Void, onCancel: @escaping () -> Void) {
         self._title = State(initialValue: "")
         self._content = State(initialValue: "")
         self._selectedCharacterIDs = State(initialValue: preselectedCharacterID != nil ? [preselectedCharacterID!] : [])
         self._selectedSceneIDs = State(initialValue: [])
+        self.onSave = onSave
+        self.onCancel = onCancel
+        self.existingNote = nil
+        self.isEditing = false
+    }
+
+    init(preselectedSceneID: UUID? = nil, onSave: @escaping (NoteBlock) -> Void, onCancel: @escaping () -> Void) {
+        self._title = State(initialValue: "")
+        self._content = State(initialValue: "")
+        self._selectedCharacterIDs = State(initialValue: [])
+        self._selectedSceneIDs = State(initialValue: preselectedSceneID != nil ? [preselectedSceneID!] : [])
         self.onSave = onSave
         self.onCancel = onCancel
         self.existingNote = nil
@@ -136,11 +159,11 @@ struct NoteEditorView: View {
     }
 }
 
-#Preview {
-    NavigationStack {
-        NoteEditorView(onSave: { _ in print("Preview Save") }, onCancel: { print("Preview Cancel") })
-            .environmentObject(NoteViewModel())
-            .environmentObject(CharacterViewModel())
-            .environmentObject(SceneViewModel())
-    }
-}
+// #Preview {
+//     NavigationStack {
+//         NoteEditorView(onSave: { _ in print("Preview Save") }, onCancel: { print("Preview Cancel") })
+//             .environmentObject(NoteViewModel())
+//             .environmentObject(CharacterViewModel())
+//             .environmentObject(SceneViewModel())
+//     }
+// }

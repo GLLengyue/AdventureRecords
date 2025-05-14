@@ -2,11 +2,12 @@ import SwiftUI
 
 struct SceneListView: View {
     @EnvironmentObject var sceneViewModel: SceneViewModel
+    @Binding var showingSceneEditor: Bool
 
-    @State private var showingSceneEditor = false
     @State private var searchText: String = ""
     @State private var stagingSearchText: String = ""
     @State private var sortOrder: SortOrder = .titleAscending
+    @State private var selectedScene: AdventureScene? = nil
 
     enum SortOrder: String, CaseIterable, Identifiable {
         case titleAscending = "名称升序"
@@ -29,134 +30,55 @@ struct SceneListView: View {
     }
 
     var body: some View {
-        NavigationView {
-            if filteredAndSortedScenes.isEmpty {
-                VStack {
-                    Image(systemName: "film.stack") // 示例图标
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 80, height: 80)
-                        .foregroundColor(.gray.opacity(0.5))
-                        .padding(.bottom)
-                    Text(searchText.isEmpty ? "还没有场景呢" : "没有找到符合条件的场景")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-                    Text(searchText.isEmpty ? "点击右上方 \"+\" 添加一个新场景吧！" : "尝试修改你的搜索词，或者清除搜索。")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                .toolbar {
-                    ToolbarItemGroup(placement: .navigationBarLeading) {
-                        EditButton()
-                        Menu {
-                            Picker("排序方式", selection: $sortOrder) {
-                                ForEach(SortOrder.allCases, id: \.self) { order in
-                                    Text(order.rawValue).tag(order)
-                                }
-                            }
-                        } label: {
-                            Label("排序", systemImage: "arrow.up.arrow.down.circle")
-                        }
-                    }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button {
-                            self.showingSceneEditor = true
-                            } label: {
-                                Label("添加场景", systemImage: "plus.circle.fill")
-                        }
-                    }
-                }
-                .sheet(isPresented: $showingSceneEditor) {
-                    SceneEditorView(
-                        onSave: { savedScene in
-                            sceneViewModel.addScene(savedScene)
-                            showingSceneEditor = false
+        ListContainer(module: .scene, title: "场景", addAction: {
+            showingSceneEditor = true
+        }) {
+            List(filteredAndSortedScenes) { scene in
+                Button {
+                    selectedScene = scene
+                } label: {
+                    SceneRow(scene: scene,
+                        onDelete: {
+                            sceneViewModel.deleteScene(scene)
                         },
-                        onCancel: {
-                            showingSceneEditor = false
+                        onEdit: { editableScene in
+                            sceneViewModel.updateScene(editableScene)
+                        },
+                        getRelatedCharacters: {
+                            return sceneViewModel.getRelatedCharacters(for: scene)
+                        },
+                        getRelatedNotes: {
+                            return sceneViewModel.getRelatedNotes(for: scene)
                         }
                     )
                 }
-                .searchable(text: $stagingSearchText, prompt: "搜索场景") // Add searchable modifier
-                .onSubmit(of: .search) {
-                    searchText = stagingSearchText
+            }
+        }
+        .sheet(item: $selectedScene) { scene in
+            SceneDetailView(scene: scene)
+        }
+        .searchable(text: $stagingSearchText, prompt: "搜索场景") // Add searchable modifier
+        .onSubmit(of: .search) {
+            searchText = stagingSearchText
+        }
+        .onChange(of: stagingSearchText) {
+            if stagingSearchText.isEmpty {
+                searchText = ""
+            }
+        }
+        .sheet(isPresented: $showingSceneEditor) {
+            SceneEditorView(
+                onSave: { savedScene in
+                    sceneViewModel.addScene(savedScene)
+                    showingSceneEditor = false
+                },
+                onCancel: {
+                    showingSceneEditor = false
                 }
-                .onChange(of: stagingSearchText) {
-                    if stagingSearchText.isEmpty {
-                        searchText = ""
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity) // 居中内容
-            } else {
-                List {
-                    ForEach(filteredAndSortedScenes) { scene in // Use filteredAndSortedScenes
-                        NavigationLink(destination: SceneDetailView(scene: scene)) {
-                            SceneRow(
-                                scene: scene,
-                                onDelete: {
-                                    sceneViewModel.deleteScene(scene)
-                                },
-                                onEdit: { editableScene in
-                                    sceneViewModel.updateScene(editableScene)
-                                },
-                                getRelatedCharacters: {
-                                    return sceneViewModel.getRelatedCharacters(for: scene)
-                                },
-                                getRelatedNotes: {
-                                    return sceneViewModel.getRelatedNotes(for: scene)
-                                }
-                            )
-                        }
-                    }
-                }
-                .refreshable {
-                    sceneViewModel.loadScenes()
-                }
-                .navigationTitle("场景")
-                .toolbar {
-                    ToolbarItemGroup(placement: .navigationBarLeading) {
-                        EditButton()
-                        Menu {
-                            Picker("排序方式", selection: $sortOrder) {
-                                ForEach(SortOrder.allCases, id: \.self) { order in
-                                    Text(order.rawValue).tag(order)
-                                }
-                            }
-                        } label: {
-                            Label("排序", systemImage: "arrow.up.arrow.down.circle")
-                        }
-                    }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button {
-                            self.showingSceneEditor = true
-                            } label: {
-                                Label("添加场景", systemImage: "plus.circle.fill")
-                        }
-                    }
-                }
-                .searchable(text: $stagingSearchText, prompt: "搜索场景") // Add searchable modifier
-                .onSubmit(of: .search) {
-                    searchText = stagingSearchText
-                }
-                .onChange(of: stagingSearchText) {
-                    if stagingSearchText.isEmpty {
-                        searchText = ""
-                    }
-                }
-                .sheet(isPresented: $showingSceneEditor) {
-                    SceneEditorView(
-                        onSave: { savedScene in
-                            sceneViewModel.addScene(savedScene)
-                            showingSceneEditor = false
-                        },
-                        onCancel: {
-                            showingSceneEditor = false
-                        }
-                    )
-                }
-            } // 关闭 else 代码块
+            )
+            .environmentObject(sceneViewModel)
+            // .environmentObject(CharacterViewModel()) // 假设的共享实例
+            // .environmentObject(NoteViewModel())       // 假设的共享实例
         }
     }
 
@@ -168,7 +90,7 @@ struct SceneListView: View {
 }
 
 // #Preview {
-//     SceneListView()
+//     SceneListView(showingSceneEditor: .constant(false))
 //         .environmentObject(SceneViewModel())
 //         .environmentObject(CharacterViewModel.preview)
 //         .environmentObject(NoteViewModel.preview)

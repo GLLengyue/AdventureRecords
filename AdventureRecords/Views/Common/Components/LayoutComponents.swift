@@ -150,7 +150,7 @@ public struct DetailContainer<Content: View>: View {
     
     public var body: some View {
         VStack(spacing: 0) {
-            ModuleNavigationBar(title: title, module: module, backAction: backAction) {
+            ModuleNavigationBar(title: title, module: module) {
                 if let editAction = editAction {
                     Button(action: editAction) {
                         Image(systemName: "pencil")

@@ -96,20 +96,3 @@ struct SceneRow: View {
         }
     }
 }
-
-#Preview {
-    SceneRow(
-        scene: AdventureScene(
-            id: UUID(), 
-            title: "预览场景", 
-            description: "这是一个预览场景的描述。", 
-            relatedCharacterIDs: [], 
-            relatedNoteIDs: []
-        ),
-        onDelete: { print("Delete action triggered for preview scene") },
-        onEdit: { _ in print("Edit action triggered for preview scene") },
-        getRelatedCharacters: { [] },
-        getRelatedNotes: { [] }
-    )
-    .environmentObject(SceneViewModel())
-}

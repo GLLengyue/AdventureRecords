@@ -5,7 +5,7 @@ import SwiftUI
 
 struct NoteBlockView: View {
     var body: some View {
-        NoteListView()
+        // NoteListView()
     }
 }
 

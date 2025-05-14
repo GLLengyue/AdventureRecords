@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 struct AdventureScene: Identifiable, Hashable {
     let id: UUID
@@ -6,6 +7,8 @@ struct AdventureScene: Identifiable, Hashable {
     var description: String
     var relatedCharacterIDs: [UUID]
     var relatedNoteIDs: [UUID]
+    var coverImage: UIImage?
+    var audioURL: URL?
     
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)

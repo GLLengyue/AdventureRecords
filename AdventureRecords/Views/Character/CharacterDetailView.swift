@@ -14,133 +14,116 @@ struct CharacterDetailView: View {
     @EnvironmentObject var sceneViewModel: SceneViewModel
 
     @State private var showNoteEditor = false
+    @State private var showCharacterEditor = false
     @State private var selectedNoteForDetail: NoteBlock? = nil
     @State private var selectedSceneForDetail: AdventureScene? = nil
     
     private var relatedNotes: [NoteBlock] {
-        characterViewModel.getRelatedNotes(for: card)
+        noteViewModel.notes.filter { card.noteIDs.contains($0.id) }
     }
     
     private var relatedScenes: [AdventureScene] {
-        characterViewModel.getRelatedScenes(for: card)
+        sceneViewModel.scenes.filter { card.sceneIDs.contains($0.id) }
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+        DetailContainer(module: .character, title: card.name, backAction: {}, editAction: { showCharacterEditor = true }) {
+            VStack(alignment: .leading, spacing: 20) {
                 // 角色头像和基本信息
-                HStack(alignment: .top, spacing: 16) {
+                HStack(alignment: .center, spacing: 16) {
                     if let avatar = card.avatar {
                         Image(uiImage: avatar)
                             .resizable()
                             .scaledToFill()
-                            .frame(width: 100, height: 100)
+                            .frame(width: 120, height: 120)
                             .clipShape(Circle())
+                            .overlay(Circle().stroke(ThemeManager.shared.accentColor(for: .character), lineWidth: 2))
                     } else {
                         Image(systemName: "person.circle.fill")
                             .resizable()
-                            .frame(width: 100, height: 100)
-                            .foregroundColor(.blue)
+                            .scaledToFit()
+                            .frame(width: 120, height: 120)
+                            .foregroundColor(ThemeManager.shared.accentColor(for: .character))
                     }
                     
                     VStack(alignment: .leading, spacing: 8) {
                         Text(card.name)
-                            .font(.title)
+                            .font(.largeTitle)
                             .bold()
-                        Text(card.description)
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                        if !card.tags.isEmpty {
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack {
-                                    ForEach(card.tags, id: \.self) { tag in
-                                        Text(tag)
-                                            .font(.caption)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 4)
-                                            .background(Color.blue.opacity(0.1))
-                                            .cornerRadius(12)
-                                    }
+                    }
+                }
+                .padding(.bottom)
+                
+                // 简介
+                Text(card.description)
+                    .font(.body)
+                
+                // 标签
+                if !card.tags.isEmpty {
+                    Section(header: Text("标签").font(.headline)) {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack {
+                                ForEach(card.tags, id: \.self) { tag in
+                                    Text(tag)
+                                        .font(.caption)
+                                        .padding(EdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10))
+                                        .background(ThemeManager.shared.accentColor(for: .character).opacity(0.15))
+                                        .clipShape(Capsule())
                                 }
                             }
                         }
                     }
                 }
-                .padding(.horizontal)
                 
                 // 相关笔记
                 if !relatedNotes.isEmpty {
-                    VStack(alignment: .leading) {
-                        Text("相关笔记")
-                            .font(.headline)
-                            .padding(.horizontal)
-                        
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 16) {
-                                ForEach(relatedNotes) { note in
-                                    VStack(alignment: .leading) {
-                                        Text(note.title)
-                                            .font(.headline)
-                                        Text(note.content)
-                                            .font(.body)
-                                            .lineLimit(3)
-                                        Text(note.date, style: .date)
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    .frame(width: 200)
-                                    .padding()
-                                    .background(Color.gray.opacity(0.1))
-                                    .cornerRadius(10)
-                                    .onTapGesture {
-                                        selectedNoteForDetail = note
-                                    }
+                    Section(header: Text("相关笔记 (\(relatedNotes.count))").font(.headline)) {
+                        ForEach(relatedNotes) { note in
+                            Button(action: { selectedNoteForDetail = note }) {
+                                HStack {
+                                    Text(note.title).foregroundColor(ThemeManager.shared.primaryTextColor)
+                                    Spacer()
+                                    Image(systemName: "chevron.right").foregroundColor(.secondary)
                                 }
+                                .padding()
+                                .background(ThemeManager.shared.secondaryBackgroundColor)
+                                .cornerRadius(8)
                             }
-                            .padding(.horizontal)
                         }
                     }
                 }
                 
                 // 相关场景
                 if !relatedScenes.isEmpty {
-                    VStack(alignment: .leading) {
-                        Text("相关场景")
-                            .font(.headline)
-                            .padding(.horizontal)
-                        
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 16) {
-                                ForEach(relatedScenes) { scene in
-                                    VStack(alignment: .leading) {
-                                        Text(scene.title)
-                                            .font(.headline)
-                                        Text(scene.description)
-                                            .font(.body)
-                                            .lineLimit(3)
-                                    }
-                                    .frame(width: 200)
-                                    .padding()
-                                    .background(Color.gray.opacity(0.1))
-                                    .cornerRadius(10)
-                                    .onTapGesture {
-                                        selectedSceneForDetail = scene
-                                    }
+                    Section(header: Text("相关场景 (\(relatedScenes.count))").font(.headline)) {
+                        ForEach(relatedScenes) { scene in
+                            Button(action: { selectedSceneForDetail = scene }) {
+                                HStack {
+                                    Text(scene.title).foregroundColor(ThemeManager.shared.primaryTextColor)
+                                    Spacer()
+                                    Image(systemName: "chevron.right").foregroundColor(.secondary)
                                 }
+                                .padding()
+                                .background(ThemeManager.shared.secondaryBackgroundColor)
+                                .cornerRadius(8)
                             }
-                            .padding(.horizontal)
                         }
                     }
                 }
-            }
-            .padding(.vertical)
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+                
+                // 新建关联笔记按钮 - 移至内容区，更符合"底部操作区"的感觉
                 Button(action: { showNoteEditor = true }) {
-                    Image(systemName: "square.and.pencil")
+                    Label("新建关联笔记", systemImage: "plus.circle.fill")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(ThemeManager.shared.accentColor(for: .character))
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                 }
+                .padding(.top)
+                
+                Spacer()
             }
         }
         .sheet(isPresented: $showNoteEditor) {
@@ -155,6 +138,19 @@ struct CharacterDetailView: View {
                 }
             )
         }
+        .sheet(isPresented: $showCharacterEditor) {
+            CharacterEditorView(
+                card: card,
+                onSave: { updatedCard in
+                    characterViewModel.updateCharacter(updatedCard)
+                    showCharacterEditor = false
+                },
+                onCancel: {
+                    showCharacterEditor = false
+                }
+            )
+            .environmentObject(characterViewModel)
+        }
         .sheet(item: $selectedNoteForDetail) { noteItem in
             NavigationStack {
                 NoteBlockDetailView(noteBlock: noteItem)
@@ -163,25 +159,30 @@ struct CharacterDetailView: View {
         .sheet(item: $selectedSceneForDetail) { sceneItem in
             NavigationStack {
                 SceneDetailView(scene: sceneItem)
+                    .environmentObject(sceneViewModel)
+                    .environmentObject(noteViewModel)
+                    .environmentObject(characterViewModel)
             }
         }
     }
 }
 
-#Preview {
-    NavigationStack {
-        CharacterDetailView(card: CharacterCard(
-            id: UUID(),
-            name: "预览角色",
-            description: "这是一个预览用的角色描述",
-            avatar: nil,
-            audioRecordings: nil,
-            tags: ["预览"],
-            noteIDs: [],
-            sceneIDs: []
-        ))
-        .environmentObject(CharacterViewModel())
-        .environmentObject(NoteViewModel())
-        .environmentObject(SceneViewModel())
-    }
-} 
+// #Preview {
+//     NavigationStack {
+//         CharacterDetailView(card: CharacterCard(
+//             id: UUID(),
+//             name: "预览角色莉莉丝",
+//             description: "这是一个非常非常长的角色描述，用于测试文本的换行和显示效果。她是一位勇敢的探险家，喜欢在古老的遗迹中寻找失落的宝藏。",
+//             avatar: nil,
+//             audioRecordings: nil,
+//             tags: ["探险家", "勇敢", "历史爱好者", "寻宝人"],
+//             noteIDs: [UUID(), UUID()],
+//             sceneIDs: [UUID()],
+//             creationDate: Date().addingTimeInterval(-86400 * 10),
+//             lastModifiedDate: Date().addingTimeInterval(-86400 * 2)
+//         ))
+//         .environmentObject(CharacterViewModel.mock)
+//         .environmentObject(NoteViewModel.mock)
+//         .environmentObject(SceneViewModel.mock)
+//     }
+// } 

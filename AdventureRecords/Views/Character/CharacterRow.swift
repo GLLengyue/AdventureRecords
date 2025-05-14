@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct CharacterCardRow: View {
+struct CharacterRow: View {
     let character: CharacterCard
     @State private var showEditor = false
     
@@ -108,7 +108,7 @@ struct CharacterCardRow: View {
 }
 
 #Preview {
-    CharacterCardRow(
+    CharacterRow(
         character: CharacterCard(
             id: UUID(),
             name: "预览角色",

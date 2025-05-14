@@ -13,65 +13,72 @@ struct SceneDetailView: View {
     @State private var showAudioPlayer = false
     @State private var selectedAudioURL: URL?
     @State private var showNoteEditor = false
+    @State private var showSceneEditor = false
     @State private var selectedNoteForDetail: NoteBlock? = nil
     @State private var selectedCharacterForDetail: CharacterCard? = nil
     
     private var relatedCharacters: [CharacterCard] {
-        sceneViewModel.getRelatedCharacters(for: scene)
+        characterViewModel.characters.filter { scene.relatedCharacterIDs.contains($0.id) }
     }
     
     private var relatedNotes: [NoteBlock] {
-        sceneViewModel.getRelatedNotes(for: scene)
+        noteViewModel.notes.filter { scene.relatedNoteIDs.contains($0.id) }
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                // 场景标题和描述
-                Text(scene.title).font(.largeTitle).bold()
-                Text(scene.description).font(.body)
-                
-                // 场景图片区域（示例）
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(height: 200)
-                    .overlay(
-                        Image(systemName: "photo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 60, height: 60)
-                            .foregroundColor(.gray)
-                    )
-                    .onTapGesture {
-                        showImageViewer = true
-                    }
-                
-                // 新增播放音频按钮
-                Button("播放场景音频 (占位符)") {
-                    selectedAudioURL = URL(string: "https://example.com/placeholder_audio.mp3") // 示例 URL
-                    showAudioPlayer = true
+        DetailContainer(module: .scene, title: scene.title, backAction: { /* 由导航处理 */ }, editAction: { showSceneEditor = true }) {
+            VStack(alignment: .leading, spacing: 20) {
+                // 场景图片区域 (保留占位符逻辑，实际图片应从 scene.coverImageURL 或类似属性加载)
+                if let coverImage = scene.coverImage {
+                    Image(uiImage: coverImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(height: 250)
+                        .clipped()
+                        .cornerRadius(10)
+                        .onTapGesture { showImageViewer = true }
+                } else {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(ThemeManager.shared.secondaryBackgroundColor)
+                        .frame(height: 250)
+                        .overlay(
+                            Image(systemName: "photo.on.rectangle.angled")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 80, height: 80)
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .scene).opacity(0.7))
+                        )
+                        .onTapGesture { showImageViewer = true }
                 }
-                .padding(.top)
+                
+                Text(scene.description)
+                    .font(.body)
+                    .padding(.bottom)
+   
+                // 新增播放音频按钮 (保持现有占位符逻辑)
+                if scene.audioURL != nil {
+                    Button("播放场景音频") {
+                        selectedAudioURL = scene.audioURL
+                        showAudioPlayer = true
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(ThemeManager.shared.accentColor(for: .scene))
+                    .padding(.bottom)
+                }
                 
                 // 相关角色
                 if !relatedCharacters.isEmpty {
-                    VStack(alignment: .leading) {
-                        Text("相关角色").font(.headline)
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack {
-                                ForEach(relatedCharacters) { character in
-                                    CharacterCardRow(
-                                        character: character,
-                                        onDelete: { print("Delete from SceneDetailView not implemented") },
-                                        onEdit: { _ in print("Edit from SceneDetailView not implemented") },
-                                        getRelatedNotes: { characterViewModel.getRelatedNotes(for: character) },
-                                        getRelatedScenes: { characterViewModel.getRelatedScenes(for: character) }
-                                    )
-                                    .frame(width: 200)
-                                    .onTapGesture {
-                                        selectedCharacterForDetail = character
-                                    }
+                    Section(header: Text("出场角色 (\(relatedCharacters.count))").font(.headline)) {
+                        ForEach(relatedCharacters) { character in
+                            Button(action: { selectedCharacterForDetail = character }) {
+                                HStack {
+                                    Text(character.name).foregroundColor(ThemeManager.shared.primaryTextColor)
+                                    Spacer()
+                                    Image(systemName: "chevron.right").foregroundColor(.secondary)
                                 }
+                                .padding()
+                                .background(ThemeManager.shared.secondaryBackgroundColor)
+                                .cornerRadius(8)
                             }
                         }
                     }
@@ -79,31 +86,33 @@ struct SceneDetailView: View {
                 
                 // 相关笔记
                 if !relatedNotes.isEmpty {
-                    VStack(alignment: .leading) {
-                        Text("相关笔记").font(.headline)
+                    Section(header: Text("相关笔记 (\(relatedNotes.count))").font(.headline)) {
                         ForEach(relatedNotes) { note in
-                            VStack(alignment: .leading) {
-                                Text(note.title).font(.title3)
-                                Text(note.content).lineLimit(3)
-                            }
-                            .padding()
-                            .background(Color.gray.opacity(0.1))
-                            .cornerRadius(10)
-                            .onTapGesture {
-                                selectedNoteForDetail = note
+                            Button(action: { selectedNoteForDetail = note }) {
+                                HStack {
+                                    Text(note.title).foregroundColor(ThemeManager.shared.primaryTextColor)
+                                    Spacer()
+                                    Image(systemName: "chevron.right").foregroundColor(.secondary)
+                                }
+                                .padding()
+                                .background(ThemeManager.shared.secondaryBackgroundColor)
+                                .cornerRadius(8)
                             }
                         }
                     }
                 }
-            }
-            .padding()
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+                
+                // 新建关联笔记按钮
                 Button(action: { showNoteEditor = true }) {
-                    Image(systemName: "square.and.pencil")
+                    Label("在当前场景下新建笔记", systemImage: "plus.circle.fill")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(ThemeManager.shared.accentColor(for: .scene))
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                 }
+                .padding(.top)
             }
         }
         .sheet(isPresented: $showImageViewer) {
@@ -134,18 +143,32 @@ struct SceneDetailView: View {
         }
         .sheet(isPresented: $showNoteEditor) {
             NoteEditorView(
+                preselectedSceneID: scene.id,
                 onSave: { newNote in
-                    var noteWithScene = newNote
-                    if !noteWithScene.relatedSceneIDs.contains(scene.id) {
-                        noteWithScene.relatedSceneIDs.append(scene.id)
-                    }
-                    noteViewModel.addNote(noteWithScene)
+                    noteViewModel.addNote(newNote)
                     showNoteEditor = false
-                }, 
-                onCancel: { 
+                },
+                onCancel: {
                     showNoteEditor = false
                 }
             )
+            .environmentObject(noteViewModel)
+            .environmentObject(characterViewModel)
+            .environmentObject(sceneViewModel)
+        }
+        .sheet(isPresented: $showSceneEditor) {
+            SceneEditorView(
+                scene: scene,
+                onSave: { updatedScene in
+                    sceneViewModel.updateScene(updatedScene)
+                    showSceneEditor = false
+                },
+                onCancel: {
+                    showSceneEditor = false
+                }
+            )
+            .environmentObject(sceneViewModel)
+            .environmentObject(characterViewModel)
         }
         .sheet(item: $selectedCharacterForDetail) { characterItem in
             NavigationStack {
@@ -155,22 +178,29 @@ struct SceneDetailView: View {
         .sheet(item: $selectedNoteForDetail) { noteItem in
             NavigationStack {
                 NoteBlockDetailView(noteBlock: noteItem)
+                    .environmentObject(noteViewModel)
+                    .environmentObject(characterViewModel)
+                    .environmentObject(sceneViewModel)
             }
         }
     }
 }
 
-#Preview {
-    NavigationStack {
-        SceneDetailView(scene: AdventureScene(
-            id: UUID(),
-            title: "预览场景",
-            description: "这是一个预览用的场景描述",
-            relatedCharacterIDs: [],
-            relatedNoteIDs: []
-        ))
-        .environmentObject(SceneViewModel())
-        .environmentObject(NoteViewModel())
-        .environmentObject(CharacterViewModel())
-    }
-}
+// #Preview {
+//     NavigationStack {
+//         SceneDetailView(scene: AdventureScene(
+//             id: UUID(),
+//             title: "幽暗森林的深处",
+//             description: "这是一个充满迷雾和未知危险的古老森林，据说中心地带隐藏着连接异世界的传送门。阳光很难穿透茂密的树冠，使得森林内部常年昏暗。",
+//             coverImage: nil,
+//             audioURL: URL(string: "https://example.com/forest_sounds.mp3"),
+//             relatedCharacterIDs: [UUID(), UUID()],
+//             relatedNoteIDs: [UUID()],
+//             creationDate: Date().addingTimeInterval(-86400 * 30),
+//             lastModifiedDate: Date().addingTimeInterval(-86400 * 5)
+//         ))
+//         .environmentObject(SceneViewModel.mock)
+//         .environmentObject(NoteViewModel.mock)
+//         .environmentObject(CharacterViewModel.mock)
+//     }
+// }
