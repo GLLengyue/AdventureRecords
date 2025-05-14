@@ -107,16 +107,22 @@ public struct ListContainer<Content: View, TrailingContent: View>: View {
     let content: Content
     var addAction: (() -> Void)? = nil
     let trailingContent: TrailingContent
+    @Binding var searchText: String
+    var onSearch: ((String) -> Void)?
 
     init(
         module: ModuleType,
         title: String,
+        searchText: Binding<String>,
+        onSearch: ((String) -> Void)? = nil,
         addAction: (() -> Void)? = nil,
         @ViewBuilder trailingContent: () -> TrailingContent = { EmptyView() },
         @ViewBuilder content: () -> Content
     ) {
         self.module = module
         self.title = title
+        self._searchText = searchText
+        self.onSearch = onSearch
         self.addAction = addAction
         self.trailingContent = trailingContent()
         self.content = content()
@@ -136,8 +142,41 @@ public struct ListContainer<Content: View, TrailingContent: View>: View {
                     }
                 }
             }
+            
+            SearchBar(text: $searchText, onSearch: onSearch)
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+            
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+}
+
+struct SearchBar: View {
+    @Binding var text: String
+    var onSearch: ((String) -> Void)?
+    
+    var body: some View {
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.gray)
+            
+            TextField("搜索", text: $text)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .onChange(of: text) { newValue in
+                    onSearch?(newValue)
+                }
+            
+            if !text.isEmpty {
+                Button(action: {
+                    text = ""
+                    onSearch?("")
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.gray)
+                }
+            }
         }
     }
 }

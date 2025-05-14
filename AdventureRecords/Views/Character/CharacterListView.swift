@@ -4,7 +4,6 @@ struct CharacterListView: View {
     @EnvironmentObject var characterViewModel: CharacterViewModel
     @Binding var showingCharacterEditor: Bool
     @State private var searchText: String = ""
-    @State private var stagingSearchText: String = ""
     @State private var sortOrder: SortOrder = .nameAscending
     @State private var selectedCharacter: CharacterCard? = nil
 
@@ -32,15 +31,28 @@ struct CharacterListView: View {
         ListContainer(
             module: .character,
             title: "角色卡",
+            searchText: $searchText,
+            onSearch: { _ in },
             addAction: {
                 showingCharacterEditor = true
             },
             trailingContent: {
-                Button(action: { /* 排序操作 */ }) {
+                Menu {
+                    ForEach(SortOrder.allCases) { order in
+                        Button(action: {
+                            sortOrder = order
+                        }) {
+                            HStack {
+                                Text(order.rawValue)
+                                if sortOrder == order {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                } label: {
                     Image(systemName: "arrow.up.arrow.down")
-                }
-                Button(action: { /* 搜索操作 */ }) {
-                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(ThemeManager.shared.accentColor(for: .character))
                 }
             }
         ) {
@@ -69,19 +81,10 @@ struct CharacterListView: View {
             CharacterDetailView(card: character)
                 .environmentObject(characterViewModel)
         }
-        .searchable(text: $stagingSearchText, prompt: "搜索角色") // 添加 searchable 修饰符
-        .onSubmit(of: .search) {
-            searchText = stagingSearchText
-        }
-        .onChange(of: stagingSearchText) {
-            if stagingSearchText.isEmpty {
-                searchText = ""
-            }
-        }
         .sheet(isPresented: $showingCharacterEditor) {
             CharacterEditorView(
                 onSave: { savedCard in
-                        characterViewModel.addCharacter(savedCard)
+                    characterViewModel.addCharacter(savedCard)
                     showingCharacterEditor = false
                 },
                 onCancel: {
@@ -93,7 +96,7 @@ struct CharacterListView: View {
     }
 
     private func deleteCharacters(at offsets: IndexSet) {
-        offsets.map { filteredAndSortedCharacters[$0] }.forEach { // 使用 filteredAndSortedCharacters
+        offsets.map { filteredAndSortedCharacters[$0] }.forEach {
             characterViewModel.deleteCharacter($0)
         }
     }

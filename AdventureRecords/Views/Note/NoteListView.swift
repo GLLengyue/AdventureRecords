@@ -5,7 +5,6 @@ struct NoteListView: View {
     @Binding var showingNoteEditor: Bool
 
     @State private var searchText: String = ""
-    @State private var stagingSearchText: String = ""
     @State private var sortOrder: SortOrder = .titleAscending
     @State private var selectedNote: NoteBlock? = nil
 
@@ -36,15 +35,28 @@ struct NoteListView: View {
 
     var body: some View {
         ListContainer(
-            module: .character,
-            title: "角色卡",
-            addAction: { /* 新增操作 */ },
+            module: .note,
+            title: "笔记块",
+            searchText: $searchText,
+            onSearch: { _ in },
+            addAction: { showingNoteEditor = true },
             trailingContent: {
-                Button(action: { /* 排序操作 */ }) {
+                Menu {
+                    ForEach(SortOrder.allCases) { order in
+                        Button(action: {
+                            sortOrder = order
+                        }) {
+                            HStack {
+                                Text(order.rawValue)
+                                if sortOrder == order {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                } label: {
                     Image(systemName: "arrow.up.arrow.down")
-                }
-                Button(action: { /* 搜索操作 */ }) {
-                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(ThemeManager.shared.accentColor(for: .note))
                 }
             }
         ) {
@@ -73,15 +85,6 @@ struct NoteListView: View {
         .sheet(item: $selectedNote) { note in
             NoteBlockDetailView(noteBlock: note)
         }
-        .searchable(text: $stagingSearchText, prompt: "搜索笔记")
-        .onSubmit(of: .search) {
-            searchText = stagingSearchText
-        }
-        .onChange(of: stagingSearchText) {
-            if stagingSearchText.isEmpty {
-                searchText = ""
-            }
-        }
         .sheet(isPresented: $showingNoteEditor) {
             NoteEditorView(
                 onSave: { newNote in
@@ -93,8 +96,6 @@ struct NoteListView: View {
                 }
             )
             .environmentObject(noteViewModel)
-            // .environmentObject(CharacterViewModel.shared)
-            // .environmentObject(SceneViewModel.shared)
         }
     }
 

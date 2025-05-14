@@ -5,9 +5,9 @@ struct SceneListView: View {
     @Binding var showingSceneEditor: Bool
 
     @State private var searchText: String = ""
-    @State private var stagingSearchText: String = ""
     @State private var sortOrder: SortOrder = .titleAscending
     @State private var selectedScene: AdventureScene? = nil
+    @State private var showingSortMenu: Bool = false
 
     enum SortOrder: String, CaseIterable, Identifiable {
         case titleAscending = "名称升序"
@@ -31,18 +31,31 @@ struct SceneListView: View {
 
     var body: some View {
         ListContainer(
-            module: .character,
-            title: "角色卡",
-            addAction: { /* 新增操作 */ },
+            module: .scene,
+            title: "场景",
+            searchText: $searchText,
+            onSearch: { _ in },
+            addAction: { showingSceneEditor = true },
             trailingContent: {
-                Button(action: { /* 排序操作 */ }) {
+                Menu {
+                    ForEach(SortOrder.allCases) { order in
+                        Button(action: {
+                            sortOrder = order
+                        }) {
+                            HStack {
+                                Text(order.rawValue)
+                                if sortOrder == order {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                } label: {
                     Image(systemName: "arrow.up.arrow.down")
-                }
-                Button(action: { /* 搜索操作 */ }) {
-                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
                 }
             }
-        ){
+        ) {
             List(filteredAndSortedScenes) { scene in
                 Button {
                     selectedScene = scene
@@ -67,15 +80,6 @@ struct SceneListView: View {
         .sheet(item: $selectedScene) { scene in
             SceneDetailView(scene: scene)
         }
-        .searchable(text: $stagingSearchText, prompt: "搜索场景") // Add searchable modifier
-        .onSubmit(of: .search) {
-            searchText = stagingSearchText
-        }
-        .onChange(of: stagingSearchText) {
-            if stagingSearchText.isEmpty {
-                searchText = ""
-            }
-        }
         .sheet(isPresented: $showingSceneEditor) {
             SceneEditorView(
                 onSave: { savedScene in
@@ -87,13 +91,11 @@ struct SceneListView: View {
                 }
             )
             .environmentObject(sceneViewModel)
-            // .environmentObject(CharacterViewModel()) // 假设的共享实例
-            // .environmentObject(NoteViewModel())       // 假设的共享实例
         }
     }
 
     private func deleteScenes(at offsets: IndexSet) {
-        offsets.map { filteredAndSortedScenes[$0] }.forEach { // Use filteredAndSortedScenes
+        offsets.map { filteredAndSortedScenes[$0] }.forEach {
             sceneViewModel.deleteScene($0)
         }
     }
