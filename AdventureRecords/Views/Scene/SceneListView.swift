@@ -30,9 +30,19 @@ struct SceneListView: View {
     }
 
     var body: some View {
-        ListContainer(module: .scene, title: "场景", addAction: {
-            showingSceneEditor = true
-        }) {
+        ListContainer(
+            module: .character,
+            title: "角色卡",
+            addAction: { /* 新增操作 */ },
+            trailingContent: {
+                Button(action: { /* 排序操作 */ }) {
+                    Image(systemName: "arrow.up.arrow.down")
+                }
+                Button(action: { /* 搜索操作 */ }) {
+                    Image(systemName: "magnifyingglass")
+                }
+            }
+        ){
             List(filteredAndSortedScenes) { scene in
                 Button {
                     selectedScene = scene
@@ -88,10 +98,3 @@ struct SceneListView: View {
         }
     }
 }
-
-// #Preview {
-//     SceneListView(showingSceneEditor: .constant(false))
-//         .environmentObject(SceneViewModel())
-//         .environmentObject(CharacterViewModel.preview)
-//         .environmentObject(NoteViewModel.preview)
-// }

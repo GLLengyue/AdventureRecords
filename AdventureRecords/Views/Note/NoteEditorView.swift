@@ -158,12 +158,3 @@ struct NoteEditorView: View {
         }
     }
 }
-
-// #Preview {
-//     NavigationStack {
-//         NoteEditorView(onSave: { _ in print("Preview Save") }, onCancel: { print("Preview Cancel") })
-//             .environmentObject(NoteViewModel())
-//             .environmentObject(CharacterViewModel())
-//             .environmentObject(SceneViewModel())
-//     }
-// }

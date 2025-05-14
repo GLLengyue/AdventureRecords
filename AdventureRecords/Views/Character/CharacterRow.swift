@@ -106,23 +106,3 @@ struct CharacterRow: View {
         }
     }
 }
-
-#Preview {
-    CharacterRow(
-        character: CharacterCard(
-            id: UUID(),
-            name: "预览角色",
-            description: "这是一个预览用的角色描述",
-            avatar: nil,
-            audioRecordings: nil,
-            tags: ["预览"],
-            noteIDs: [],
-            sceneIDs: []
-        ),
-        onDelete: { print("Delete action triggered for preview") },
-        onEdit: { _ in print("Edit action triggered for preview") },
-        getRelatedNotes: { [] },
-        getRelatedScenes: { [] }
-    )
-    .environmentObject(CharacterViewModel())
-} 

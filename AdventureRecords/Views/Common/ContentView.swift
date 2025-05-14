@@ -43,7 +43,3 @@ struct ContentView: View {
         .environmentObject(sceneViewModel)
     }
 }
-
-#Preview {
-    ContentView()
-}

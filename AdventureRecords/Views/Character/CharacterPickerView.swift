@@ -37,8 +37,3 @@ struct CharacterPickerView: View {
         }
     }
 }
-
-#Preview {
-    CharacterPickerView(selectedCharacterIDs: .constant([]))
-        .environmentObject(CharacterViewModel())
-} 

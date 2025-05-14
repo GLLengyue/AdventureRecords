@@ -132,27 +132,3 @@ public struct TabButton: View {
         }
     }
 }
-
-/// 预览
-struct ButtonStyles_Previews: PreviewProvider {
-    static var previews: some View {
-        VStack(spacing: 20) {
-            ModuleButton(title: "角色卡按钮", module: .character, action: {})
-            ModuleButton(title: "笔记块按钮", module: .note, action: {}, icon: "note.text")
-            ModuleButton(title: "场景按钮", module: .scene, action: {}, isProminent: true)
-            
-            HStack {
-                IconButton(icon: "plus", module: .character, action: {})
-                IconButton(icon: "trash", module: .note, action: {}, isProminent: true)
-                IconButton(icon: "pencil", module: .scene, action: {})
-            }
-            
-            HStack {
-                TabButton(title: "角色卡", icon: "person.3", module: .character, isSelected: true, action: {})
-                TabButton(title: "笔记块", icon: "note.text", module: .note, isSelected: false, action: {})
-                TabButton(title: "场景", icon: "map", module: .scene, isSelected: false, action: {})
-            }
-        }
-        .padding()
-    }
-}

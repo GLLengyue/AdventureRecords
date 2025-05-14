@@ -35,7 +35,3 @@ struct SceneCreationView: View {
         }
     }
 }
-
-#Preview {
-    SceneCreationView(onSave: { _ in })
-}

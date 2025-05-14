@@ -47,8 +47,3 @@ struct AudioRecordingCreationView: View {
     //     }
     // }
 }
-
-// Preview can be added if needed, e.g.:
-// #Preview {
-//     AudioRecordingCreationView()
-// } 

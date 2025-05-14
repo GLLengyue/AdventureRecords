@@ -8,8 +8,3 @@ struct CharacterView: View {
         // CharacterListView()
     }
 }
-
-#Preview {
-    CharacterView()
-        .environmentObject(CharacterViewModel())
-}

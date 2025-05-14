@@ -166,23 +166,3 @@ struct CharacterDetailView: View {
         }
     }
 }
-
-// #Preview {
-//     NavigationStack {
-//         CharacterDetailView(card: CharacterCard(
-//             id: UUID(),
-//             name: "预览角色莉莉丝",
-//             description: "这是一个非常非常长的角色描述，用于测试文本的换行和显示效果。她是一位勇敢的探险家，喜欢在古老的遗迹中寻找失落的宝藏。",
-//             avatar: nil,
-//             audioRecordings: nil,
-//             tags: ["探险家", "勇敢", "历史爱好者", "寻宝人"],
-//             noteIDs: [UUID(), UUID()],
-//             sceneIDs: [UUID()],
-//             creationDate: Date().addingTimeInterval(-86400 * 10),
-//             lastModifiedDate: Date().addingTimeInterval(-86400 * 2)
-//         ))
-//         .environmentObject(CharacterViewModel.mock)
-//         .environmentObject(NoteViewModel.mock)
-//         .environmentObject(SceneViewModel.mock)
-//     }
-// } 

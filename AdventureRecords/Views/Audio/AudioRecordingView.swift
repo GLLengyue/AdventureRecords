@@ -37,7 +37,3 @@ struct AudioRecordingView: View {
     //     }
     }
 }
-
-#Preview {
-    AudioRecordingView()
-}

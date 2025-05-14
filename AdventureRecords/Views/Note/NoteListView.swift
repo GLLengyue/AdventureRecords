@@ -35,9 +35,19 @@ struct NoteListView: View {
     }
 
     var body: some View {
-        ListContainer(module: .note, title: "笔记块", addAction: {
-            showingNoteEditor = true
-        }) {
+        ListContainer(
+            module: .character,
+            title: "角色卡",
+            addAction: { /* 新增操作 */ },
+            trailingContent: {
+                Button(action: { /* 排序操作 */ }) {
+                    Image(systemName: "arrow.up.arrow.down")
+                }
+                Button(action: { /* 搜索操作 */ }) {
+                    Image(systemName: "magnifyingglass")
+                }
+            }
+        ) {
             List(filteredAndSortedNotes) { note in
                 Button {
                     selectedNote = note
@@ -94,10 +104,3 @@ struct NoteListView: View {
         }
     }
 }
-
-// #Preview {
-//     NoteListView()
-//         .environmentObject(NoteViewModel.preview)
-//         .environmentObject(CharacterViewModel.preview)
-//         .environmentObject(SceneViewModel.preview)
-// }

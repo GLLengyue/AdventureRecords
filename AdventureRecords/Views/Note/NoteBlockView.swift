@@ -8,8 +8,3 @@ struct NoteBlockView: View {
         // NoteListView()
     }
 }
-
-#Preview {
-    NoteBlockView()
-        .environmentObject(NoteViewModel())
-}

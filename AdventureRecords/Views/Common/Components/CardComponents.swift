@@ -178,35 +178,3 @@ public struct TagView: View {
             .foregroundColor(ThemeManager.shared.accentColor(for: module))
     }
 }
-
-/// 预览
-struct CardComponents_Previews: PreviewProvider {
-    static var previews: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                CharacterCardView(
-                    name: "艾莉丝",
-                    description: "主角，拥有特殊能力的少女"
-                )
-                
-                NoteCardView(
-                    title: "初次相遇",
-                    content: "今天在森林里遇到了一个奇怪的人，他似乎知道关于我能力的秘密...",
-                    date: Date()
-                )
-                
-                SceneCardView(
-                    title: "神秘森林",
-                    description: "位于城市郊外的一片古老森林，传说中隐藏着不为人知的秘密"
-                )
-                
-                HStack {
-                    TagView(text: "主角", module: .character)
-                    TagView(text: "重要", module: .note)
-                    TagView(text: "关键地点", module: .scene)
-                }
-            }
-            .padding()
-        }
-    }
-}

@@ -8,8 +8,3 @@ struct SceneView: View {
         // SceneListView()
     }
 }
-
-#Preview {
-    SceneView()
-        .environmentObject(SceneViewModel())
-}

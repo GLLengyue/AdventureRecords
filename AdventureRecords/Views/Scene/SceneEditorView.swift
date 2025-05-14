@@ -123,11 +123,3 @@ struct SceneEditorView: View {
         }
     }
 }
-
-#Preview {
-    NavigationStack {
-        SceneEditorView(onSave: { _ in print("Preview Save") }, onCancel: { print("Preview Cancel") })
-            .environmentObject(SceneViewModel())
-            .environmentObject(CharacterViewModel())
-    }
-}

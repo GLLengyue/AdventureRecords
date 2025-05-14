@@ -99,23 +99,3 @@ struct NoteBlockRow: View {
         }
     }
 }
-
-#Preview {
-    NoteBlockRow(
-        note: NoteBlock(
-            id: UUID(), 
-            title: "预览笔记", 
-            content: "这是预览笔记的内容。", 
-            relatedCharacterIDs: [], 
-            relatedSceneIDs: [], 
-            date: Date()
-        ),
-        onDelete: { print("Delete action triggered for preview note") },
-        onEdit: { _ in print("Edit action triggered for preview note") },
-        getRelatedCharacters: { [] },
-        getRelatedScenes: { [] }
-    )
-    .environmentObject(NoteViewModel())
-    .environmentObject(CharacterViewModel())
-    .environmentObject(SceneViewModel())
-}

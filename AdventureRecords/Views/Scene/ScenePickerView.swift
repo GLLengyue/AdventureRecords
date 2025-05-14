@@ -37,8 +37,3 @@ struct ScenePickerView: View {
         }
     }
 }
-
-#Preview {
-    ScenePickerView(selectedSceneIDs: .constant([]))
-        .environmentObject(SceneViewModel())
-}

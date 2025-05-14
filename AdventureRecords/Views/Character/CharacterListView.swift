@@ -29,9 +29,21 @@ struct CharacterListView: View {
     }
 
     var body: some View {
-        ListContainer(module: .character, title: "角色卡", addAction: {
-            showingCharacterEditor = true
-        }) {
+        ListContainer(
+            module: .character,
+            title: "角色卡",
+            addAction: {
+                showingCharacterEditor = true
+            },
+            trailingContent: {
+                Button(action: { /* 排序操作 */ }) {
+                    Image(systemName: "arrow.up.arrow.down")
+                }
+                Button(action: { /* 搜索操作 */ }) {
+                    Image(systemName: "magnifyingglass")
+                }
+            }
+        ) {
             List(filteredAndSortedCharacters) { character in
                 Button {
                     selectedCharacter = character
@@ -86,7 +98,3 @@ struct CharacterListView: View {
         }
     }
 }
-
-// #Preview {
-//     CharacterListView(showingCharacterEditor: .constant(false))
-// }

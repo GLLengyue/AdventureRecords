@@ -185,22 +185,3 @@ struct SceneDetailView: View {
         }
     }
 }
-
-// #Preview {
-//     NavigationStack {
-//         SceneDetailView(scene: AdventureScene(
-//             id: UUID(),
-//             title: "幽暗森林的深处",
-//             description: "这是一个充满迷雾和未知危险的古老森林，据说中心地带隐藏着连接异世界的传送门。阳光很难穿透茂密的树冠，使得森林内部常年昏暗。",
-//             coverImage: nil,
-//             audioURL: URL(string: "https://example.com/forest_sounds.mp3"),
-//             relatedCharacterIDs: [UUID(), UUID()],
-//             relatedNoteIDs: [UUID()],
-//             creationDate: Date().addingTimeInterval(-86400 * 30),
-//             lastModifiedDate: Date().addingTimeInterval(-86400 * 5)
-//         ))
-//         .environmentObject(SceneViewModel.mock)
-//         .environmentObject(NoteViewModel.mock)
-//         .environmentObject(CharacterViewModel.mock)
-//     }
-// }

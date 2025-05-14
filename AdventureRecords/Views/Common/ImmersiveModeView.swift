@@ -25,7 +25,3 @@ struct ImmersiveModeView: View {
         }
     }
 }
-
-#Preview {
-    ImmersiveModeView(content: "沉浸模式示例内容")
-}

@@ -157,13 +157,3 @@ struct CharacterEditorView: View {
         }
     }
 }
-
-#Preview {
-    NavigationStack {
-        CharacterEditorView(
-            onSave: { _ in print("Preview Save") },
-            onCancel: { print("Preview Cancel") }
-        )
-        .environmentObject(CharacterViewModel())
-    }
-} 
