@@ -142,11 +142,11 @@ public struct ListContainer<Content: View, TrailingContent: View>: View {
                     }
                 }
             }
+            .padding(.horizontal)
+            .padding(.top, 8)
             
             SearchBar(text: $searchText, onSearch: onSearch)
-                .padding(.horizontal)
-                .padding(.bottom, 8)
-            
+                .padding(.horizontal)            
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
