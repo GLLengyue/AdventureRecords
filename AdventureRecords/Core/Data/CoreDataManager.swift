@@ -234,6 +234,8 @@ class CoreDataManager {
             entity.sceneDescription = scene.description
             entity.relatedCharacterIDs = scene.relatedCharacterIDs
             entity.relatedNoteIDs = scene.relatedNoteIDs
+            entity.coverImage = scene.coverImage?.pngData()
+            entity.atmosphereData = try? JSONEncoder().encode(scene.atmosphere)
             saveContext()
         } else {
             print("场景未找到，无法更新")
@@ -247,6 +249,7 @@ class CoreDataManager {
         entity.sceneDescription = description
         entity.relatedCharacterIDs = []
         entity.relatedNoteIDs = []
+        entity.atmosphereData = try? JSONEncoder().encode(SceneAtmosphere.default)
         
         saveContext()
         
@@ -255,7 +258,10 @@ class CoreDataManager {
             title: entity.title ?? "",
             description: entity.sceneDescription ?? "",
             relatedCharacterIDs: [],
-            relatedNoteIDs: []
+            relatedNoteIDs: [],
+            coverImage: nil,
+            audioURL: nil,
+            atmosphere: .default
         )
     }
 
@@ -269,14 +275,16 @@ class CoreDataManager {
                     title: entity.title ?? "",
                     description: entity.sceneDescription ?? "",
                     relatedCharacterIDs: entity.relatedCharacterIDs ?? [],
-                    relatedNoteIDs: entity.relatedNoteIDs ?? []
+                    relatedNoteIDs: entity.relatedNoteIDs ?? [],
+                    coverImage: entity.coverImage != nil ? UIImage(data: entity.coverImage!) : nil,
+                    audioURL: nil,
+                    atmosphere: entity.atmosphere
                 )
             }
         } catch {
             print("获取场景数据失败: \(error)")
             return []
         }
-
     }
     
     func fetchScenes(for sceneIDs: [UUID]) -> [AdventureScene] {
@@ -290,7 +298,10 @@ class CoreDataManager {
                     title: entity.title ?? "",
                     description: entity.sceneDescription ?? "",
                     relatedCharacterIDs: entity.relatedCharacterIDs ?? [],
-                    relatedNoteIDs: entity.relatedNoteIDs ?? []
+                    relatedNoteIDs: entity.relatedNoteIDs ?? [],
+                    coverImage: entity.coverImage != nil ? UIImage(data: entity.coverImage!) : nil,
+                    audioURL: nil,
+                    atmosphere: entity.atmosphere
                 )
             }
         } catch {
@@ -417,6 +428,8 @@ class CoreDataManager {
         entity.sceneDescription = scene.description
         entity.relatedCharacterIDs = scene.relatedCharacterIDs
         entity.relatedNoteIDs = scene.relatedNoteIDs
+        entity.coverImage = scene.coverImage?.pngData()
+        entity.atmosphereData = try? JSONEncoder().encode(scene.atmosphere)
         saveContext()
     }
     

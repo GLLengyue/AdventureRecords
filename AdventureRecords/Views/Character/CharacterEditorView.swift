@@ -16,6 +16,7 @@ struct CharacterEditorView: View {
     @State private var selectedItem: PhotosPickerItem?
     @State private var audioRecordings: [AudioRecording]
     @State private var showRecordingSheet: Bool
+    @State private var newTag: String
     
     // Original Character card, if editing
     private var existingCharacter: Character?
@@ -35,6 +36,7 @@ struct CharacterEditorView: View {
         self._selectedItem = State(initialValue: nil)
         self._audioRecordings = State(initialValue: [])
         self._showRecordingSheet = State(initialValue: false)
+        self._newTag = State(initialValue: "")
         self.existingCharacter = nil
     }
     
@@ -49,6 +51,7 @@ struct CharacterEditorView: View {
         self._selectedItem = State(initialValue: nil)
         self._audioRecordings = State(initialValue: card.audioRecordings ?? [])
         self._showRecordingSheet = State(initialValue: false)
+        self._newTag = State(initialValue: "")
         self.existingCharacter = card
     }
     
@@ -99,10 +102,34 @@ struct CharacterEditorView: View {
                 
                 Section(header: Text("标签")) {
                     ForEach(tags, id: \.self) { tag in
-                        Text(tag)
+                        HStack {
+                            Text(tag)
+                            Spacer()
+                            Button(action: {
+                                if let index = tags.firstIndex(of: tag) {
+                                    tags.remove(at: index)
+                                }
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.red)
+                            }
+                        }
                     }
-                    Button("添加标签") {
-                        // TODO: 实现标签添加功能
+                    
+                    HStack {
+                        TextField("新标签", text: $newTag)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        
+                        Button(action: {
+                            if !newTag.isEmpty && !tags.contains(newTag) {
+                                tags.append(newTag)
+                                newTag = ""
+                            }
+                        }) {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundColor(.blue)
+                        }
+                        .disabled(newTag.isEmpty)
                     }
                 }
 
