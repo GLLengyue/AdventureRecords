@@ -16,6 +16,8 @@ struct SceneDetailView: View {
     @State private var showSceneEditor = false
     @State private var selectedNoteForDetail: NoteBlock? = nil
     @State private var selectedCharacterForDetail: CharacterCard? = nil
+    @State private var isDescriptionExpanded: Bool = false
+    @State private var showImmersiveMode = false // 新增状态：控制沉浸模式显示
     
     private var relatedCharacters: [CharacterCard] {
         characterViewModel.characters.filter { scene.relatedCharacterIDs.contains($0.id) }
@@ -51,9 +53,26 @@ struct SceneDetailView: View {
                         .onTapGesture { showImageViewer = true }
                 }
                 
-                Text(scene.description)
-                    .font(.body)
-                    .padding(.bottom)
+                // 场景描述
+                VStack(alignment: .leading) {
+                    Text(scene.description)
+                        .font(.body)
+                        .lineLimit(isDescriptionExpanded ? nil : 3)
+                    
+                    if scene.description.count > 100 { // 仅当描述较长时显示展开/收起按钮
+                        Button(action: {
+                            withAnimation {
+                                isDescriptionExpanded.toggle()
+                            }
+                        }) {
+                            Text(isDescriptionExpanded ? "收起" : "展开")
+                                .font(.caption)
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                        }
+                        .padding(.top, 2)
+                    }
+                }
+                .padding(.bottom)
    
                 // 新增播放音频按钮 (保持现有占位符逻辑)
                 if scene.audioURL != nil {
@@ -109,6 +128,18 @@ struct SceneDetailView: View {
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(ThemeManager.shared.accentColor(for: .scene))
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .padding(.top)
+                
+                // 沉浸模式入口按钮
+                Button(action: { showImmersiveMode = true }) {
+                    Label("进入沉浸模式", systemImage: "arrow.up.left.and.arrow.down.right.circle.fill")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(ThemeManager.shared.accentColor(for: .scene).opacity(0.8))
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
@@ -182,6 +213,9 @@ struct SceneDetailView: View {
                     .environmentObject(characterViewModel)
                     .environmentObject(sceneViewModel)
             }
+        }
+        .fullScreenCover(isPresented: $showImmersiveMode) { // 使用 fullScreenCover 展示沉浸模式
+            ImmersiveModeView(content: .scene(scene))
         }
     }
 }

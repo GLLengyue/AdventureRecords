@@ -8,6 +8,7 @@ struct NoteBlockDetailView: View {
     @State private var showEditor = false
     @State private var selectedCharacterForDetail: CharacterCard? = nil
     @State private var selectedSceneForDetail: AdventureScene? = nil
+    @State private var showImmersiveMode = false // 新增状态：控制沉浸模式显示
 
     private var relatedCharacters: [CharacterCard] {
         characterViewModel.characters.filter { noteBlock.relatedCharacterIDs.contains($0.id) }
@@ -66,6 +67,18 @@ struct NoteBlockDetailView: View {
                 Text(noteBlock.content)
                     .font(.body)
                 
+                // 沉浸模式入口按钮
+                Button(action: { showImmersiveMode = true }) {
+                    Label("进入沉浸模式", systemImage: "arrow.up.left.and.arrow.down.right.circle.fill")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(ThemeManager.shared.accentColor(for: .note).opacity(0.8))
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .padding(.top)
+                
                 Spacer()
             }
         }
@@ -96,6 +109,9 @@ struct NoteBlockDetailView: View {
                     .environmentObject(noteViewModel)
                     .environmentObject(characterViewModel)
             }
+        }
+        .fullScreenCover(isPresented: $showImmersiveMode) { // 使用 fullScreenCover 展示沉浸模式
+            ImmersiveModeView(content: .note(noteBlock))
         }
     }
 }

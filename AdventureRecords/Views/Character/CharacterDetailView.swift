@@ -17,6 +17,8 @@ struct CharacterDetailView: View {
     @State private var showCharacterEditor = false
     @State private var selectedNoteForDetail: NoteBlock? = nil
     @State private var selectedSceneForDetail: AdventureScene? = nil
+    @State private var isDescriptionExpanded: Bool = false
+    @State private var showImmersiveMode = false // 新增状态：控制沉浸模式显示
     
     private var relatedNotes: [NoteBlock] {
         noteViewModel.notes.filter { card.noteIDs.contains($0.id) }
@@ -55,8 +57,24 @@ struct CharacterDetailView: View {
                 .padding(.bottom)
                 
                 // 简介
-                Text(card.description)
-                    .font(.body)
+                VStack(alignment: .leading) {
+                    Text(card.description)
+                        .font(.body)
+                        .lineLimit(isDescriptionExpanded ? nil : 3) // 根据状态限制行数
+                    
+                    if card.description.count > 100 { // 仅当描述较长时显示展开/收起按钮 (可调整字数阈值)
+                        Button(action: {
+                            withAnimation {
+                                isDescriptionExpanded.toggle()
+                            }
+                        }) {
+                            Text(isDescriptionExpanded ? "收起" : "展开")
+                                .font(.caption)
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                        }
+                        .padding(.top, 2)
+                    }
+                }
                 
                 // 标签
                 if !card.tags.isEmpty {
@@ -73,6 +91,7 @@ struct CharacterDetailView: View {
                             }
                         }
                     }
+                }
                 }
                 
                 // 相关笔记
@@ -122,10 +141,20 @@ struct CharacterDetailView: View {
                         .cornerRadius(10)
                 }
                 .padding(.top)
-                
+                // 沉浸模式入口按钮
+                Button(action: { showImmersiveMode = true }) {
+                    Label("进入沉浸模式", systemImage: "arrow.up.left.and.arrow.down.right.circle.fill")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(ThemeManager.shared.accentColor(for: .character).opacity(0.8))
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .padding(.top)
+
                 Spacer()
             }
-        }
         .sheet(isPresented: $showNoteEditor) {
             NoteEditorView(
                 preselectedCharacterID: card.id,
@@ -163,6 +192,9 @@ struct CharacterDetailView: View {
                     .environmentObject(noteViewModel)
                     .environmentObject(characterViewModel)
             }
+        }
+        .fullScreenCover(isPresented: $showImmersiveMode) { // 使用 fullScreenCover 展示沉浸模式
+            ImmersiveModeView(content: .character(card))
         }
     }
 }

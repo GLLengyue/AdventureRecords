@@ -29,10 +29,9 @@ struct ContentView: View {
                 NoteListView(showingNoteEditor: $showingNoteEditorSheet)
             } else if selectedTab == 2 {
                 SceneListView(showingSceneEditor: $showingSceneEditorSheet)
-            } else { // 假设 selectedTab == 3 是沉浸模式
-                // ImmersiveModeView 可能需要根据上下文来决定显示哪个模块的沉浸内容
-                // 例如，可以传递一个参数给 ImmersiveModeView，或者 ImmersiveModeView 内部有自己的逻辑
-                ImmersiveModeView(content: "沉浸模式示例内容") // 保持现有逻辑
+            } else { // 假设 selectedTab == 3 是设置
+                // TODO: 实现设置视图
+                // SettingsView()
             }
             
             ModuleTabBar(selectedTab: $selectedTab)
