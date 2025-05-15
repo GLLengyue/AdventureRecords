@@ -6,11 +6,11 @@ struct NoteBlockDetailView: View {
     @EnvironmentObject var characterViewModel: CharacterViewModel
     @EnvironmentObject var sceneViewModel: SceneViewModel
     @State private var showEditor = false
-    @State private var selectedCharacterForDetail: CharacterCard? = nil
+    @State private var selectedCharacterForDetail: Character? = nil
     @State private var selectedSceneForDetail: AdventureScene? = nil
     @State private var showImmersiveMode = false // 新增状态：控制沉浸模式显示
 
-    private var relatedCharacters: [CharacterCard] {
+    private var relatedCharacters: [Character] {
         characterViewModel.characters.filter { noteBlock.relatedCharacterIDs.contains($0.id) }
     }
 

@@ -33,8 +33,8 @@ class CoreDataManager {
     }
     
     // MARK: - 角色卡操作
-    func createCharacterCard(name: String, description: String, avatar: Data? = nil) -> CharacterCard {
-        let entity = CharacterCardEntity(context: viewContext)
+    func createCharacter(name: String, description: String, avatar: Data? = nil) -> Character {
+        let entity = CharacterEntity(context: viewContext)
         entity.id = UUID()
         entity.name = name
         entity.characterDescription = description
@@ -45,7 +45,7 @@ class CoreDataManager {
         
         saveContext()
         
-        return CharacterCard(
+        return Character(
             id: entity.id ?? UUID(),
             name: entity.name ?? "",
             description: entity.characterDescription ?? "",
@@ -57,12 +57,12 @@ class CoreDataManager {
         )
     }
     
-    func fetchCharacters() -> [CharacterCard] {
-        let request: NSFetchRequest<CharacterCardEntity> = CharacterCardEntity.fetchRequest()
+    func fetchCharacters() -> [Character] {
+        let request: NSFetchRequest<CharacterEntity> = CharacterEntity.fetchRequest()
         do {
             let entities = try viewContext.fetch(request)
             return entities.map { entity in
-                CharacterCard(
+                Character(
                     id: entity.id ?? UUID(),
                     name: entity.name ?? "",
                     description: entity.characterDescription ?? "",
@@ -79,13 +79,13 @@ class CoreDataManager {
         }
     }
 
-    func fetchCharacters(for characterIDs: [UUID]) -> [CharacterCard] {
-        let request: NSFetchRequest<CharacterCardEntity> = CharacterCardEntity.fetchRequest()
+    func fetchCharacters(for characterIDs: [UUID]) -> [Character] {
+        let request: NSFetchRequest<CharacterEntity> = CharacterEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id IN %@", characterIDs)
         do {
             let entities = try viewContext.fetch(request)
             return entities.map { entity in
-                CharacterCard(
+                Character(
                     id: entity.id ?? UUID(),
                     name: entity.name ?? "",
                     description: entity.characterDescription ?? "",
@@ -101,8 +101,8 @@ class CoreDataManager {
             return []
         }
     }
-    func fetchCharacter(by id: UUID) -> CharacterCardEntity? {
-        let request: NSFetchRequest<CharacterCardEntity> = CharacterCardEntity.fetchRequest()
+    func fetchCharacter(by id: UUID) -> CharacterEntity? {
+        let request: NSFetchRequest<CharacterEntity> = CharacterEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         do {
             let entities = try viewContext.fetch(request)
@@ -113,7 +113,7 @@ class CoreDataManager {
         }
     }
 
-    func updateCharacter(_ character: CharacterCard) {
+    func updateCharacter(_ character: Character) {
         if let entity = fetchCharacter(by: character.id) {
             entity.name = character.name
             entity.characterDescription = character.description
@@ -301,7 +301,7 @@ class CoreDataManager {
     
     // MARK: - 关系操作
     func addCharacterToNote(characterId: UUID, noteId: UUID) {
-        let characterRequest: NSFetchRequest<CharacterCardEntity> = CharacterCardEntity.fetchRequest()
+        let characterRequest: NSFetchRequest<CharacterEntity> = CharacterEntity.fetchRequest()
         characterRequest.predicate = NSPredicate(format: "id == %@", characterId as CVarArg)
         
         let noteRequest: NSFetchRequest<NoteEntity> = NoteEntity.fetchRequest()
@@ -333,7 +333,7 @@ class CoreDataManager {
     }
     
     func addCharacterToScene(characterId: UUID, sceneId: UUID) {
-        let characterRequest: NSFetchRequest<CharacterCardEntity> = CharacterCardEntity.fetchRequest()
+        let characterRequest: NSFetchRequest<CharacterEntity> = CharacterEntity.fetchRequest()
         characterRequest.predicate = NSPredicate(format: "id == %@", characterId as CVarArg)
         
         let sceneRequest: NSFetchRequest<SceneEntity> = SceneEntity.fetchRequest()
@@ -397,8 +397,8 @@ class CoreDataManager {
     }
     
     // MARK: - Character 相关方法
-    func saveCharacter(_ character: CharacterCard) {
-        let entity = CharacterCardEntity(context: viewContext)
+    func saveCharacter(_ character: Character) {
+        let entity = CharacterEntity(context: viewContext)
         entity.id = character.id
         entity.name = character.name
         entity.characterDescription = character.description
@@ -462,7 +462,7 @@ class CoreDataManager {
     
     // MARK: - 删除方法
     func deleteCharacter(_ id: UUID) {
-        let request: NSFetchRequest<CharacterCardEntity> = CharacterCardEntity.fetchRequest()
+        let request: NSFetchRequest<CharacterEntity> = CharacterEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         deleteEntities(request)
     }

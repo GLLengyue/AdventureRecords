@@ -37,7 +37,7 @@ public struct ModuleCardView<Content: View>: View {
 }
 
 /// 角色卡片组件
-public struct CharacterCardView: View {
+public struct CharacterView: View {
     let name: String
     let description: String
     var avatar: UIImage? = nil

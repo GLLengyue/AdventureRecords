@@ -39,7 +39,7 @@ class NoteViewModel: ObservableObject {
         selectedNote = note
     }
     
-    func getRelatedCharacters(for note: NoteBlock) -> [CharacterCard] {
+    func getRelatedCharacters(for note: NoteBlock) -> [Character] {
         return coreDataManager.fetchCharacters(for: note.relatedCharacterIDs)
     }
     

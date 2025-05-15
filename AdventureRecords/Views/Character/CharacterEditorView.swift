@@ -18,14 +18,14 @@ struct CharacterEditorView: View {
     @State private var showRecordingSheet: Bool
     
     // Original Character card, if editing
-    private var existingCharacterCard: CharacterCard?
+    private var existingCharacter: Character?
     
     // 回调闭包
-    var onSave: (CharacterCard) -> Void
+    var onSave: (Character) -> Void
     var onCancel: () -> Void
     
     // 创建新角色卡
-    init(onSave: @escaping (CharacterCard) -> Void, onCancel: @escaping () -> Void) {
+    init(onSave: @escaping (Character) -> Void, onCancel: @escaping () -> Void) {
         self.onSave = onSave
         self.onCancel = onCancel
         self._name = State(initialValue: "")
@@ -35,11 +35,11 @@ struct CharacterEditorView: View {
         self._selectedItem = State(initialValue: nil)
         self._audioRecordings = State(initialValue: [])
         self._showRecordingSheet = State(initialValue: false)
-        self.existingCharacterCard = nil
+        self.existingCharacter = nil
     }
     
     // 编辑现有角色卡
-    init(card: CharacterCard!, onSave: @escaping (CharacterCard) -> Void, onCancel: @escaping () -> Void) {
+    init(card: Character!, onSave: @escaping (Character) -> Void, onCancel: @escaping () -> Void) {
         self.onSave = onSave
         self.onCancel = onCancel
         self._name = State(initialValue: card.name)
@@ -49,7 +49,7 @@ struct CharacterEditorView: View {
         self._selectedItem = State(initialValue: nil)
         self._audioRecordings = State(initialValue: card.audioRecordings ?? [])
         self._showRecordingSheet = State(initialValue: false)
-        self.existingCharacterCard = card
+        self.existingCharacter = card
     }
     
     var body: some View {
@@ -125,16 +125,16 @@ struct CharacterEditorView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("保存") {
-                        if var editedCharacterCard = existingCharacterCard {
-                            editedCharacterCard.name = name
-                            editedCharacterCard.description = description
-                            editedCharacterCard.avatar = avatar
-                            editedCharacterCard.audioRecordings = audioRecordings
-                            editedCharacterCard.tags = tags
-                            onSave(editedCharacterCard)
+                        if var editedCharacter = existingCharacter {
+                            editedCharacter.name = name
+                            editedCharacter.description = description
+                            editedCharacter.avatar = avatar
+                            editedCharacter.audioRecordings = audioRecordings
+                            editedCharacter.tags = tags
+                            onSave(editedCharacter)
                         }
                         else {
-                            let cardToSave = CharacterCard(
+                            let cardToSave = Character(
                                 id: UUID(),
                                 name: name,
                                 description: description,

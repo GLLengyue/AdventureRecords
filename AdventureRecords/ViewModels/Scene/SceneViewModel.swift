@@ -58,7 +58,7 @@ class SceneViewModel: ObservableObject {
         selectedScene = scene
     }
     
-    func getRelatedCharacters(for scene: AdventureScene) -> [CharacterCard] {
+    func getRelatedCharacters(for scene: AdventureScene) -> [Character] {
         return coreDataManager.fetchCharacters(for: scene.relatedCharacterIDs)
     }
     

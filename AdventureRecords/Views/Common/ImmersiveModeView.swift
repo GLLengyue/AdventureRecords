@@ -4,7 +4,7 @@
 import SwiftUI
 
 enum ImmersiveContent {
-    case character(CharacterCard)
+    case character(Character)
     case note(NoteBlock)
     case scene(AdventureScene)
 }
@@ -62,7 +62,7 @@ struct ImmersiveModeView: View {
         .preferredColorScheme(.dark)
     }
     
-    private func characterContent(_ card: CharacterCard) -> some View {
+    private func characterContent(_ card: Character) -> some View {
         VStack(spacing: 20) {
             if let avatar = card.avatar {
                 Image(uiImage: avatar)

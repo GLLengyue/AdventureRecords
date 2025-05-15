@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22522" systemVersion="24.4.0" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
-    <entity name="CharacterCardEntity" representedClassName="CharacterCardEntity" syncable="YES" codeGenerationType="class">
+    <entity name="CharacterEntity" representedClassName="CharacterEntity" syncable="YES" codeGenerationType="class">
         <attribute name="avatar" optional="YES" attributeType="Binary"/>
         <attribute name="characterDescription" optional="YES" attributeType="String"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>

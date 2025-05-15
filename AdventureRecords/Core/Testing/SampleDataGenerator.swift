@@ -29,13 +29,13 @@ enum SampleDataGenerator {
     /// 开发环境的示例数据
     private static func initializeDebugData() {
         // 创建角色
-        let alice = shared.createCharacterCard(
+        let alice = shared.createCharacter(
             name: "艾莉丝",
             description: "一位勇敢的冒险者",
             avatar: nil
         )
         
-        let reinhart = shared.createCharacterCard(
+        let reinhart = shared.createCharacter(
             name: "莱因哈特",
             description: "神秘的吟游诗人",
             avatar: nil
@@ -78,7 +78,7 @@ enum SampleDataGenerator {
     /// 生产环境的引导数据
     private static func initializeProductionData() {
         // 创建一个简单的示例，帮助用户理解应用
-        let guide = shared.createCharacterCard(
+        let guide = shared.createCharacter(
             name: "冒险指南",
             description: "欢迎来到冒险笔记！这是一个帮助你记录和管理角色、场景和故事的工具。",
             avatar: nil

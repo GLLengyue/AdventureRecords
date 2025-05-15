@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct CharacterCard: Identifiable, Hashable {
+struct Character: Identifiable, Hashable {
     let id: UUID
     var name: String
     var description: String
@@ -15,7 +15,7 @@ struct CharacterCard: Identifiable, Hashable {
         hasher.combine(id)
     }
     
-    static func == (lhs: CharacterCard, rhs: CharacterCard) -> Bool {
+    static func == (lhs: Character, rhs: Character) -> Bool {
         lhs.id == rhs.id
     }
     

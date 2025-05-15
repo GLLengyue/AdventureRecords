@@ -3,8 +3,8 @@ import SwiftUI
 import Combine
 
 class CharacterViewModel: ObservableObject {
-    @Published var characters: [CharacterCard] = []
-    @Published var selectedCharacter: CharacterCard?
+    @Published var characters: [Character] = []
+    @Published var selectedCharacter: Character?
     @Published var isEditing: Bool = false
     
     private var cancellables = Set<AnyCancellable>()
@@ -18,19 +18,19 @@ class CharacterViewModel: ObservableObject {
         characters = coreDataManager.fetchCharacters()
     }
     
-    func addCharacter(_ character: CharacterCard) {
+    func addCharacter(_ character: Character) {
         coreDataManager.saveCharacter(character)
         updateRelatedEntities(for: character)
         loadCharacters()
     }
     
-    func updateCharacter(_ character: CharacterCard) {
+    func updateCharacter(_ character: Character) {
         coreDataManager.updateCharacter(character)
         updateRelatedEntities(for: character)
         loadCharacters()
     }
     
-    func updateRelatedEntities(for character: CharacterCard) {
+    func updateRelatedEntities(for character: Character) {
         let notes = coreDataManager.fetchNotes(for: character.noteIDs)
         for var note in notes {
             print("Updating note: \(note.title)")
@@ -49,22 +49,22 @@ class CharacterViewModel: ObservableObject {
         }
     }
     
-    func deleteCharacter(_ character: CharacterCard) {
+    func deleteCharacter(_ character: Character) {
         print("Deleting character: \(character.id)")
         coreDataManager.deleteCharacter(character.id)
         print("Character deleted")
         loadCharacters()
     }
     
-    func selectCharacter(_ character: CharacterCard) {
+    func selectCharacter(_ character: Character) {
         selectedCharacter = character
     }
     
-    func getRelatedNotes(for character: CharacterCard) -> [NoteBlock] {
+    func getRelatedNotes(for character: Character) -> [NoteBlock] {
         return coreDataManager.fetchNotes(for: character.noteIDs)
     }
     
-    func getRelatedScenes(for character: CharacterCard) -> [AdventureScene] {
+    func getRelatedScenes(for character: Character) -> [AdventureScene] {
         return coreDataManager.fetchScenes(for: character.sceneIDs)
     }
 }

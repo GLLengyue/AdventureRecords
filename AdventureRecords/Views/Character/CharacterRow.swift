@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct CharacterRow: View {
-    let character: CharacterCard
+    let character: Character
     @State private var showEditor = false
     
     var onDelete: () -> Void
-    var onEdit: (CharacterCard) -> Void
+    var onEdit: (Character) -> Void
     var getRelatedNotes: () -> [NoteBlock]
     var getRelatedScenes: () -> [AdventureScene]
 

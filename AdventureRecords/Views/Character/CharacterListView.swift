@@ -5,7 +5,7 @@ struct CharacterListView: View {
     @Binding var showingCharacterEditor: Bool
     @State private var searchText: String = ""
     @State private var sortOrder: SortOrder = .nameAscending
-    @State private var selectedCharacter: CharacterCard? = nil
+    @State private var selectedCharacter: Character? = nil
 
     enum SortOrder: String, CaseIterable, Identifiable {
         case nameAscending = "名称升序"
@@ -14,7 +14,7 @@ struct CharacterListView: View {
         var id: String { self.rawValue }
     }
 
-    var filteredAndSortedCharacters: [CharacterCard] {
+    var filteredAndSortedCharacters: [Character] {
         let filtered = characterViewModel.characters.filter { character in
             searchText.isEmpty ? true : character.name.localizedCaseInsensitiveContains(searchText) || character.description.localizedCaseInsensitiveContains(searchText)
         }

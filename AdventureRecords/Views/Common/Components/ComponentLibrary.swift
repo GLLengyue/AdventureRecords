@@ -24,7 +24,7 @@ public typealias ARButtonSize = ButtonSize
 
 // 卡片组件
 public typealias ARModuleCard = ModuleCardView
-public typealias ARCharacterCard = CharacterCardView
+public typealias ARCharacter = CharacterView
 public typealias ARNoteCard = NoteCardView
 public typealias ARSceneCard = SceneCardView
 public typealias ARTagView = TagView

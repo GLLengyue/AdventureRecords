@@ -1,5 +1,5 @@
 //
-//  CharacterCardDetailView.swift
+//  CharacterDetailView.swift
 //  AdventureRecords
 //
 //  Created by Lengyue's Macbook on 2025/5/10.
@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CharacterDetailView: View {
-    let card: CharacterCard
+    let card: Character
     @EnvironmentObject var characterViewModel: CharacterViewModel
     @EnvironmentObject var noteViewModel: NoteViewModel
     @EnvironmentObject var sceneViewModel: SceneViewModel

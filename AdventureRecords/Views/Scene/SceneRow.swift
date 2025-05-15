@@ -6,7 +6,7 @@ struct SceneRow: View {
     
     var onDelete: () -> Void
     var onEdit: (AdventureScene) -> Void
-    var getRelatedCharacters: () -> [CharacterCard]
+    var getRelatedCharacters: () -> [Character]
     var getRelatedNotes: () -> [NoteBlock]
 
     var body: some View {
