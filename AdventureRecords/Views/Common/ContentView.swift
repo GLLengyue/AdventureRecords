@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var selectedTab = 0
     
     // ViewModel 初始化 (如果它们是 StateObjects，通常在这里或App结构中创建)
+    @StateObject var audioViewModel = AudioViewModel()
     @StateObject var characterViewModel = CharacterViewModel() // 或者您的初始化方式
     @StateObject var noteViewModel = NoteViewModel()             // 或者您的初始化方式
     @StateObject var sceneViewModel = SceneViewModel()             // 或者您的初始化方式
@@ -40,5 +41,6 @@ struct ContentView: View {
         .environmentObject(characterViewModel)
         .environmentObject(noteViewModel)
         .environmentObject(sceneViewModel)
+        .environmentObject(audioViewModel)
     }
 }

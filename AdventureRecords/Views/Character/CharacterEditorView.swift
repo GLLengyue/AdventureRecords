@@ -7,6 +7,7 @@ import PhotosUI
 struct CharacterEditorView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var viewModel: CharacterViewModel
+    @EnvironmentObject var audioViewModel: AudioViewModel // Added for audio playback
     
     // 状态变量
     @State private var name: String
@@ -134,8 +135,32 @@ struct CharacterEditorView: View {
                 }
 
                 Section(header: Text("录音")) {
+                    if audioRecordings.isEmpty {
+                        Text("暂无录音")
+                            .foregroundColor(.secondary)
+                    }
                     ForEach(audioRecordings) { recording in
-                        Text(recording.title)
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(recording.title)
+                                    .font(.headline)
+                                Text("录制于: \(recording.date, style: .date) \(recording.date, style: .time)")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
+                            Spacer()
+                            Button {
+                                if audioViewModel.currentlyPlayingAudioID == recording.id && audioViewModel.isPlayingAudio {
+                                    audioViewModel.stopPlayback()
+                                } else {
+                                    audioViewModel.playRecording(recording: recording)
+                                }
+                            } label: {
+                                Image(systemName: audioViewModel.currentlyPlayingAudioID == recording.id && audioViewModel.isPlayingAudio ? "stop.circle.fill" : "play.circle.fill")
+                                    .foregroundColor(.blue)
+                            }
+                            // TODO: Add delete recording button here later
+                        }
                     }
                     Button("添加录音") {
                         showRecordingSheet = true
@@ -179,7 +204,23 @@ struct CharacterEditorView: View {
                 }
             }
             .sheet(isPresented: $showRecordingSheet) {
-                AudioRecordingView()
+                // Pass the character ID if available (editing existing character)
+                // For new characters, ID isn't available until save, so pass nil initially.
+                AudioRecordingCreationView(characterID: existingCharacter?.id)
+                    .environmentObject(audioViewModel) // Pass AudioViewModel to the sheet
+            }
+            .onAppear {
+                // Reload audio recordings for the character when the view appears or re-appears
+                // This is important if recordings were added/deleted in the sheet
+                if let charId = existingCharacter?.id {
+                    viewModel.refreshCharacter(id: charId)
+                    // Update local state if selectedCharacter matches
+                    if let updatedCharacter = viewModel.characters.first(where: { $0.id == charId }) {
+                         self.audioRecordings = updatedCharacter.audioRecordings ?? []
+                    } else if let selChar = viewModel.selectedCharacter, selChar.id == charId {
+                         self.audioRecordings = selChar.audioRecordings ?? []
+                    }
+                }
             }
         }
     }

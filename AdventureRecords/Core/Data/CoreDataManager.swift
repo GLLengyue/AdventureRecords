@@ -67,7 +67,7 @@ class CoreDataManager {
                     name: entity.name ?? "",
                     description: entity.characterDescription ?? "",
                     avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
-                    audioRecordings: nil,
+                    audioRecordings: fetchAudioRecordings(for: entity.audioIDs as? [UUID] ?? []),
                     tags: entity.tags ?? [],
                     noteIDs: entity.noteIDs ?? [],
                     sceneIDs: entity.sceneIDs ?? []
@@ -75,6 +75,26 @@ class CoreDataManager {
             }
         } catch {
             print("获取角色数据失败: \(error)")
+            return []
+        }
+    }
+
+    func fetchAudioRecordings(for audioIDs: [UUID]) -> [AudioRecording] {
+        guard !audioIDs.isEmpty else { return [] }
+        let request: NSFetchRequest<AudioRecordingEntity> = AudioRecordingEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "id IN %@", audioIDs)
+        do {
+            let entities = try viewContext.fetch(request)
+            return entities.map { entity in
+                AudioRecording(
+                    id: entity.id ?? UUID(),
+                    title: entity.title ?? "",
+                    recordingURL: entity.recordingURL ?? URL(fileURLWithPath: ""),
+                    date: entity.date ?? Date()
+                )
+            }
+        } catch {
+            print("获取录音数据失败: \(error)")
             return []
         }
     }
@@ -90,7 +110,7 @@ class CoreDataManager {
                     name: entity.name ?? "",
                     description: entity.characterDescription ?? "",
                     avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
-                    audioRecordings: nil,
+                    audioRecordings: fetchAudioRecordings(for: entity.audioIDs as? [UUID] ?? []),
                     tags: entity.tags ?? [],
                     noteIDs: entity.noteIDs ?? [],
                     sceneIDs: entity.sceneIDs ?? []
@@ -309,6 +329,32 @@ class CoreDataManager {
             return []
         }
     }
+
+    func fetchCharacterStruct(id: UUID) -> Character? {
+        guard let entity = fetchCharacter(by: id) else { return nil }
+        return Character(
+            id: entity.id ?? UUID(),
+            name: entity.name ?? "",
+            description: entity.characterDescription ?? "",
+            avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
+            audioRecordings: fetchAudioRecordings(for: entity.audioIDs as? [UUID] ?? []),
+            tags: entity.tags ?? [],
+            noteIDs: entity.noteIDs ?? [],
+            sceneIDs: entity.sceneIDs ?? []
+        )
+    }
+
+    private func mapAudioEntitiesToStructs(audioEntities: Set<AudioRecordingEntity>?) -> [AudioRecording] {
+        guard let entities = audioEntities else { return [] }
+        return entities.map { audioEntity in
+            AudioRecording(
+                id: audioEntity.id ?? UUID(),
+                title: audioEntity.title ?? "",
+                recordingURL: audioEntity.recordingURL ?? URL(fileURLWithPath: ""),
+                date: audioEntity.date ?? Date()
+            )
+        }
+    }
     
     // MARK: - 关系操作
     func addCharacterToNote(characterId: UUID, noteId: UUID) {
@@ -446,12 +492,31 @@ class CoreDataManager {
     }
     
     // MARK: - Audio 相关方法
-    func saveAudioRecording(_ recording: AudioRecording) {
+    func fetchAudioRecordingEntity(by id: UUID) -> AudioRecordingEntity? {
+        let request: NSFetchRequest<AudioRecordingEntity> = AudioRecordingEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        do {
+            return try viewContext.fetch(request).first
+        } catch {
+            print("获取 AudioRecordingEntity 失败: \(error)")
+            return nil
+        }
+    }
+
+    func saveAudioRecording(_ recording: AudioRecording, forCharacterID characterID: UUID? = nil) {
         let entity = AudioRecordingEntity(context: viewContext)
         entity.id = recording.id
         entity.title = recording.title
         entity.recordingURL = recording.recordingURL
         entity.date = recording.date
+
+        if let charID = characterID, let characterEntity = fetchCharacter(by: charID) {
+            var ids = characterEntity.audioIDs as? [UUID] ?? []
+            if !ids.contains(recording.id) {
+                ids.append(recording.id)
+                characterEntity.audioIDs = ids as NSArray
+            }
+        }
         saveContext()
     }
     
@@ -493,9 +558,31 @@ class CoreDataManager {
     }
     
     func deleteAudioRecording(_ id: UUID) {
-        let request: NSFetchRequest<AudioRecordingEntity> = AudioRecordingEntity.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-        deleteEntities(request)
+        // 先解除所有角色的audioIDs关联
+        let request: NSFetchRequest<CharacterEntity> = CharacterEntity.fetchRequest()
+        if let characters = try? viewContext.fetch(request) {
+            for character in characters {
+                var ids = character.audioIDs as? [UUID] ?? []
+                if let idx = ids.firstIndex(of: id) {
+                    ids.remove(at: idx)
+                    character.audioIDs = ids as NSArray
+                }
+            }
+        }
+        // 再删除录音实体
+        if let audioEntity = fetchAudioRecordingEntity(by: id) {
+            viewContext.delete(audioEntity)
+        }
+        saveContext()
+    }
+
+    func updateAudioRecording(_ recording: AudioRecording) {
+        if let entity = fetchAudioRecordingEntity(by: recording.id) {
+            entity.title = recording.title
+            entity.recordingURL = recording.recordingURL
+            entity.date = recording.date
+            saveContext()
+        }
     }
     
     private func deleteEntities<T: NSManagedObject>(_ request: NSFetchRequest<T>) {

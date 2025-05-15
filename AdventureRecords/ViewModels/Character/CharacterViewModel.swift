@@ -67,4 +67,15 @@ class CharacterViewModel: ObservableObject {
     func getRelatedScenes(for character: Character) -> [AdventureScene] {
         return coreDataManager.fetchScenes(for: character.sceneIDs)
     }
+
+    func refreshCharacter(id: UUID) {
+        if let updatedCharacter = coreDataManager.fetchCharacterStruct(id: id) {
+            if let index = characters.firstIndex(where: { $0.id == id }) {
+                characters[index] = updatedCharacter
+            }
+            if selectedCharacter?.id == id {
+                selectedCharacter = updatedCharacter
+            }
+        }
+    }
 }
