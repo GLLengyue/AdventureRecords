@@ -41,8 +41,8 @@ public struct ModuleTabBar: View {
             }
             
             TabButton(
-                title: "沉浸模式",
-                icon: "eye",
+                title: "设置",
+                icon: "gear",
                 module: .character, // 使用角色模块的颜色
                 isSelected: selectedTab == 3
             ) {
