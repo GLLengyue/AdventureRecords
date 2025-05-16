@@ -79,7 +79,6 @@ struct CharacterListView: View {
         }
         .sheet(item: $selectedCharacter) { character in
             CharacterDetailView(card: character)
-                .environmentObject(characterViewModel)
         }
         .sheet(isPresented: $showingCharacterEditor) {
             CharacterEditorView(
@@ -91,7 +90,6 @@ struct CharacterListView: View {
                     showingCharacterEditor = false
                 }
             )
-            .environmentObject(characterViewModel)
         }
     }
 

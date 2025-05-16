@@ -76,6 +76,13 @@ class AudioViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
 
+
+    func updateRecording(_ recording: AudioRecording) {
+        print("Update recording.")
+        coreDataManager.updateAudioRecording(recording)
+        loadRecordings() // Refresh the list after updating
+    }
+
     func saveRecording(recordingToSave: AudioRecording, forCharacterID characterID: UUID? = nil) {
         // Ensure title is not empty, this should ideally be validated in the View or ViewModel before calling
         guard !recordingToSave.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {

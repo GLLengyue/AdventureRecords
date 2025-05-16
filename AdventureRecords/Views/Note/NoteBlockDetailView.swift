@@ -97,17 +97,11 @@ struct NoteBlockDetailView: View {
         .sheet(item: $selectedCharacterForDetail) { characterItem in
             NavigationStack {
                 CharacterDetailView(card: characterItem)
-                    .environmentObject(characterViewModel)
-                    .environmentObject(noteViewModel)
-                    .environmentObject(sceneViewModel)
             }
         }
         .sheet(item: $selectedSceneForDetail) { sceneItem in
             NavigationStack {
                 SceneDetailView(scene: sceneItem)
-                    .environmentObject(sceneViewModel)
-                    .environmentObject(noteViewModel)
-                    .environmentObject(characterViewModel)
             }
         }
         .fullScreenCover(isPresented: $showImmersiveMode) { // 使用 fullScreenCover 展示沉浸模式

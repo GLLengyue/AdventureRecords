@@ -95,7 +95,6 @@ struct NoteListView: View {
                     showingNoteEditor = false
                 }
             )
-            .environmentObject(noteViewModel)
         }
     }
 

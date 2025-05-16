@@ -15,13 +15,20 @@ struct CharacterEditorView: View {
     @State private var tags: [String]
     @State private var avatar: UIImage?
     @State private var selectedItem: PhotosPickerItem?
-    @State private var audioRecordings: [AudioRecording]
     @State private var showRecordingSheet: Bool
     @State private var newTag: String
+    @State private var recordingForRenameSheet: AudioRecording? = nil
+    @State private var recordingForDeleteSheet: AudioRecording? = nil
+    @State private var newRecordingName: String = ""
+    @State private var showingDeleteConfirmationFor: AudioRecording? = nil
     
     // Original Character card, if editing
     private var existingCharacter: Character?
     
+    private var relatedRecordings: [AudioRecording] {
+        guard let ids = existingCharacter?.audioRecordings?.map({ $0.id }) else { return [] }
+        return audioViewModel.recordings.filter { ids.contains($0.id) }
+    }
     // 回调闭包
     var onSave: (Character) -> Void
     var onCancel: () -> Void
@@ -35,7 +42,7 @@ struct CharacterEditorView: View {
         self._tags = State(initialValue: [])
         self._avatar = State(initialValue: nil)
         self._selectedItem = State(initialValue: nil)
-        self._audioRecordings = State(initialValue: [])
+
         self._showRecordingSheet = State(initialValue: false)
         self._newTag = State(initialValue: "")
         self.existingCharacter = nil
@@ -50,7 +57,7 @@ struct CharacterEditorView: View {
         self._tags = State(initialValue: card.tags)
         self._avatar = State(initialValue: card.avatar)
         self._selectedItem = State(initialValue: nil)
-        self._audioRecordings = State(initialValue: card.audioRecordings ?? [])
+
         self._showRecordingSheet = State(initialValue: false)
         self._newTag = State(initialValue: "")
         self.existingCharacter = card
@@ -135,11 +142,11 @@ struct CharacterEditorView: View {
                 }
 
                 Section(header: Text("录音")) {
-                    if audioRecordings.isEmpty {
+                    if relatedRecordings.isEmpty {
                         Text("暂无录音")
                             .foregroundColor(.secondary)
                     }
-                    ForEach(audioRecordings) { recording in
+                    ForEach(relatedRecordings) { recording in
                         HStack {
                             VStack(alignment: .leading) {
                                 Text(recording.title)
@@ -147,6 +154,21 @@ struct CharacterEditorView: View {
                                 Text("录制于: \(recording.date, style: .date) \(recording.date, style: .time)")
                                     .font(.caption)
                                     .foregroundColor(.gray)
+                            }
+                            .contentShape(Rectangle()) // 确保整个 HStack 区域对上下文菜单交互响应
+                            .contextMenu {
+                                Button {
+                                    self.newRecordingName = recording.title // 为重命名 sheet 预填名称
+                                    self.recordingForRenameSheet = recording // 触发重命名 sheet
+                                } label: {
+                                    Label("重命名", systemImage: "pencil")
+                                }
+
+                                Button(role: .destructive) {
+                                    self.recordingForDeleteSheet = recording // 触发删除确认 sheet
+                                } label: {
+                                    Label("删除", systemImage: "trash")
+                                }
                             }
                             Spacer()
                             Button {
@@ -159,7 +181,6 @@ struct CharacterEditorView: View {
                                 Image(systemName: audioViewModel.currentlyPlayingAudioID == recording.id && audioViewModel.isPlayingAudio ? "stop.circle.fill" : "play.circle.fill")
                                     .foregroundColor(.blue)
                             }
-                            // TODO: Add delete recording button here later
                         }
                     }
                     Button("添加录音") {
@@ -181,7 +202,7 @@ struct CharacterEditorView: View {
                             editedCharacter.name = name
                             editedCharacter.description = description
                             editedCharacter.avatar = avatar
-                            editedCharacter.audioRecordings = audioRecordings
+
                             editedCharacter.tags = tags
                             onSave(editedCharacter)
                         }
@@ -191,7 +212,7 @@ struct CharacterEditorView: View {
                                 name: name,
                                 description: description,
                                 avatar: avatar,
-                                audioRecordings: audioRecordings.isEmpty ? nil : audioRecordings,
+
                                 tags: tags,
                                 noteIDs: [],
                                 sceneIDs: []
@@ -207,21 +228,92 @@ struct CharacterEditorView: View {
                 // Pass the character ID if available (editing existing character)
                 // For new characters, ID isn't available until save, so pass nil initially.
                 AudioRecordingCreationView(characterID: existingCharacter?.id)
-                    .environmentObject(audioViewModel) // Pass AudioViewModel to the sheet
             }
-            .onAppear {
-                // Reload audio recordings for the character when the view appears or re-appears
-                // This is important if recordings were added/deleted in the sheet
-                if let charId = existingCharacter?.id {
-                    viewModel.refreshCharacter(id: charId)
-                    // Update local state if selectedCharacter matches
-                    if let updatedCharacter = viewModel.characters.first(where: { $0.id == charId }) {
-                         self.audioRecordings = updatedCharacter.audioRecordings ?? []
-                    } else if let selChar = viewModel.selectedCharacter, selChar.id == charId {
-                         self.audioRecordings = selChar.audioRecordings ?? []
+            // Sheet for Renaming Recording
+            .sheet(item: $recordingForRenameSheet) { recordingToRename in
+                VStack(spacing: 20) {
+                    Text("重命名录音")
+                        .font(.title2).bold()
+                    
+                    Text("当前名称: \(recordingToRename.title)")
+                    
+                    TextField("新名称", text: $newRecordingName)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding(.horizontal)
+                    
+                    HStack(spacing: 20) {
+                        Button("取消") {
+                            recordingForRenameSheet = nil
+                            newRecordingName = "" // Clear the name
+                        }
+                        .padding()
+                        .contentShape(Rectangle())
+                        .frame(maxWidth: .infinity)
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.primary)
+                        .cornerRadius(10)
+                        
+                        Button("保存") {
+                            print("clicked")
+                            var recordingToUpdate = recordingToRename
+                            recordingToUpdate.title = newRecordingName.trimmingCharacters(in: .whitespacesAndNewlines)
+                            print("new title: \recordingToUpdate.title")
+                            audioViewModel.updateRecording(recordingToUpdate)
+                            recordingForRenameSheet = nil
+                            newRecordingName = "" // Clear the name
+                        }
+                        .padding()
+                        .contentShape(Rectangle())
+                        .frame(maxWidth: .infinity)
+                        .background(newRecordingName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.gray.opacity(0.5) : Color.accentColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                        .disabled(newRecordingName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
+                    .padding(.horizontal)
                 }
+                .padding()
+                .presentationDetents([.height(280)])
             }
+            // Sheet for Deleting Recording Confirmation
+            .sheet(item: $recordingForDeleteSheet) { recordingToDelete in
+                VStack(spacing: 20) {
+                    Text("确认删除")
+                        .font(.title2).bold()
+                    
+                    Text("您确定要删除录音 \"\(recordingToDelete.title)\" 吗？此操作无法撤销。")
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    
+                    HStack(spacing: 20) {
+                        Button("取消") {
+                            recordingForDeleteSheet = nil
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.red)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    }
+                    .padding(.horizontal)
+                }
+                .padding()
+                .presentationDetents([.height(240)])
+            }
+            // .onAppear {
+            //     // Reload audio recordings for the character when the view appears or re-appears
+            //     // This is important if recordings were added/deleted in the sheet
+            //     if let charId = existingCharacter?.id {
+            //         viewModel.refreshCharacter(id: charId)
+            //         // Update local state if selectedCharacter matches
+            //         if let updatedCharacter = viewModel.characters.first(where: { $0.id == charId }) {
+            //              self.audioRecordings = updatedCharacter.audioRecordings ?? []
+            //         } else if let selChar = viewModel.selectedCharacter, selChar.id == charId {
+            //              self.audioRecordings = selChar.audioRecordings ?? []
+            //         }
+            //     }
+            // }
         }
     }
 }

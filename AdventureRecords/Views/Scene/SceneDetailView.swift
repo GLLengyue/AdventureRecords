@@ -183,9 +183,6 @@ struct SceneDetailView: View {
                     showNoteEditor = false
                 }
             )
-            .environmentObject(noteViewModel)
-            .environmentObject(characterViewModel)
-            .environmentObject(sceneViewModel)
         }
         .sheet(isPresented: $showSceneEditor) {
             SceneEditorView(
@@ -198,8 +195,6 @@ struct SceneDetailView: View {
                     showSceneEditor = false
                 }
             )
-            .environmentObject(sceneViewModel)
-            .environmentObject(characterViewModel)
         }
         .sheet(item: $selectedCharacterForDetail) { characterItem in
             NavigationStack {
@@ -209,9 +204,6 @@ struct SceneDetailView: View {
         .sheet(item: $selectedNoteForDetail) { noteItem in
             NavigationStack {
                 NoteBlockDetailView(noteBlock: noteItem)
-                    .environmentObject(noteViewModel)
-                    .environmentObject(characterViewModel)
-                    .environmentObject(sceneViewModel)
             }
         }
         .fullScreenCover(isPresented: $showImmersiveMode) { // 使用 fullScreenCover 展示沉浸模式

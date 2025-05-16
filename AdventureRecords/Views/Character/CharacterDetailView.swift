@@ -7,7 +7,10 @@
 
 import SwiftUI
 
+import AVFoundation
+
 struct CharacterDetailView: View {
+    @StateObject private var audioPlayerManager = AudioPlayerManager()
     let card: Character
     @EnvironmentObject var characterViewModel: CharacterViewModel
     @EnvironmentObject var noteViewModel: NoteViewModel
@@ -26,6 +29,13 @@ struct CharacterDetailView: View {
     
     private var relatedScenes: [AdventureScene] {
         sceneViewModel.scenes.filter { card.sceneIDs.contains($0.id) }
+    }
+    
+    // 最佳实践：直接用全局音频数据过滤出属于当前角色的录音
+    @EnvironmentObject var audioViewModel: AudioViewModel
+    private var relatedRecordings: [AudioRecording] {
+        guard let ids = card.audioRecordings?.map({ $0.id }) else { return [] }
+        return audioViewModel.recordings.filter { ids.contains($0.id) }
     }
     
     var body: some View {
@@ -130,6 +140,40 @@ struct CharacterDetailView: View {
                     }
                 }
                 
+                // 相关录音
+                if !relatedRecordings.isEmpty {
+                    Section(header: Text("相关录音 (\(relatedRecordings.count))").font(.headline)) {
+                        ForEach(relatedRecordings) { recording in
+                            let audioURL = recording.recordingURL
+                            HStack {
+                                Text(recording.title)
+                                    .foregroundColor(ThemeManager.shared.primaryTextColor)
+                                Spacer()
+                                Button {
+                                    if audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == audioURL {
+                                        audioPlayerManager.pause()
+                                    } else {
+                                        guard audioURL.isFileURL, FileManager.default.fileExists(atPath: audioURL.path) else {
+                                            print("Audio file not found at \(audioURL.path)")
+                                            // Consider showing an alert to the user here
+                                                return
+                                            }
+                                            audioPlayerManager.play(url: audioURL)
+                                        }
+                                    } label: {
+                                        Image(systemName: audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == audioURL ? "pause.circle.fill" : "play.circle.fill")
+                                            .font(.title2)
+                                            .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                                    }
+                                }
+                                .padding()
+                                .background(ThemeManager.shared.secondaryBackgroundColor)
+                                .cornerRadius(8)
+                        }
+                    }
+                    .padding(.bottom) // Add some spacing after the audio section
+                }
+
                 // 新建关联笔记按钮 - 移至内容区，更符合"底部操作区"的感觉
                 Button(action: { showNoteEditor = true }) {
                     Label("新建关联笔记", systemImage: "plus.circle.fill")
@@ -155,6 +199,9 @@ struct CharacterDetailView: View {
 
                 Spacer()
             }
+        .onDisappear {
+            audioPlayerManager.stopAndDeactivateSession()
+        }
         .sheet(isPresented: $showNoteEditor) {
             NoteEditorView(
                 preselectedCharacterID: card.id,
@@ -188,9 +235,6 @@ struct CharacterDetailView: View {
         .sheet(item: $selectedSceneForDetail) { sceneItem in
             NavigationStack {
                 SceneDetailView(scene: sceneItem)
-                    .environmentObject(sceneViewModel)
-                    .environmentObject(noteViewModel)
-                    .environmentObject(characterViewModel)
             }
         }
         .fullScreenCover(isPresented: $showImmersiveMode) { // 使用 fullScreenCover 展示沉浸模式

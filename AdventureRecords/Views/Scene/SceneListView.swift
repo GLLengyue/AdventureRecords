@@ -90,7 +90,6 @@ struct SceneListView: View {
                     showingSceneEditor = false
                 }
             )
-            .environmentObject(sceneViewModel)
         }
     }
 
