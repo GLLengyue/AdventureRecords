@@ -74,7 +74,17 @@ struct NoteEditorView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        EditorContainer(
+            module: .note,
+            title: isEditing ? "编辑笔记" : "新建笔记",
+            cancelAction: {
+                onCancel()
+            },
+            saveAction: {
+                saveNoteAction()
+            },
+            saveDisabled: title.isEmpty
+        ) {
             Form {
                 Section(header: Text("基本信息")) {
                     TextField("标题", text: $title)
@@ -101,21 +111,6 @@ struct NoteEditorView: View {
                     Button(action: { showCreateScene = true }) {
                         Label("创建新场景", systemImage: "plus.circle.fill")
                     }
-                }
-            }
-            .navigationTitle(isEditing ? "编辑笔记" : "新建笔记")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("取消") {
-                        onCancel()
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("保存") {
-                        saveNoteAction()
-                    }
-                    .disabled(title.isEmpty)
                 }
             }
             .sheet(isPresented: $showCharacterPicker) {

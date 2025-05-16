@@ -224,12 +224,14 @@ public struct EditorContainer<Content: View>: View {
     let content: Content
     let cancelAction: () -> Void
     let saveAction: () -> Void
+    let saveDisabled: Bool
     
-    init(module: ModuleType, title: String, cancelAction: @escaping () -> Void, saveAction: @escaping () -> Void, @ViewBuilder content: () -> Content) {
+    init(module: ModuleType, title: String, cancelAction: @escaping () -> Void, saveAction: @escaping () -> Void, saveDisabled: Bool = false, @ViewBuilder content: () -> Content) {
         self.module = module
         self.title = title
         self.cancelAction = cancelAction
         self.saveAction = saveAction
+        self.saveDisabled = saveDisabled
         self.content = content()
     }
     
@@ -241,12 +243,12 @@ public struct EditorContainer<Content: View>: View {
                         .font(.headline)
                         .foregroundColor(ThemeManager.shared.accentColor(for: module))
                 }
+                .disabled(saveDisabled)
+
             }
             
-            ScrollView {
-                content
-                    .padding()
-            }
+            content
+                .padding()
         }
     }
 }

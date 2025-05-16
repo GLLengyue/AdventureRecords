@@ -48,7 +48,36 @@ struct SceneEditorView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        EditorContainer(
+            module: .scene,
+            title: isEditing ? "编辑场景" : "新建场景",
+            cancelAction: {
+                onCancel()
+            },
+            saveAction: {
+                if var sceneToUpdate = existingScene {
+                    sceneToUpdate.title = title
+                    sceneToUpdate.description = description
+                    sceneToUpdate.relatedCharacterIDs = relatedCharacterIDs
+                    sceneToUpdate.relatedNoteIDs = relatedNoteIDs
+                    sceneToUpdate.coverImage = coverImage
+                    sceneToUpdate.atmosphere = atmosphere
+                    onSave(sceneToUpdate)
+                } else {
+                    let newScene = AdventureScene(
+                        id: UUID(),
+                        title: title,
+                        description: description,
+                        relatedCharacterIDs: relatedCharacterIDs,
+                        relatedNoteIDs: relatedNoteIDs,
+                        coverImage: coverImage,
+                        atmosphere: atmosphere
+                    )
+                    onSave(newScene)
+                }
+            },
+            saveDisabled: title.isEmpty
+        ) {
             Form {
                 Section(header: Text("基本信息")) {
                     TextField("场景名称", text: $title)
@@ -95,18 +124,6 @@ struct SceneEditorView: View {
                         }
                     }
                 }
-                
-                // 这里可以添加关联角色和笔记的选择器
-                Section(header: Text("关联角色")) {
-                    NavigationLink(destination: CharacterPickerView(selectedCharacterIDs: $relatedCharacterIDs).environmentObject(CharacterViewModel())) {
-                        Text("已关联 \(relatedCharacterIDs.count) 个角色")
-                    }
-                }
-                
-                Section(header: Text("关联笔记")) {
-                    Text("已关联 \(relatedNoteIDs.count) 个笔记")
-                }
-                
                 Section(header: Text("场景氛围")) {
                     // 背景颜色选择
                     ColorPicker("背景颜色", selection: Binding(
@@ -151,40 +168,6 @@ struct SceneEditorView: View {
                             atmosphere.ambientSound = selectedAudio
                         }
                     }
-                }
-            }
-            .navigationTitle(isEditing ? "编辑场景" : "新建场景")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") {
-                        onCancel()
-                    }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") {
-                        if var sceneToUpdate = existingScene {
-                            sceneToUpdate.title = title
-                            sceneToUpdate.description = description
-                            sceneToUpdate.relatedCharacterIDs = relatedCharacterIDs
-                            sceneToUpdate.relatedNoteIDs = relatedNoteIDs
-                            sceneToUpdate.coverImage = coverImage
-                            sceneToUpdate.atmosphere = atmosphere
-                            onSave(sceneToUpdate)
-                        } else {
-                            let newScene = AdventureScene(
-                                id: UUID(),
-                                title: title,
-                                description: description,
-                                relatedCharacterIDs: relatedCharacterIDs,
-                                relatedNoteIDs: relatedNoteIDs,
-                                coverImage: coverImage,
-                                atmosphere: atmosphere
-                            )
-                            onSave(newScene)
-                        }
-                    }
-                    .disabled(title.isEmpty)
                 }
             }
         }

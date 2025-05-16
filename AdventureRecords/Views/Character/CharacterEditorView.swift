@@ -21,7 +21,7 @@ struct CharacterEditorView: View {
     @State private var recordingForDeleteSheet: AudioRecording? = nil
     @State private var newRecordingName: String = ""
     @State private var showingDeleteConfirmationFor: AudioRecording? = nil
-    
+
     // Original Character card, if editing
     private var existingCharacter: Character?
     
@@ -64,7 +64,34 @@ struct CharacterEditorView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        EditorContainer(
+            module: .character,
+            title: existingCharacter == nil ? "新建角色" : "编辑角色",
+            cancelAction: {
+                onCancel()
+            },
+            saveAction: {
+                if var editedCharacter = existingCharacter {
+                    editedCharacter.name = name
+                    editedCharacter.description = description
+                    editedCharacter.avatar = avatar
+                    editedCharacter.tags = tags
+                    onSave(editedCharacter)
+                } else {
+                    let cardToSave = Character(
+                        id: UUID(),
+                        name: name,
+                        description: description,
+                        avatar: avatar,
+                        tags: tags,
+                        noteIDs: [],
+                        sceneIDs: []
+                    )
+                    onSave(cardToSave)
+                }
+            },
+            saveDisabled: name.isEmpty
+        ) {
             Form {
                 Section(header: Text("基本信息")) {
                     TextField("名称", text: $name)
@@ -188,132 +215,85 @@ struct CharacterEditorView: View {
                     }
                 }
             }
-            .navigationTitle(avatar == nil ? "新建角色" : "编辑角色")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+        }
+        .sheet(isPresented: $showRecordingSheet) {
+            AudioRecordingCreationView(characterID: existingCharacter?.id)
+        }
+        .sheet(item: $recordingForRenameSheet) { recordingToRename in
+            VStack(spacing: 20) {
+                Text("重命名录音")
+                    .font(.title2).bold()
+                Text("当前名称: \(recordingToRename.title)")
+                TextField("新名称", text: $newRecordingName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding(.horizontal)
+                HStack(spacing: 20) {
                     Button("取消") {
-                        onCancel()
+                        recordingForRenameSheet = nil
+                        newRecordingName = "" // Clear the name
                     }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
+                    .padding()
+                    .contentShape(Rectangle())
+                    .frame(maxWidth: .infinity)
+                    .background(Color.gray.opacity(0.2))
+                    .foregroundColor(.primary)
+                    .cornerRadius(10)
+                    
                     Button("保存") {
-                        if var editedCharacter = existingCharacter {
-                            editedCharacter.name = name
-                            editedCharacter.description = description
-                            editedCharacter.avatar = avatar
-
-                            editedCharacter.tags = tags
-                            onSave(editedCharacter)
-                        }
-                        else {
-                            let cardToSave = Character(
-                                id: UUID(),
-                                name: name,
-                                description: description,
-                                avatar: avatar,
-
-                                tags: tags,
-                                noteIDs: [],
-                                sceneIDs: []
-                            )
-                            onSave(cardToSave)
-
-                        }
+                        var recordingToUpdate = recordingToRename
+                        recordingToUpdate.title = newRecordingName.trimmingCharacters(in: .whitespacesAndNewlines)
+                        print("new title: \(recordingToUpdate.title)")
+                        audioViewModel.updateRecording(recordingToUpdate)
+                        recordingForRenameSheet = nil
+                        newRecordingName = "" // Clear the name
                     }
-                    .disabled(name.isEmpty)
+                    .padding()
+                    .contentShape(Rectangle())
+                    .frame(maxWidth: .infinity)
+                    .background(newRecordingName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.gray.opacity(0.5) : Color.accentColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .disabled(newRecordingName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
+                .padding(.horizontal)
             }
-            .sheet(isPresented: $showRecordingSheet) {
-                // Pass the character ID if available (editing existing character)
-                // For new characters, ID isn't available until save, so pass nil initially.
-                AudioRecordingCreationView(characterID: existingCharacter?.id)
-            }
-            // Sheet for Renaming Recording
-            .sheet(item: $recordingForRenameSheet) { recordingToRename in
-                VStack(spacing: 20) {
-                    Text("重命名录音")
-                        .font(.title2).bold()
-                    
-                    Text("当前名称: \(recordingToRename.title)")
-                    
-                    TextField("新名称", text: $newRecordingName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.horizontal)
-                    
-                    HStack(spacing: 20) {
-                        Button("取消") {
-                            recordingForRenameSheet = nil
-                            newRecordingName = "" // Clear the name
-                        }
-                        .padding()
-                        .contentShape(Rectangle())
-                        .frame(maxWidth: .infinity)
-                        .background(Color.gray.opacity(0.2))
-                        .foregroundColor(.primary)
-                        .cornerRadius(10)
-                        
-                        Button("保存") {
-                            print("clicked")
-                            var recordingToUpdate = recordingToRename
-                            recordingToUpdate.title = newRecordingName.trimmingCharacters(in: .whitespacesAndNewlines)
-                            print("new title: \recordingToUpdate.title")
-                            audioViewModel.updateRecording(recordingToUpdate)
-                            recordingForRenameSheet = nil
-                            newRecordingName = "" // Clear the name
-                        }
-                        .padding()
-                        .contentShape(Rectangle())
-                        .frame(maxWidth: .infinity)
-                        .background(newRecordingName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.gray.opacity(0.5) : Color.accentColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                        .disabled(newRecordingName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    }
+            .padding()
+            .presentationDetents([.height(280)])
+        }
+        .sheet(item: $recordingForDeleteSheet) { recordingToDelete in
+            VStack(spacing: 20) {
+                Text("确认删除")
+                    .font(.title2).bold()
+                Text("您确定要删除录音 \"\(recordingToDelete.title)\" 吗？此操作无法撤销。")
+                    .multilineTextAlignment(.center)
                     .padding(.horizontal)
-                }
-                .padding()
-                .presentationDetents([.height(280)])
-            }
-            // Sheet for Deleting Recording Confirmation
-            .sheet(item: $recordingForDeleteSheet) { recordingToDelete in
-                VStack(spacing: 20) {
-                    Text("确认删除")
-                        .font(.title2).bold()
-                    
-                    Text("您确定要删除录音 \"\(recordingToDelete.title)\" 吗？此操作无法撤销。")
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                    
-                    HStack(spacing: 20) {
-                        Button("取消") {
-                            recordingForDeleteSheet = nil
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.red)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                HStack(spacing: 20) {
+                    Button("取消") {
+                        recordingForDeleteSheet = nil
                     }
-                    .padding(.horizontal)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.gray.opacity(0.2))
+                    .foregroundColor(.primary)
+                    .cornerRadius(10)
+                    
+                    Button("删除") {
+                        audioViewModel.deleteRecording(recordingToDelete)
+                        // if let charId = existingCharacter?.id {
+                        //     viewModel.refreshCharacter(charId)
+                        // }
+                        recordingForDeleteSheet = nil
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.red)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
                 }
-                .padding()
-                .presentationDetents([.height(240)])
+                .padding(.horizontal)
             }
-            // .onAppear {
-            //     // Reload audio recordings for the character when the view appears or re-appears
-            //     // This is important if recordings were added/deleted in the sheet
-            //     if let charId = existingCharacter?.id {
-            //         viewModel.refreshCharacter(id: charId)
-            //         // Update local state if selectedCharacter matches
-            //         if let updatedCharacter = viewModel.characters.first(where: { $0.id == charId }) {
-            //              self.audioRecordings = updatedCharacter.audioRecordings ?? []
-            //         } else if let selChar = viewModel.selectedCharacter, selChar.id == charId {
-            //              self.audioRecordings = selChar.audioRecordings ?? []
-            //         }
-            //     }
-            // }
+            .padding()
+            .presentationDetents([.height(240)])
         }
     }
 }
