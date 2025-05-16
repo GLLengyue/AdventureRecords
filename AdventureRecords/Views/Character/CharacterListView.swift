@@ -66,12 +66,6 @@ struct CharacterListView: View {
                         },
                         onEdit: { editableCharacter in
                             characterViewModel.updateCharacter(editableCharacter)
-                        },
-                        getRelatedNotes: {
-                            return characterViewModel.getRelatedNotes(for: character)
-                        },
-                        getRelatedScenes: {
-                            return characterViewModel.getRelatedScenes(for: character)
                         }
                     )
                 }

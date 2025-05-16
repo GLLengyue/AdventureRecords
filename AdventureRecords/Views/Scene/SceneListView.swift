@@ -66,12 +66,6 @@ struct SceneListView: View {
                         },
                         onEdit: { editableScene in
                             sceneViewModel.updateScene(editableScene)
-                        },
-                        getRelatedCharacters: {
-                            return sceneViewModel.getRelatedCharacters(for: scene)
-                        },
-                        getRelatedNotes: {
-                            return sceneViewModel.getRelatedNotes(for: scene)
                         }
                     )
                 }

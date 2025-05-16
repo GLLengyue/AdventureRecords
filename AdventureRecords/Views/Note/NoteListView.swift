@@ -71,12 +71,6 @@ struct NoteListView: View {
                         },
                         onEdit: { editableNote in
                             noteViewModel.updateNote(editableNote)
-                        },
-                        getRelatedCharacters: {
-                            return noteViewModel.getRelatedCharacters(for: note)
-                        },
-                        getRelatedScenes: {
-                            return noteViewModel.getRelatedScenes(for: note)
                         }
                     )
                 }

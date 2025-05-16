@@ -4,10 +4,15 @@ struct SceneRow: View {
     let scene: AdventureScene
     @State private var showEditor = false
     
+    @EnvironmentObject var characterViewModel: CharacterViewModel
+    @EnvironmentObject var noteViewModel: NoteViewModel
     var onDelete: () -> Void
     var onEdit: (AdventureScene) -> Void
-    var getRelatedCharacters: () -> [Character]
-    var getRelatedNotes: () -> [NoteBlock]
+    // 通过全局ViewModel和ID动态查找
+    var relatedCharacters: [Character] { characterViewModel.characters.filter { scene.relatedCharacterIDs.contains($0.id) } }
+    var relatedNotes: [NoteBlock] { noteViewModel.notes.filter { scene.relatedNoteIDs.contains($0.id) } }
+    // 移除 getRelatedCharacters/getRelatedNotes 参数，保持与调用方一致
+
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -19,7 +24,6 @@ struct SceneRow: View {
                 .lineLimit(2)
 
             // Display related characters
-            let relatedCharacters = getRelatedCharacters()
             if !relatedCharacters.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -40,7 +44,6 @@ struct SceneRow: View {
             }
 
             // Display related notes
-            let relatedNotes = getRelatedNotes()
             if !relatedNotes.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
