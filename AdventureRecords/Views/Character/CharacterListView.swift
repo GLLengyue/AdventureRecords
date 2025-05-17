@@ -30,7 +30,7 @@ struct CharacterListView: View {
     var body: some View {
         ListContainer(
             module: .character,
-            title: "角色卡",
+            title: "角色",
             searchText: $searchText,
             onSearch: { _ in },
             addAction: {

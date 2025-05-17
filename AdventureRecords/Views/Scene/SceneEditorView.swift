@@ -2,7 +2,6 @@ import SwiftUI
 import PhotosUI
 
 struct SceneEditorView: View {
-    @EnvironmentObject var viewModel: SceneViewModel
     @Environment(\.dismiss) var dismiss
 
     @State private var title: String

@@ -14,7 +14,7 @@ public struct ModuleTabBar: View {
     public var body: some View {
         HStack(spacing: 0) {
             TabButton(
-                title: "角色卡",
+                title: "角色",
                 icon: "person.3",
                 module: .character,
                 isSelected: selectedTab == 0
@@ -23,7 +23,7 @@ public struct ModuleTabBar: View {
             }
             
             TabButton(
-                title: "笔记块",
+                title: "笔记",
                 icon: "note.text",
                 module: .note,
                 isSelected: selectedTab == 1

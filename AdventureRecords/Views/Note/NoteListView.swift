@@ -36,7 +36,7 @@ struct NoteListView: View {
     var body: some View {
         ListContainer(
             module: .note,
-            title: "笔记块",
+            title: "笔记",
             searchText: $searchText,
             onSearch: { _ in },
             addAction: { showingNoteEditor = true },

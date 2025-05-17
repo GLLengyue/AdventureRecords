@@ -175,6 +175,17 @@ struct CharacterDetailView: View {
                     .padding(.bottom) // Add some spacing after the audio section
                 }
 
+                // 沉浸模式入口按钮
+                Button(action: { showImmersiveMode = true }) {
+                    Label("进入沉浸模式", systemImage: "arrow.up.left.and.arrow.down.right.circle.fill")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(ThemeManager.shared.accentColor(for: .character))
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .padding(.top)
                 // 新建关联笔记按钮 - 移至内容区，更符合"底部操作区"的感觉
                 Button(action: { showNoteEditor = true }) {
                     Label("新建关联笔记", systemImage: "plus.circle.fill")
@@ -185,18 +196,6 @@ struct CharacterDetailView: View {
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
-                .padding(.top)
-                // 沉浸模式入口按钮
-                Button(action: { showImmersiveMode = true }) {
-                    Label("进入沉浸模式", systemImage: "arrow.up.left.and.arrow.down.right.circle.fill")
-                        .font(.headline)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(ThemeManager.shared.accentColor(for: .character).opacity(0.8))
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-                .padding(.top)
 
                 Spacer()
             }

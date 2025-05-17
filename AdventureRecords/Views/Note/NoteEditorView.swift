@@ -16,7 +16,8 @@ struct NoteEditorView: View {
     
     @State private var showCharacterPicker = false
     @State private var showScenePicker = false
-    @State private var showCreateScene = false
+    @State private var showingSceneEditor = false
+    @State private var showingCharacterEditor = false
     
     private var onSave: (NoteBlock) -> Void
     private var onCancel: () -> Void
@@ -99,6 +100,9 @@ struct NoteEditorView: View {
                     Button(action: { showCharacterPicker = true }) {
                         Label("选择角色", systemImage: "person.badge.plus")
                     }
+                    Button(action: { showingCharacterEditor = true }) {
+                        Label("创建新角色", systemImage: "plus.circle.fill")
+                    }
                 }
                 
                 Section(header: Text("关联场景")) {
@@ -108,7 +112,7 @@ struct NoteEditorView: View {
                     Button(action: { showScenePicker = true }) {
                         Label("选择场景", systemImage: "map.badge.plus")
                     }
-                    Button(action: { showCreateScene = true }) {
+                    Button(action: { showingSceneEditor = true }) {
                         Label("创建新场景", systemImage: "plus.circle.fill")
                     }
                 }
@@ -121,14 +125,29 @@ struct NoteEditorView: View {
                 ScenePickerView(selectedSceneIDs: $selectedSceneIDs)
                     .environmentObject(sceneViewModel)
             }
-            .sheet(isPresented: $showCreateScene) {
-                SceneCreationView {
-                    newScene in
-                    sceneViewModel.addScene(newScene)
-                    selectedSceneIDs.append(newScene.id)
-                }
-                .environmentObject(sceneViewModel)
+            .sheet(isPresented: $showingSceneEditor) {
+                SceneEditorView(
+                    onSave: { savedScene in
+                        sceneViewModel.addScene(savedScene)
+                        showingSceneEditor = false
+                    },
+                    onCancel: {
+                        showingSceneEditor = false
+                    }
+                )
             }
+            .sheet(isPresented: $showingCharacterEditor) {
+                CharacterEditorView(
+                    onSave: { savedCard in
+                        characterViewModel.addCharacter(savedCard)
+                        showingCharacterEditor = false
+                    },
+                    onCancel: {
+                        showingCharacterEditor = false
+                    }
+                )
+            }
+            
         }
     }
     

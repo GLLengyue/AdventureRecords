@@ -119,7 +119,17 @@ struct SceneDetailView: View {
                         }
                     }
                 }
-                
+                // 沉浸模式入口按钮
+                Button(action: { showImmersiveMode = true }) {
+                    Label("进入沉浸模式", systemImage: "arrow.up.left.and.arrow.down.right.circle.fill")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(ThemeManager.shared.accentColor(for: .scene))
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .padding(.top)
                 // 新建关联笔记按钮
                 Button(action: { showNoteEditor = true }) {
                     Label("在当前场景下新建笔记", systemImage: "plus.circle.fill")
@@ -130,19 +140,6 @@ struct SceneDetailView: View {
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
-                .padding(.top)
-                
-                // 沉浸模式入口按钮
-                Button(action: { showImmersiveMode = true }) {
-                    Label("进入沉浸模式", systemImage: "arrow.up.left.and.arrow.down.right.circle.fill")
-                        .font(.headline)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(ThemeManager.shared.accentColor(for: .scene).opacity(0.8))
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-                .padding(.top)
             }
         }
         .sheet(isPresented: $showImageViewer) {
