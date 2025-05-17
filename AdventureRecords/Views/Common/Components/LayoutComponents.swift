@@ -109,6 +109,8 @@ public struct ListContainer<Content: View, TrailingContent: View>: View {
     let trailingContent: TrailingContent
     @Binding var searchText: String
     var onSearch: ((String) -> Void)?
+    @FocusState private var isSearchFieldFocused: Bool
+    @State private var showSearchField = false
 
     init(
         module: ModuleType,
@@ -126,6 +128,7 @@ public struct ListContainer<Content: View, TrailingContent: View>: View {
         self.addAction = addAction
         self.trailingContent = trailingContent()
         self.content = content()
+        self.isSearchFieldFocused = false
     }
 
     public var body: some View {
@@ -133,6 +136,39 @@ public struct ListContainer<Content: View, TrailingContent: View>: View {
             ModuleNavigationBar(title: title, module: module) {
                 HStack(spacing: 8) {
                     trailingContent
+                    if showSearchField {
+                        TextField("请输入关键词", text: $searchText, onCommit: {dismissSearch()})
+                            .padding(10)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .focused($isSearchFieldFocused)
+                            .transition(.move(edge: .top).combined(with: .opacity)) // 动画效果
+                    }
+
+                    Button(action: {
+                        withAnimation {
+                            showSearchField = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            withAnimation {
+                                isSearchFieldFocused = true
+                            }
+                        }
+                    }) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(ThemeManager.shared.accentColor(for: module))
+                    }
+                    .onChange(of: isSearchFieldFocused) {
+                        if isSearchFieldFocused {
+                            withAnimation {
+                                showSearchField = true
+                            }
+                        } else {
+                            withAnimation {
+                                showSearchField = false
+                            }
+                        }
+                    }
                     if let addAction = addAction {
                         Button(action: addAction) {
                             Image(systemName: "plus")
@@ -144,39 +180,18 @@ public struct ListContainer<Content: View, TrailingContent: View>: View {
             }
             .padding(.horizontal)
             .padding(.top, 8)
-            
-            SearchBar(text: $searchText, onSearch: onSearch)
-                .padding(.horizontal)            
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
-}
 
-struct SearchBar: View {
-    @Binding var text: String
-    var onSearch: ((String) -> Void)?
-    
-    var body: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
-            
-            TextField("搜索", text: $text)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .onChange(of: text) { newValue in
-                    onSearch?(newValue)
-                }
-            
-            if !text.isEmpty {
-                Button(action: {
-                    text = ""
-                    onSearch?("")
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.gray)
-                }
-            }
+    private func dismissSearch() {
+        withAnimation {
+            showSearchField = false
+        }
+        searchText = ""
+        withAnimation {
+            isSearchFieldFocused = false
         }
     }
 }
