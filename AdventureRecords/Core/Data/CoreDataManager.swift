@@ -40,8 +40,7 @@ class CoreDataManager {
         entity.characterDescription = description
         entity.avatar = avatar
         entity.tags = []
-        entity.noteIDs = []
-        entity.sceneIDs = []
+        entity.relatedNoteIDs = []
         
         saveContext()
         
@@ -52,8 +51,7 @@ class CoreDataManager {
             avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
             audioRecordings: nil,
             tags: [],
-            noteIDs: [],
-            sceneIDs: []
+            relatedNoteIDs: []
         )
     }
     
@@ -69,8 +67,7 @@ class CoreDataManager {
                     avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
                     audioRecordings: fetchAudioRecordings(for: entity.audioIDs as? [UUID] ?? []),
                     tags: entity.tags ?? [],
-                    noteIDs: entity.noteIDs ?? [],
-                    sceneIDs: entity.sceneIDs ?? []
+                    relatedNoteIDs: entity.relatedNoteIDs ?? []
                 )
             }
         } catch {
@@ -112,16 +109,15 @@ class CoreDataManager {
                     avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
                     audioRecordings: fetchAudioRecordings(for: entity.audioIDs as? [UUID] ?? []),
                     tags: entity.tags ?? [],
-                    noteIDs: entity.noteIDs ?? [],
-                    sceneIDs: entity.sceneIDs ?? []
-                )
+                    relatedNoteIDs: entity.relatedNoteIDs ?? []
+            )
             }
         } catch {
             print("获取角色数据失败: \(error)")
             return []
         }
     }
-    func fetchCharacter(by id: UUID) -> CharacterEntity? {
+    func fetchCharacterEntity(by id: UUID) -> CharacterEntity? {
         let request: NSFetchRequest<CharacterEntity> = CharacterEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         do {
@@ -134,13 +130,12 @@ class CoreDataManager {
     }
 
     func updateCharacter(_ character: Character) {
-        if let entity = fetchCharacter(by: character.id) {
+        if let entity = fetchCharacterEntity(by: character.id) {
             entity.name = character.name
             entity.characterDescription = character.description
             entity.avatar = character.avatar?.pngData()
             entity.tags = character.tags
-            entity.noteIDs = character.noteIDs
-            entity.sceneIDs = character.sceneIDs
+            entity.relatedNoteIDs = character.relatedNoteIDs
             saveContext()
         } else {
             print("角色未找到，无法更新")
@@ -211,7 +206,7 @@ class CoreDataManager {
         }
     }
     
-    func fetchNote(by id: UUID) -> NoteEntity? {
+    func fetchNoteEntity(by id: UUID) -> NoteEntity? {
         let request: NSFetchRequest<NoteEntity> = NoteEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         do {
@@ -224,7 +219,7 @@ class CoreDataManager {
     }
 
     func updateNote(_ note: NoteBlock) {
-        if let entity = fetchNote(by: note.id) {
+        if let entity = fetchNoteEntity(by: note.id) {
             entity.title = note.title
             entity.content = note.content
             entity.date = note.date
@@ -236,7 +231,7 @@ class CoreDataManager {
         }
     }
 
-    func fetchScene(by id: UUID) -> SceneEntity? {
+    func fetchSceneEntity(by id: UUID) -> SceneEntity? {
         let request: NSFetchRequest<SceneEntity> = SceneEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         do {
@@ -249,10 +244,9 @@ class CoreDataManager {
     }
 
     func updateScene(_ scene: AdventureScene) {
-        if let entity = fetchScene(by: scene.id) {
+        if let entity = fetchSceneEntity(by: scene.id) {
             entity.title = scene.title
             entity.sceneDescription = scene.description
-            entity.relatedCharacterIDs = scene.relatedCharacterIDs
             entity.relatedNoteIDs = scene.relatedNoteIDs
             entity.coverImage = scene.coverImage?.pngData()
             entity.atmosphereData = try? JSONEncoder().encode(scene.atmosphere)
@@ -267,7 +261,6 @@ class CoreDataManager {
         entity.id = UUID()
         entity.title = title
         entity.sceneDescription = description
-        entity.relatedCharacterIDs = []
         entity.relatedNoteIDs = []
         entity.atmosphereData = try? JSONEncoder().encode(SceneAtmosphere.default)
         
@@ -277,7 +270,6 @@ class CoreDataManager {
             id: entity.id ?? UUID(),
             title: entity.title ?? "",
             description: entity.sceneDescription ?? "",
-            relatedCharacterIDs: [],
             relatedNoteIDs: [],
             coverImage: nil,
             audioURL: nil,
@@ -294,7 +286,6 @@ class CoreDataManager {
                     id: entity.id ?? UUID(),
                     title: entity.title ?? "",
                     description: entity.sceneDescription ?? "",
-                    relatedCharacterIDs: entity.relatedCharacterIDs ?? [],
                     relatedNoteIDs: entity.relatedNoteIDs ?? [],
                     coverImage: entity.coverImage != nil ? UIImage(data: entity.coverImage!) : nil,
                     audioURL: nil,
@@ -317,7 +308,6 @@ class CoreDataManager {
                     id: entity.id ?? UUID(),
                     title: entity.title ?? "",
                     description: entity.sceneDescription ?? "",
-                    relatedCharacterIDs: entity.relatedCharacterIDs ?? [],
                     relatedNoteIDs: entity.relatedNoteIDs ?? [],
                     coverImage: entity.coverImage != nil ? UIImage(data: entity.coverImage!) : nil,
                     audioURL: nil,
@@ -330,129 +320,6 @@ class CoreDataManager {
         }
     }
 
-    func fetchCharacterStruct(id: UUID) -> Character? {
-        guard let entity = fetchCharacter(by: id) else { return nil }
-        return Character(
-            id: entity.id ?? UUID(),
-            name: entity.name ?? "",
-            description: entity.characterDescription ?? "",
-            avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
-            audioRecordings: fetchAudioRecordings(for: entity.audioIDs as? [UUID] ?? []),
-            tags: entity.tags ?? [],
-            noteIDs: entity.noteIDs ?? [],
-            sceneIDs: entity.sceneIDs ?? []
-        )
-    }
-
-    private func mapAudioEntitiesToStructs(audioEntities: Set<AudioRecordingEntity>?) -> [AudioRecording] {
-        guard let entities = audioEntities else { return [] }
-        return entities.map { audioEntity in
-            AudioRecording(
-                id: audioEntity.id ?? UUID(),
-                title: audioEntity.title ?? "",
-                recordingURL: audioEntity.recordingURL ?? URL(fileURLWithPath: ""),
-                date: audioEntity.date ?? Date()
-            )
-        }
-    }
-    
-    // MARK: - 关系操作
-    func addCharacterToNote(characterId: UUID, noteId: UUID) {
-        let characterRequest: NSFetchRequest<CharacterEntity> = CharacterEntity.fetchRequest()
-        characterRequest.predicate = NSPredicate(format: "id == %@", characterId as CVarArg)
-        
-        let noteRequest: NSFetchRequest<NoteEntity> = NoteEntity.fetchRequest()
-        noteRequest.predicate = NSPredicate(format: "id == %@", noteId as CVarArg)
-        
-        do {
-            let characters = try viewContext.fetch(characterRequest)
-            let notes = try viewContext.fetch(noteRequest)
-            
-            if let character = characters.first, let note = notes.first {
-                var characterNoteIDs = character.noteIDs ?? []
-                var noteCharacterIDs = note.relatedCharacterIDs ?? []
-                
-                if !characterNoteIDs.contains(noteId) {
-                    characterNoteIDs.append(noteId)
-                    character.noteIDs = characterNoteIDs
-                }
-                
-                if !noteCharacterIDs.contains(characterId) {
-                    noteCharacterIDs.append(characterId)
-                    note.relatedCharacterIDs = noteCharacterIDs
-                }
-                
-                saveContext()
-            }
-        } catch {
-            print("添加角色到笔记失败: \(error)")
-        }
-    }
-    
-    func addCharacterToScene(characterId: UUID, sceneId: UUID) {
-        let characterRequest: NSFetchRequest<CharacterEntity> = CharacterEntity.fetchRequest()
-        characterRequest.predicate = NSPredicate(format: "id == %@", characterId as CVarArg)
-        
-        let sceneRequest: NSFetchRequest<SceneEntity> = SceneEntity.fetchRequest()
-        sceneRequest.predicate = NSPredicate(format: "id == %@", sceneId as CVarArg)
-        
-        do {
-            let characters = try viewContext.fetch(characterRequest)
-            let scenes = try viewContext.fetch(sceneRequest)
-            
-            if let character = characters.first, let scene = scenes.first {
-                var characterSceneIDs = character.sceneIDs ?? []
-                var sceneCharacterIDs = scene.relatedCharacterIDs ?? []
-                
-                if !characterSceneIDs.contains(sceneId) {
-                    characterSceneIDs.append(sceneId)
-                    character.sceneIDs = characterSceneIDs
-                }
-                
-                if !sceneCharacterIDs.contains(characterId) {
-                    sceneCharacterIDs.append(characterId)
-                    scene.relatedCharacterIDs = sceneCharacterIDs
-                }
-                
-                saveContext()
-            }
-        } catch {
-            print("添加角色到场景失败: \(error)")
-        }
-    }
-    
-    func addNoteToScene(noteId: UUID, sceneId: UUID) {
-        let noteRequest: NSFetchRequest<NoteEntity> = NoteEntity.fetchRequest()
-        noteRequest.predicate = NSPredicate(format: "id == %@", noteId as CVarArg)
-        
-        let sceneRequest: NSFetchRequest<SceneEntity> = SceneEntity.fetchRequest()
-        sceneRequest.predicate = NSPredicate(format: "id == %@", sceneId as CVarArg)
-        
-        do {
-            let notes = try viewContext.fetch(noteRequest)
-            let scenes = try viewContext.fetch(sceneRequest)
-            
-            if let note = notes.first, let scene = scenes.first {
-                var noteSceneIDs = note.relatedSceneIDs ?? []
-                var sceneNoteIDs = scene.relatedNoteIDs ?? []
-                
-                if !noteSceneIDs.contains(sceneId) {
-                    noteSceneIDs.append(sceneId)
-                    note.relatedSceneIDs = noteSceneIDs
-                }
-                
-                if !sceneNoteIDs.contains(noteId) {
-                    sceneNoteIDs.append(noteId)
-                    scene.relatedNoteIDs = sceneNoteIDs
-                }
-                
-                saveContext()
-            }
-        } catch {
-            print("添加笔记到场景失败: \(error)")
-        }
-    }
-    
     // MARK: - Character 相关方法
     func saveCharacter(_ character: Character) {
         let entity = CharacterEntity(context: viewContext)
@@ -461,8 +328,7 @@ class CoreDataManager {
         entity.characterDescription = character.description
         entity.avatar = character.avatar?.pngData()
         entity.tags = character.tags
-        entity.noteIDs = character.noteIDs
-        entity.sceneIDs = character.sceneIDs
+        entity.relatedNoteIDs = character.relatedNoteIDs
         saveContext()
     }
     
@@ -472,7 +338,6 @@ class CoreDataManager {
         entity.id = scene.id
         entity.title = scene.title
         entity.sceneDescription = scene.description
-        entity.relatedCharacterIDs = scene.relatedCharacterIDs
         entity.relatedNoteIDs = scene.relatedNoteIDs
         entity.coverImage = scene.coverImage?.pngData()
         entity.atmosphereData = try? JSONEncoder().encode(scene.atmosphere)
@@ -510,7 +375,7 @@ class CoreDataManager {
         entity.recordingURL = recording.recordingURL
         entity.date = recording.date
 
-        if let charID = characterID, let characterEntity = fetchCharacter(by: charID) {
+        if let charID = characterID, let characterEntity = fetchCharacterEntity(by: charID) {
             var ids = characterEntity.audioIDs as? [UUID] ?? []
             if !ids.contains(recording.id) {
                 ids.append(recording.id)
@@ -558,22 +423,9 @@ class CoreDataManager {
     }
     
     func deleteAudioRecording(_ id: UUID) {
-        // 先解除所有角色的audioIDs关联
-        let request: NSFetchRequest<CharacterEntity> = CharacterEntity.fetchRequest()
-        if let characters = try? viewContext.fetch(request) {
-            for character in characters {
-                var ids = character.audioIDs as? [UUID] ?? []
-                if let idx = ids.firstIndex(of: id) {
-                    ids.remove(at: idx)
-                    character.audioIDs = ids as NSArray
-                }
-            }
-        }
-        // 再删除录音实体
-        if let audioEntity = fetchAudioRecordingEntity(by: id) {
-            viewContext.delete(audioEntity)
-        }
-        saveContext()
+        let request: NSFetchRequest<AudioRecordingEntity> = AudioRecordingEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        deleteEntities(request)
     }
 
     func updateAudioRecording(_ recording: AudioRecording) {
@@ -583,8 +435,11 @@ class CoreDataManager {
             entity.date = recording.date
             saveContext()
         }
+        else {
+            print("录音未找到，无法更新")
+        }
     }
-    
+
     private func deleteEntities<T: NSManagedObject>(_ request: NSFetchRequest<T>) {
         do {
             let entities = try viewContext.fetch(request)

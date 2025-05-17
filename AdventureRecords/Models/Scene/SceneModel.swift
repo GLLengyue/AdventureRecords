@@ -6,7 +6,6 @@ struct AdventureScene: Identifiable, Hashable {
     let id: UUID
     var title: String
     var description: String
-    var relatedCharacterIDs: [UUID]
     var relatedNoteIDs: [UUID]
     var coverImage: UIImage?
     var audioURL: URL?
@@ -14,11 +13,10 @@ struct AdventureScene: Identifiable, Hashable {
     // 场景氛围设置
     var atmosphere: SceneAtmosphere
     
-    init(id: UUID = UUID(), title: String, description: String, relatedCharacterIDs: [UUID] = [], relatedNoteIDs: [UUID] = [], coverImage: UIImage? = nil, audioURL: URL? = nil, atmosphere: SceneAtmosphere = .default) {
+    init(id: UUID = UUID(), title: String, description: String, relatedNoteIDs: [UUID] = [], coverImage: UIImage? = nil, audioURL: URL? = nil, atmosphere: SceneAtmosphere = .default) {
         self.id = id
         self.title = title
         self.description = description
-        self.relatedCharacterIDs = relatedCharacterIDs
         self.relatedNoteIDs = relatedNoteIDs
         self.coverImage = coverImage
         self.audioURL = audioURL
@@ -32,15 +30,27 @@ struct AdventureScene: Identifiable, Hashable {
     static func == (lhs: AdventureScene, rhs: AdventureScene) -> Bool {
         lhs.id == rhs.id
     }
-    
+}
+
+extension AdventureScene {
     mutating func addRelatedNoteID(_ noteID: UUID) {
         relatedNoteIDs.append(noteID)
         relatedNoteIDs = Array(Set(relatedNoteIDs))
     }
 
-    mutating func addRelatedCharacterIDs(_ characterIDs: [UUID]) {
-        relatedCharacterIDs.append(contentsOf: characterIDs)
-        relatedCharacterIDs = Array(Set(relatedCharacterIDs))
+    mutating func removeRelatedNoteID(_ noteID: UUID) {
+        if let index = relatedNoteIDs.firstIndex(of: noteID) {
+            relatedNoteIDs.remove(at: index)
+        }
+    }
+
+    func relatedNotes(in notes: [NoteBlock]) -> [NoteBlock] {
+        return notes.filter { relatedNoteIDs.contains($0.id) }
+    }
+
+    func relatedCharacters(in notes: [NoteBlock], characterProvider: (NoteBlock) -> [Character]) -> [Character] {
+        let relatedNotes = relatedNotes(in: notes)
+        return relatedNotes.flatMap(characterProvider)
     }
 }
 

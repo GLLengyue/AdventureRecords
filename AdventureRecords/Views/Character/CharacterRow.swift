@@ -9,8 +9,14 @@ struct CharacterRow: View {
     var onDelete: () -> Void
     var onEdit: (Character) -> Void
     // 通过全局ViewModel和ID动态查找
-    var relatedNotes: [NoteBlock] { noteViewModel.notes.filter { character.noteIDs.contains($0.id) } }
-    var relatedScenes: [AdventureScene] { sceneViewModel.scenes.filter { character.sceneIDs.contains($0.id) } }
+    var relatedNotes: [NoteBlock] {
+        character.relatedNotes(in: noteViewModel.notes)
+    }
+    var relatedScenes: [AdventureScene] {
+        character.relatedScenes(in: noteViewModel.notes, sceneProvider: { note in
+            note.relatedScenes(in: sceneViewModel.scenes)
+        })
+    }
 
     var body: some View {
         HStack {

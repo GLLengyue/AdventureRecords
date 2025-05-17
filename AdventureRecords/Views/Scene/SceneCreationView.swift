@@ -21,7 +21,6 @@ struct SceneCreationView: View {
                             id: UUID(),
                             title: title,
                             description: description,
-                            relatedCharacterIDs: [],
                             relatedNoteIDs: []
                         )
                         onSave(newScene)

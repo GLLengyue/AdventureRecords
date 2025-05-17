@@ -96,7 +96,7 @@ struct NoteBlockDetailView: View {
         }
         .sheet(item: $selectedCharacterForDetail) { characterItem in
             NavigationStack {
-                CharacterDetailView(card: characterItem)
+                CharacterDetailView(character: characterItem)
             }
         }
         .sheet(item: $selectedSceneForDetail) { sceneItem in

@@ -72,7 +72,7 @@ struct CharacterListView: View {
             }
         }
         .sheet(item: $selectedCharacter) { character in
-            CharacterDetailView(card: character)
+            CharacterDetailView(character: character)
         }
         .sheet(isPresented: $showingCharacterEditor) {
             CharacterEditorView(

@@ -19,12 +19,11 @@ struct SceneDetailView: View {
     @State private var isDescriptionExpanded: Bool = false
     @State private var showImmersiveMode = false // 新增状态：控制沉浸模式显示
     
-    private var relatedCharacters: [Character] {
-        characterViewModel.characters.filter { scene.relatedCharacterIDs.contains($0.id) }
-    }
-    
-    private var relatedNotes: [NoteBlock] {
-        noteViewModel.notes.filter { scene.relatedNoteIDs.contains($0.id) }
+    var relatedNotes: [NoteBlock] { scene.relatedNotes(in: noteViewModel.notes) }
+    var relatedCharacters: [Character] {
+        scene.relatedCharacters(in: noteViewModel.notes, characterProvider: { note in
+            note.relatedCharacters(in: characterViewModel.characters)
+        })
     }
     
     var body: some View {
@@ -198,7 +197,7 @@ struct SceneDetailView: View {
         }
         .sheet(item: $selectedCharacterForDetail) { characterItem in
             NavigationStack {
-                CharacterDetailView(card: characterItem)
+                CharacterDetailView(character: characterItem)
             }
         }
         .sheet(item: $selectedNoteForDetail) { noteItem in

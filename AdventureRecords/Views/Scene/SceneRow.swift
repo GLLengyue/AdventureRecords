@@ -9,8 +9,12 @@ struct SceneRow: View {
     var onDelete: () -> Void
     var onEdit: (AdventureScene) -> Void
     // 通过全局ViewModel和ID动态查找
-    var relatedCharacters: [Character] { characterViewModel.characters.filter { scene.relatedCharacterIDs.contains($0.id) } }
-    var relatedNotes: [NoteBlock] { noteViewModel.notes.filter { scene.relatedNoteIDs.contains($0.id) } }
+    var relatedNotes: [NoteBlock] { scene.relatedNotes(in: noteViewModel.notes) }
+    var relatedCharacters: [Character] {
+        scene.relatedCharacters(in: noteViewModel.notes, characterProvider: { note in
+            note.relatedCharacters(in: characterViewModel.characters)
+        })
+    }
     // 移除 getRelatedCharacters/getRelatedNotes 参数，保持与调用方一致
 
 

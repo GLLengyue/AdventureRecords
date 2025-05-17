@@ -11,7 +11,7 @@ import AVFoundation
 
 struct CharacterDetailView: View {
     @StateObject private var audioPlayerManager = AudioPlayerManager()
-    let card: Character
+    let character: Character
     @EnvironmentObject var characterViewModel: CharacterViewModel
     @EnvironmentObject var noteViewModel: NoteViewModel
     @EnvironmentObject var sceneViewModel: SceneViewModel
@@ -23,27 +23,28 @@ struct CharacterDetailView: View {
     @State private var isDescriptionExpanded: Bool = false
     @State private var showImmersiveMode = false // 新增状态：控制沉浸模式显示
     
-    private var relatedNotes: [NoteBlock] {
-        noteViewModel.notes.filter { card.noteIDs.contains($0.id) }
+    var relatedNotes: [NoteBlock] {
+        character.relatedNotes(in: noteViewModel.notes)
     }
-    
-    private var relatedScenes: [AdventureScene] {
-        sceneViewModel.scenes.filter { card.sceneIDs.contains($0.id) }
+    var relatedScenes: [AdventureScene] {
+        character.relatedScenes(in: noteViewModel.notes, sceneProvider: { note in
+            note.relatedScenes(in: sceneViewModel.scenes)
+        })
     }
-    
+
     // 最佳实践：直接用全局音频数据过滤出属于当前角色的录音
     @EnvironmentObject var audioViewModel: AudioViewModel
     private var relatedRecordings: [AudioRecording] {
-        guard let ids = card.audioRecordings?.map({ $0.id }) else { return [] }
+        guard let ids = character.audioRecordings?.map({ $0.id }) else { return [] }
         return audioViewModel.recordings.filter { ids.contains($0.id) }
     }
     
     var body: some View {
-        DetailContainer(module: .character, title: card.name, backAction: {}, editAction: { showCharacterEditor = true }) {
+        DetailContainer(module: .character, title: character.name, backAction: {}, editAction: { showCharacterEditor = true }) {
             VStack(alignment: .leading, spacing: 20) {
                 // 角色头像和基本信息
                 HStack(alignment: .center, spacing: 16) {
-                    if let avatar = card.avatar {
+                    if let avatar = character.avatar {
                         Image(uiImage: avatar)
                             .resizable()
                             .scaledToFill()
@@ -59,7 +60,7 @@ struct CharacterDetailView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(card.name)
+                        Text(character.name)
                             .font(.largeTitle)
                             .bold()
                     }
@@ -68,11 +69,11 @@ struct CharacterDetailView: View {
                 
                 // 简介
                 VStack(alignment: .leading) {
-                    Text(card.description)
+                    Text(character.description)
                         .font(.body)
                         .lineLimit(isDescriptionExpanded ? nil : 3) // 根据状态限制行数
                     
-                    if card.description.count > 100 { // 仅当描述较长时显示展开/收起按钮 (可调整字数阈值)
+                    if character.description.count > 100 { // 仅当描述较长时显示展开/收起按钮 (可调整字数阈值)
                         Button(action: {
                             withAnimation {
                                 isDescriptionExpanded.toggle()
@@ -87,11 +88,11 @@ struct CharacterDetailView: View {
                 }
                 
                 // 标签
-                if !card.tags.isEmpty {
+                if !character.tags.isEmpty {
                     Section(header: Text("标签").font(.headline)) {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack {
-                                ForEach(card.tags, id: \.self) { tag in
+                                ForEach(character.tags, id: \.self) { tag in
                                     Text(tag)
                                         .font(.caption)
                                         .padding(EdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10))
@@ -204,7 +205,7 @@ struct CharacterDetailView: View {
         }
         .sheet(isPresented: $showNoteEditor) {
             NoteEditorView(
-                preselectedCharacterID: card.id,
+                preselectedCharacterID: character.id,
                 onSave: { newNote in
                     noteViewModel.addNote(newNote)
                     showNoteEditor = false
@@ -216,7 +217,7 @@ struct CharacterDetailView: View {
         }
         .sheet(isPresented: $showCharacterEditor) {
             CharacterEditorView(
-                card: card,
+                card: character,
                 onSave: { updatedCard in
                     characterViewModel.updateCharacter(updatedCard)
                     showCharacterEditor = false
@@ -238,7 +239,7 @@ struct CharacterDetailView: View {
             }
         }
         .fullScreenCover(isPresented: $showImmersiveMode) { // 使用 fullScreenCover 展示沉浸模式
-            ImmersiveModeView(content: .character(card))
+            ImmersiveModeView(content: .character(character))
         }
     }
 }

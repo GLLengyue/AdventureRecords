@@ -8,8 +8,7 @@ struct Character: Identifiable, Hashable {
     var avatar: UIImage?
     var audioRecordings: [AudioRecording]?
     var tags: [String]
-    var noteIDs: [UUID]
-    var sceneIDs: [UUID]
+    var relatedNoteIDs: [UUID]
     
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
@@ -18,14 +17,38 @@ struct Character: Identifiable, Hashable {
     static func == (lhs: Character, rhs: Character) -> Bool {
         lhs.id == rhs.id
     }
+
+    init(id: UUID = UUID(), name: String, description: String, avatar: UIImage? = nil, audioRecordings: [AudioRecording]? = nil, tags: [String] = [], relatedNoteIDs: [UUID] = []) {
+        self.id = id
+        self.name = name
+        self.description = description
+        self.avatar = avatar
+        self.audioRecordings = audioRecordings
+        self.tags = tags
+        self.relatedNoteIDs = relatedNoteIDs
+    }
     
+}
+
+extension Character {
     mutating func addNoteID(_ noteID: UUID) {
-        noteIDs.append(noteID)
-        noteIDs = Array(Set(noteIDs))
+        if !relatedNoteIDs.contains(noteID) {
+            relatedNoteIDs.append(noteID)
+        }
     }
 
-    mutating func addSceneIDs(_ SceneIDs: [UUID]) {
-        sceneIDs.append(contentsOf: SceneIDs)
-        sceneIDs = Array(Set(sceneIDs))
+    mutating func removeNoteID(_ noteID: UUID) {
+        if let index = relatedNoteIDs.firstIndex(of: noteID) {
+            relatedNoteIDs.remove(at: index)
+        }
     }
+
+    func relatedNotes(in notes: [NoteBlock]) -> [NoteBlock] {
+        return notes.filter { relatedNoteIDs.contains($0.id) }
+    }
+
+    func relatedScenes(in notes: [NoteBlock], sceneProvider: (NoteBlock) -> [AdventureScene]) -> [AdventureScene] {
+        relatedNotes(in: notes).flatMap(sceneProvider)
+    }
+
 }

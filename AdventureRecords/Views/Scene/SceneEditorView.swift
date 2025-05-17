@@ -7,11 +7,9 @@ struct SceneEditorView: View {
 
     @State private var title: String
     @State private var description: String
-    @State private var relatedCharacterIDs: [UUID]
-    @State private var relatedNoteIDs: [UUID]
     @State private var showImagePicker = false
     @State private var coverImage: UIImage?
-    @State private var selectedItem: PhotosPickerItem?
+    @State private var selectedItem: PhotosPickerItem? = nil
     @State private var atmosphere: SceneAtmosphere
     @State private var showAudioPicker = false
     
@@ -24,8 +22,6 @@ struct SceneEditorView: View {
     init(onSave: @escaping (AdventureScene) -> Void, onCancel: @escaping () -> Void) {
         self._title = State(initialValue: "")
         self._description = State(initialValue: "")
-        self._relatedCharacterIDs = State(initialValue: [])
-        self._relatedNoteIDs = State(initialValue: [])
         self.onSave = onSave
         self.onCancel = onCancel
         self.isEditing = false
@@ -37,8 +33,6 @@ struct SceneEditorView: View {
     init(scene: AdventureScene, onSave: @escaping (AdventureScene) -> Void, onCancel: @escaping () -> Void) {
         self._title = State(initialValue: scene.title)
         self._description = State(initialValue: scene.description)
-        self._relatedCharacterIDs = State(initialValue: scene.relatedCharacterIDs)
-        self._relatedNoteIDs = State(initialValue: scene.relatedNoteIDs)
         self._coverImage = State(initialValue: scene.coverImage)
         self.onSave = onSave
         self.onCancel = onCancel
@@ -58,8 +52,6 @@ struct SceneEditorView: View {
                 if var sceneToUpdate = existingScene {
                     sceneToUpdate.title = title
                     sceneToUpdate.description = description
-                    sceneToUpdate.relatedCharacterIDs = relatedCharacterIDs
-                    sceneToUpdate.relatedNoteIDs = relatedNoteIDs
                     sceneToUpdate.coverImage = coverImage
                     sceneToUpdate.atmosphere = atmosphere
                     onSave(sceneToUpdate)
@@ -68,8 +60,6 @@ struct SceneEditorView: View {
                         id: UUID(),
                         title: title,
                         description: description,
-                        relatedCharacterIDs: relatedCharacterIDs,
-                        relatedNoteIDs: relatedNoteIDs,
                         coverImage: coverImage,
                         atmosphere: atmosphere
                     )

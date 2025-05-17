@@ -9,10 +9,8 @@ struct NoteBlockRow: View {
     var onDelete: () -> Void
     var onEdit: (NoteBlock) -> Void
     // 通过全局ViewModel和ID动态查找
-    var relatedCharacters: [Character] { characterViewModel.characters.filter { note.relatedCharacterIDs.contains($0.id) } }
-    var relatedScenes: [AdventureScene] { sceneViewModel.scenes.filter { note.relatedSceneIDs.contains($0.id) } }
-    // 移除 getRelatedCharacters/getRelatedScenes 参数，保持与调用方一致
-
+    var relatedCharacters: [Character] { note.relatedCharacters(in: characterViewModel.characters) }
+    var relatedScenes: [AdventureScene] { note.relatedScenes(in: sceneViewModel.scenes) }
 
     var body: some View {
         VStack(alignment: .leading) {

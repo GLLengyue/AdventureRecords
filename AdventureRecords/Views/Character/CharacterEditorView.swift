@@ -79,13 +79,10 @@ struct CharacterEditorView: View {
                     onSave(editedCharacter)
                 } else {
                     let cardToSave = Character(
-                        id: UUID(),
                         name: name,
                         description: description,
                         avatar: avatar,
-                        tags: tags,
-                        noteIDs: [],
-                        sceneIDs: []
+                        tags: tags
                     )
                     onSave(cardToSave)
                 }
@@ -168,56 +165,58 @@ struct CharacterEditorView: View {
                     }
                 }
 
-                Section(header: Text("录音")) {
-                    if relatedRecordings.isEmpty {
-                        Text("暂无录音")
-                            .foregroundColor(.secondary)
-                    }
-                    ForEach(relatedRecordings) { recording in
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(recording.title)
-                                    .font(.headline)
-                                Text("录制于: \(recording.date, style: .date) \(recording.date, style: .time)")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                            }
-                            .contentShape(Rectangle()) // 确保整个 HStack 区域对上下文菜单交互响应
-                            .contextMenu {
-                                Button {
-                                    self.newRecordingName = recording.title // 为重命名 sheet 预填名称
-                                    self.recordingForRenameSheet = recording // 触发重命名 sheet
-                                } label: {
-                                    Label("重命名", systemImage: "pencil")
+                if existingCharacter != nil {
+                    Section(header: Text("录音")) {
+                        if relatedRecordings.isEmpty {
+                            Text("暂无录音")
+                                .foregroundColor(.secondary)
+                        }
+                        ForEach(relatedRecordings) { recording in
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(recording.title)
+                                        .font(.headline)
+                                    Text("录制于: \(recording.date, style: .date) \(recording.date, style: .time)")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
                                 }
+                                .contentShape(Rectangle()) // 确保整个 HStack 区域对上下文菜单交互响应
+                                .contextMenu {
+                                    Button {
+                                        self.newRecordingName = recording.title // 为重命名 sheet 预填名称
+                                        self.recordingForRenameSheet = recording // 触发重命名 sheet
+                                    } label: {
+                                        Label("重命名", systemImage: "pencil")
+                                    }
 
-                                Button(role: .destructive) {
-                                    self.recordingForDeleteSheet = recording // 触发删除确认 sheet
+                                    Button(role: .destructive) {
+                                        self.recordingForDeleteSheet = recording // 触发删除确认 sheet
+                                    } label: {
+                                        Label("删除", systemImage: "trash")
+                                    }
+                                }
+                                Spacer()
+                                Button {
+                                    if audioViewModel.currentlyPlayingAudioID == recording.id && audioViewModel.isPlayingAudio {
+                                        audioViewModel.stopPlayback()
+                                    } else {
+                                        audioViewModel.playRecording(recording: recording)
+                                    }
                                 } label: {
-                                    Label("删除", systemImage: "trash")
+                                    Image(systemName: audioViewModel.currentlyPlayingAudioID == recording.id && audioViewModel.isPlayingAudio ? "stop.circle.fill" : "play.circle.fill")
+                                        .foregroundColor(.blue)
                                 }
-                            }
-                            Spacer()
-                            Button {
-                                if audioViewModel.currentlyPlayingAudioID == recording.id && audioViewModel.isPlayingAudio {
-                                    audioViewModel.stopPlayback()
-                                } else {
-                                    audioViewModel.playRecording(recording: recording)
-                                }
-                            } label: {
-                                Image(systemName: audioViewModel.currentlyPlayingAudioID == recording.id && audioViewModel.isPlayingAudio ? "stop.circle.fill" : "play.circle.fill")
-                                    .foregroundColor(.blue)
                             }
                         }
-                    }
-                    Button("添加录音") {
-                        showRecordingSheet = true
+                        Button("添加录音") {
+                            showRecordingSheet = true
+                        }
                     }
                 }
             }
         }
         .sheet(isPresented: $showRecordingSheet) {
-            AudioRecordingCreationView(characterID: existingCharacter?.id)
+            AudioRecordingCreationView(characterID: existingCharacter!.id)
         }
         .sheet(item: $recordingForRenameSheet) { recordingToRename in
             VStack(spacing: 20) {
