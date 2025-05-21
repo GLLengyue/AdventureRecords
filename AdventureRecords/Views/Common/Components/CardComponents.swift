@@ -160,21 +160,3 @@ public struct SceneCardView: View {
         }
     }
 }
-
-/// 标签组件
-public struct TagView: View {
-    let text: String
-    let module: ModuleType
-    
-    public var body: some View {
-        Text(text)
-            .font(.caption)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(
-                Capsule()
-                    .fill(ThemeManager.shared.accentColor(for: module).opacity(0.2))
-            )
-            .foregroundColor(ThemeManager.shared.accentColor(for: module))
-    }
-}

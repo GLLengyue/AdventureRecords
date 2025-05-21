@@ -9,7 +9,7 @@ struct CharacterPickerView: View {
     
     var body: some View {
         NavigationStack {
-            List(viewModel.characters) { character in
+            List(viewModel.getCharacters()) { character in
                 HStack {
                     Text(character.name)
                     Spacer()

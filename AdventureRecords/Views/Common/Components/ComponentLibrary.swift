@@ -12,36 +12,6 @@ import SwiftUI
 
 // 重新导出所有组件，使其可以通过单一导入使用
 
-// 主题系统
-public typealias ARThemeManager = ThemeManager
-public typealias ARModuleType = ModuleType
-
-// 按钮组件
-public typealias ARModuleButton = ModuleButton
-public typealias ARIconButton = IconButton
-public typealias ARTabButton = TabButton
-public typealias ARButtonSize = ButtonSize
-
-// 卡片组件
-public typealias ARModuleCard = ModuleCardView
-public typealias ARCharacter = CharacterView
-public typealias ARNoteCard = NoteCardView
-public typealias ARSceneCard = SceneCardView
-public typealias ARTagView = TagView
-
-// 输入组件
-public typealias ARModuleTextField = ModuleTextField
-public typealias ARModulePicker = ModulePicker
-public typealias ARRelationshipSelector = RelationshipSelector
-public typealias ARModuleDatePicker = ModuleDatePicker
-
-// 布局组件
-public typealias ARModuleTabBar = ModuleTabBar
-public typealias ARModuleNavigationBar = ModuleNavigationBar
-public typealias ARListContainer = ListContainer
-public typealias ARDetailContainer = DetailContainer
-public typealias AREditorContainer = EditorContainer
-
 /// 组件库版本信息
 struct ComponentLibrary {
     static let version = "1.0.0"

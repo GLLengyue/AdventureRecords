@@ -11,7 +11,7 @@ struct NoteBlockRow: View {
     var onDelete: () -> Void
     var onEdit: (NoteBlock) -> Void
     // 通过全局ViewModel和ID动态查找
-    var relatedCharacters: [Character] { note.relatedCharacters(in: characterViewModel.characters) }
+    var relatedCharacters: [Character] { note.relatedCharacters(in: characterViewModel.getCharacters()) }
     var relatedScenes: [AdventureScene] { note.relatedScenes(in: sceneViewModel.scenes) }
 
     var body: some View {

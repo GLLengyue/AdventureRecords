@@ -13,6 +13,15 @@ class CharacterViewModel: ObservableObject {
     private init() {
         loadCharacters()
     }
+
+    func getCharacter(id: UUID) -> Character? {
+        return characters.first(where: {$0.id == id})
+    }
+
+    func getCharacters() -> [Character] {
+        loadCharacters()
+        return characters
+    }
     
     func loadCharacters() {
         characters = coreDataManager.fetchCharacters()

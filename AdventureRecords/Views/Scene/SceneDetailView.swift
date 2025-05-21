@@ -2,8 +2,10 @@
 //  AdventureRecords
 //  场景详情视图
 import SwiftUI
+import AVFoundation
 
 struct SceneDetailView: View {
+    @StateObject private var audioPlayerManager = AudioPlayerManager()
     let scene: AdventureScene
     
     // 使用单例
@@ -12,8 +14,6 @@ struct SceneDetailView: View {
     private let characterViewModel = CharacterViewModel.shared
 
     @State private var showImageViewer = false
-    @State private var showAudioPlayer = false
-    @State private var selectedAudioURL: URL?
     @State private var showNoteEditor = false
     @State private var showSceneEditor = false
     @State private var selectedNoteForDetail: NoteBlock? = nil
@@ -23,141 +23,248 @@ struct SceneDetailView: View {
     var relatedNotes: [NoteBlock] { scene.relatedNotes(in: noteViewModel.notes) }
     var relatedCharacters: [Character] {
         scene.relatedCharacters(in: noteViewModel.notes, characterProvider: { note in
-            note.relatedCharacters(in: characterViewModel.characters)
+            note.relatedCharacters(in: characterViewModel.getCharacters())
         })
     }
     
     var body: some View {
         DetailContainer(module: .scene, title: scene.title, backAction: { /* 由导航处理 */ }, editAction: { showSceneEditor = true }) {
-            VStack(alignment: .leading, spacing: 20) {
-                // 场景图片区域 (保留占位符逻辑，实际图片应从 scene.coverImageURL 或类似属性加载)
-                if let coverImage = scene.coverImage {
-                    Image(uiImage: coverImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(height: 250)
-                        .clipped()
-                        .cornerRadius(10)
-                        .onTapGesture { showImageViewer = true }
-                } else {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(ThemeManager.shared.secondaryBackgroundColor)
-                        .frame(height: 250)
-                        .overlay(
-                            Image(systemName: "photo.on.rectangle.angled")
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    // 场景图片区域
+                    ZStack(alignment: .bottomLeading) {
+                        if let coverImage = scene.coverImage {
+                            Image(uiImage: coverImage)
                                 .resizable()
-                                .scaledToFit()
-                                .frame(width: 80, height: 80)
-                                .foregroundColor(ThemeManager.shared.accentColor(for: .scene).opacity(0.7))
-                        )
-                        .onTapGesture { showImageViewer = true }
-                }
-                
-                // 场景描述
-                VStack(alignment: .leading) {
-                    Text(scene.description)
-                        .font(.body)
-                        .lineLimit(isDescriptionExpanded ? nil : 3)
+                                .aspectRatio(contentMode: .fill)
+                                .frame(height: 220)
+                                .clipped()
+                                .overlay(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.black.opacity(0.6), Color.black.opacity(0)]),
+                                        startPoint: .bottom,
+                                        endPoint: .center
+                                    )
+                                )
+                        } else {
+                            Rectangle()
+                                .fill(ThemeManager.shared.accentColor(for: .scene).opacity(0.15))
+                                .frame(height: 180)
+                                .overlay(
+                                    Image(systemName: "photo.on.rectangle.angled")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 60, height: 60)
+                                        .foregroundColor(ThemeManager.shared.accentColor(for: .scene).opacity(0.5))
+                                )
+                        }
+                        
+                        // 标题和日期可以直接显示在图片上
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(scene.title)
+                                .font(.system(size: 28, weight: .bold))
+                                .foregroundColor(Color.white)
+                                .shadow(color: Color.black.opacity(0.5), radius: 2, x: 0, y: 1)
+                            
+                            .foregroundColor(Color.white.opacity(0.9))
+                            .shadow(color: Color.black.opacity(0.5), radius: 2, x: 0, y: 1)
+                        }
+                        .padding([.leading, .bottom], 16)
+                    }
+                    .cornerRadius(12)
+                    .onTapGesture { showImageViewer = true }
+                    .padding(.horizontal, 16)
                     
-                    if scene.description.count > 100 { // 仅当描述较长时显示展开/收起按钮
-                        Button(action: {
-                            withAnimation {
-                                isDescriptionExpanded.toggle()
-                            }
-                        }) {
-                            Text(isDescriptionExpanded ? "收起" : "展开")
-                                .font(.caption)
+                    // 音频播放区
+                    if let audioURL = scene.audioURL {
+                        HStack(spacing: 12) {
+                            Button(action: {
+                                if audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == audioURL {
+                                    audioPlayerManager.pause()
+                                } else {
+                                    guard audioURL.isFileURL, FileManager.default.fileExists(atPath: audioURL.path) else {
+                                        print("Audio file not found at \(audioURL.path)")
+                                        return
+                                    }
+                                    audioPlayerManager.play(url: audioURL)
+                                }
+                            }) {
+                                HStack {
+                                    Image(systemName: audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == audioURL ? "pause.circle.fill" : "play.circle.fill")
+                                        .font(.title2)
+                                    Text(audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == audioURL ? "暂停场景音频" : "播放场景音频")
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                }
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 16)
+                                .background(ThemeManager.shared.accentColor(for: .scene).opacity(0.15))
                                 .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
-                        }
-                        .padding(.top, 2)
-                    }
-                }
-                .padding(.bottom)
-   
-                // 新增播放音频按钮 (保持现有占位符逻辑)
-                if scene.audioURL != nil {
-                    Button("播放场景音频") {
-                        selectedAudioURL = scene.audioURL
-                        showAudioPlayer = true
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(ThemeManager.shared.accentColor(for: .scene))
-                    .padding(.bottom)
-                }
-                
-                // 相关角色
-                if !relatedCharacters.isEmpty {
-                    Section(header: Text("出场角色 (\(relatedCharacters.count))").font(.headline)) {
-                        ForEach(relatedCharacters) { character in
-                            Button(action: { selectedCharacterForDetail = character }) {
-                                HStack {
-                                    Text(character.name).foregroundColor(ThemeManager.shared.primaryTextColor)
-                                    Spacer()
-                                    Image(systemName: "chevron.right").foregroundColor(.secondary)
+                                .cornerRadius(20)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(ThemeManager.shared.accentColor(for: .scene).opacity(0.3), lineWidth: 1)
+                                )
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+                            
+                            // 播放波形模拟
+                            if audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == audioURL {
+                                HStack(spacing: 2) {
+                                    ForEach(0..<8, id: \.self) { index in
+                                        RoundedRectangle(cornerRadius: 1.5)
+                                            .fill(ThemeManager.shared.accentColor(for: .scene))
+                                            .frame(width: 3, height: CGFloat.random(in: 8...20))
+                                            .animation(
+                                                Animation.easeInOut(duration: 0.6)
+                                                    .repeatForever(autoreverses: true)
+                                                    .delay(Double.random(in: 0...0.6)),
+                                                value: audioPlayerManager.isPlaying
+                                            )
+                                    }
                                 }
-                                .padding()
-                                .background(ThemeManager.shared.secondaryBackgroundColor)
-                                .cornerRadius(8)
                             }
                         }
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 16)
                     }
-                }
-                
-                // 相关笔记
-                if !relatedNotes.isEmpty {
-                    Section(header: Text("相关笔记 (\(relatedNotes.count))").font(.headline)) {
-                        ForEach(relatedNotes) { note in
-                            Button(action: { selectedNoteForDetail = note }) {
-                                HStack {
-                                    Text(note.title).foregroundColor(ThemeManager.shared.primaryTextColor)
-                                    Spacer()
-                                    Image(systemName: "chevron.right").foregroundColor(.secondary)
+                    
+                    VStack(alignment: .leading, spacing: 20) {
+                        // 场景描述
+                        VStack(alignment: .leading, spacing: 12) {
+                            Label("场景简介", systemImage: "text.alignleft")
+                                .font(.headline)
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                            
+                            Text(scene.description)
+                                .font(.body)
+                                .foregroundColor(ThemeManager.shared.primaryTextColor)
+                                .lineLimit(isDescriptionExpanded ? nil : 3)
+                                .fixedSize(horizontal: false, vertical: true)
+                            
+                            if scene.description.count > 100 {
+                                Button(action: {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        isDescriptionExpanded.toggle()
+                                    }
+                                }) {
+                                    HStack(spacing: 4) {
+                                        Text(isDescriptionExpanded ? "收起内容" : "展开全部")
+                                            .font(.caption)
+                                        Image(systemName: isDescriptionExpanded ? "chevron.up" : "chevron.down")
+                                            .font(.caption)
+                                    }
+                                    .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                                    .padding(.vertical, 4)
                                 }
-                                .padding()
-                                .background(ThemeManager.shared.secondaryBackgroundColor)
-                                .cornerRadius(8)
+                                .buttonStyle(ScaleButtonStyle())
                             }
                         }
-                    }
-                }
+                        
+                        Divider()
+                        
+                        // 相关角色
+                        if !relatedCharacters.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Label("出场角色 (\(relatedCharacters.count))", systemImage: "person.2")
+                                    .font(.headline)
+                                    .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                                
+                                FlowLayout(spacing: 8) {
+                                    ForEach(relatedCharacters) { character in
+                                        CharacterTagView(character: character) {
+                                            selectedCharacterForDetail = character
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(.bottom, 8)
+                        }
+                        
+                        // 相关笔记
+                        if !relatedNotes.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Label("相关笔记 (\(relatedNotes.count))", systemImage: "doc.text")
+                                    .font(.headline)
+                                    .foregroundColor(ThemeManager.shared.accentColor(for: .note))
+                                
+                                VStack(spacing: 10) {
+                                    ForEach(relatedNotes) { note in
+                                        NoteItemView(note: note) {
+                                            selectedNoteForDetail = note
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(.bottom, 16)
+                        }
 
-                // 新建关联笔记按钮
-                Button(action: { showNoteEditor = true }) {
-                    Label("在当前场景下新建笔记", systemImage: "plus.circle.fill")
-                        .font(.headline)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(ThemeManager.shared.accentColor(for: .scene))
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                        // 新建关联笔记按钮
+                        Button(action: { showNoteEditor = true }) {
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.headline)
+                                Text("在当前场景下新建笔记")
+                                    .font(.headline)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(ThemeManager.shared.accentColor(for: .scene))
+                            )
+                            .foregroundColor(.white)
+                        }
+                        .buttonStyle(ScaleButtonStyle())
+                        .padding(.vertical, 8)
+                    }
+                    .padding(.horizontal)
+                    
+                    Spacer(minLength: 40)
                 }
+            }
+            .background(ThemeManager.shared.backgroundColor)
+            .onDisappear {
+                audioPlayerManager.stopAndDeactivateSession()
             }
         }
         .sheet(isPresented: $showImageViewer) {
-            VStack {
-                Text("图片查看器占位符")
-                    .font(.title)
-                Text("这里将来会显示场景图片")
-                Button("关闭") {
-                    showImageViewer = false
-                }
-                .padding()
-            }
-        }
-        .sheet(isPresented: $showAudioPlayer) {
-            VStack {
-                if let url = selectedAudioURL {
-                    Text("音频播放器占位符")
-                        .font(.title)
-                    Text("播放: \(url.absoluteString)")
+            ZStack(alignment: .topTrailing) {
+                if let coverImage = scene.coverImage {
+                    GeometryReader { geometry in
+                        Image(uiImage: coverImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: geometry.size.width, height: geometry.size.height)
+                            .clipped()
+                    }
                 } else {
-                    Text("未选择音频")
+                    VStack(spacing: 20) {
+                        Image(systemName: "photo.on.rectangle.angled")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 120, height: 120)
+                            .foregroundColor(ThemeManager.shared.accentColor(for: .scene).opacity(0.7))
+                        
+                        Text("暂无场景图片")
+                            .font(.title2)
+                            .foregroundColor(.secondary)
+                    }
                 }
-                Button("关闭") {
-                    showAudioPlayer = false
+                
+                Button(action: {
+                    showImageViewer = false
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundColor(.white)
+                        .background(Color.black.opacity(0.6))
+                        .clipShape(Circle())
+                        .padding()
                 }
-                .padding()
             }
+            .edgesIgnoringSafeArea(.all)
+            .background(Color.black)
         }
         .sheet(isPresented: $showNoteEditor) {
             NoteEditorView(
@@ -185,7 +292,7 @@ struct SceneDetailView: View {
         }
         .sheet(item: $selectedCharacterForDetail) { characterItem in
             NavigationStack {
-                CharacterDetailView(character: characterItem)
+                CharacterDetailView(CharacterID: characterItem.id)
             }
         }
         .sheet(item: $selectedNoteForDetail) { noteItem in

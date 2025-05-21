@@ -106,7 +106,7 @@ struct NoteEditorView: View {
                 
                 Section(header: Text("关联角色")) {
                     ForEach(selectedCharacterIDs, id: \.self) { charID in
-                        Text(characterViewModel.characters.first(where: { $0.id == charID })?.name ?? "未知角色")
+                        Text(characterViewModel.getCharacter(id: charID)?.name ?? "未知角色")
                     }
                     Button(action: { showCharacterPicker = true }) {
                         Label("选择角色", systemImage: "person.badge.plus")

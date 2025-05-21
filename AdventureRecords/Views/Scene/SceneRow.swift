@@ -14,7 +14,7 @@ struct SceneRow: View {
     var relatedNotes: [NoteBlock] { scene.relatedNotes(in: noteViewModel.notes) }
     var relatedCharacters: [Character] {
         scene.relatedCharacters(in: noteViewModel.notes, characterProvider: { note in
-            note.relatedCharacters(in: characterViewModel.characters)
+            note.relatedCharacters(in: characterViewModel.getCharacters())
         })
     }
     // 移除 getRelatedCharacters/getRelatedNotes 参数，保持与调用方一致

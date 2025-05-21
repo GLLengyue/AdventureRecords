@@ -17,7 +17,7 @@ struct CharacterListView: View {
     }
 
     var filteredAndSortedCharacters: [Character] {
-        let filtered = characterViewModel.characters.filter { character in
+        let filtered = characterViewModel.getCharacters().filter { character in
             searchText.isEmpty ? true : character.name.localizedCaseInsensitiveContains(searchText) || character.description.localizedCaseInsensitiveContains(searchText)
         }
 
@@ -74,7 +74,7 @@ struct CharacterListView: View {
             }
         }
         .sheet(item: $selectedCharacter) { character in
-            CharacterDetailView(character: character)
+            CharacterDetailView(CharacterID: character.id)
         }
         .sheet(isPresented: $showingCharacterEditor) {
             CharacterEditorView(

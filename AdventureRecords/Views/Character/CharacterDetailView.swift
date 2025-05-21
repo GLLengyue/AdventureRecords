@@ -6,12 +6,12 @@
 //
 
 import SwiftUI
-
 import AVFoundation
 
 struct CharacterDetailView: View {
     @StateObject private var audioPlayerManager = AudioPlayerManager()
-    let character: Character
+    let CharacterID : UUID
+    // let character: Character
     
     // 使用单例
     private let characterViewModel = CharacterViewModel.shared
@@ -24,7 +24,11 @@ struct CharacterDetailView: View {
     @State private var selectedNoteForDetail: NoteBlock? = nil
     @State private var selectedSceneForDetail: AdventureScene? = nil
     @State private var isDescriptionExpanded: Bool = false
+    @State private var selectedRecordingForPlayback: AudioRecording? = nil
     
+    var character: Character {
+        return characterViewModel.getCharacter(id: CharacterID)!
+    }
     var relatedNotes: [NoteBlock] {
         character.relatedNotes(in: noteViewModel.notes)
     }
@@ -43,155 +47,199 @@ struct CharacterDetailView: View {
     
     var body: some View {
         DetailContainer(module: .character, title: character.name, backAction: {}, editAction: { showCharacterEditor = true }) {
-            VStack(alignment: .leading, spacing: 20) {
-                // 角色头像和基本信息
-                HStack(alignment: .center, spacing: 16) {
-                    if let avatar = character.avatar {
-                        Image(uiImage: avatar)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 120, height: 120)
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(ThemeManager.shared.accentColor(for: .character), lineWidth: 2))
-                    } else {
-                        Image(systemName: "person.circle.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 120, height: 120)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    // 角色头像和基本信息
+                    HStack(alignment: .center, spacing: 20) {
+                        if let avatar = character.avatar {
+                            Image(uiImage: avatar)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 100, height: 100)
+                                .clipShape(Circle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(ThemeManager.shared.accentColor(for: .character), lineWidth: 2)
+                                )
+                                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+                        } else {
+                            ZStack {
+                                Circle()
+                                    .fill(ThemeManager.shared.accentColor(for: .character).opacity(0.1))
+                                    .frame(width: 100, height: 100)
+                                
+                                Image(systemName: "person.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 50, height: 50)
+                                    .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                            }
+                            .overlay(
+                                Circle()
+                                    .stroke(ThemeManager.shared.accentColor(for: .character).opacity(0.3), lineWidth: 1.5)
+                            )
+                            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 1)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(character.name)
+                                .font(.system(size: 28, weight: .bold))
+                                .foregroundColor(ThemeManager.shared.primaryTextColor)
+                                
+                            if !character.tags.isEmpty {
+                                Text(character.tags.prefix(3).joined(separator: " • "))
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, 8)
+                    
+                    Divider()
+                        .padding(.vertical, 8)
+                    
+                    // 简介
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label("角色简介", systemImage: "text.quote")
+                            .font(.headline)
                             .foregroundColor(ThemeManager.shared.accentColor(for: .character))
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(character.name)
-                            .font(.largeTitle)
-                            .bold()
-                    }
-                }
-                .padding(.bottom)
-                
-                // 简介
-                VStack(alignment: .leading) {
-                    Text(character.description)
-                        .font(.body)
-                        .lineLimit(isDescriptionExpanded ? nil : 3) // 根据状态限制行数
-                    
-                    if character.description.count > 100 { // 仅当描述较长时显示展开/收起按钮 (可调整字数阈值)
-                        Button(action: {
-                            withAnimation {
-                                isDescriptionExpanded.toggle()
-                            }
-                        }) {
-                            Text(isDescriptionExpanded ? "收起" : "展开")
-                                .font(.caption)
-                                .foregroundColor(ThemeManager.shared.accentColor(for: .character))
-                        }
-                        .padding(.top, 2)
-                    }
-                }
-                
-                // 标签
-                if !character.tags.isEmpty {
-                    Section(header: Text("标签").font(.headline)) {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack {
-                                ForEach(character.tags, id: \.self) { tag in
-                                    Text(tag)
+                        
+                        Text(character.description)
+                            .font(.body)
+                            .foregroundColor(ThemeManager.shared.primaryTextColor)
+                            .lineLimit(isDescriptionExpanded ? nil : 3)
+                            .fixedSize(horizontal: false, vertical: true)
+                        
+                        if character.description.count > 100 {
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    isDescriptionExpanded.toggle()
+                                }
+                            }) {
+                                HStack(spacing: 4) {
+                                    Text(isDescriptionExpanded ? "收起内容" : "展开全部")
                                         .font(.caption)
-                                        .padding(EdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10))
-                                        .background(ThemeManager.shared.accentColor(for: .character).opacity(0.15))
-                                        .clipShape(Capsule())
+                                    Image(systemName: isDescriptionExpanded ? "chevron.up" : "chevron.down")
+                                        .font(.caption)
+                                }
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                                .padding(.vertical, 4)
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+                        }
+                    }
+                    .padding(.bottom, 8)
+                    
+                    // 标签
+                    if !character.tags.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Label("标签", systemImage: "tag")
+                                .font(.headline)
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                            
+                            FlowLayout(spacing: 8) {
+                                ForEach(character.tags, id: \.self) { tag in
+                                    TagView(tag: tag, accentColor: ThemeManager.shared.accentColor(for: .character))
                                 }
                             }
                         }
+                        .padding(.bottom, 16)
                     }
-                }
-                }
-                
-                // 相关笔记
-                if !relatedNotes.isEmpty {
-                    Section(header: Text("相关笔记 (\(relatedNotes.count))").font(.headline)) {
-                        ForEach(relatedNotes) { note in
-                            Button(action: { selectedNoteForDetail = note }) {
-                                HStack {
-                                    Text(note.title).foregroundColor(ThemeManager.shared.primaryTextColor)
-                                    Spacer()
-                                    Image(systemName: "chevron.right").foregroundColor(.secondary)
-                                }
-                                .padding()
-                                .background(ThemeManager.shared.secondaryBackgroundColor)
-                                .cornerRadius(8)
-                            }
-                        }
-                    }
-                }
-                
-                // 相关场景
-                if !relatedScenes.isEmpty {
-                    Section(header: Text("相关场景 (\(relatedScenes.count))").font(.headline)) {
-                        ForEach(relatedScenes) { scene in
-                            Button(action: { selectedSceneForDetail = scene }) {
-                                HStack {
-                                    Text(scene.title).foregroundColor(ThemeManager.shared.primaryTextColor)
-                                    Spacer()
-                                    Image(systemName: "chevron.right").foregroundColor(.secondary)
-                                }
-                                .padding()
-                                .background(ThemeManager.shared.secondaryBackgroundColor)
-                                .cornerRadius(8)
-                            }
-                        }
-                    }
-                }
-                
-                // 相关录音
-                if !relatedRecordings.isEmpty {
-                    Section(header: Text("相关录音 (\(relatedRecordings.count))").font(.headline)) {
-                        ForEach(relatedRecordings) { recording in
-                            let audioURL = recording.recordingURL
-                            HStack {
-                                Text(recording.title)
-                                    .foregroundColor(ThemeManager.shared.primaryTextColor)
-                                Spacer()
-                                Button {
-                                    if audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == audioURL {
-                                        audioPlayerManager.pause()
-                                    } else {
-                                        guard audioURL.isFileURL, FileManager.default.fileExists(atPath: audioURL.path) else {
-                                            print("Audio file not found at \(audioURL.path)")
-                                            // Consider showing an alert to the user here
+                    
+                    // 相关录音
+                    if !relatedRecordings.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Label("相关录音 (\(relatedRecordings.count))", systemImage: "waveform")
+                                .font(.headline)
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                            
+                            VStack(spacing: 10) {
+                                ForEach(relatedRecordings) { recording in
+                                    RecordingItemView(recording: recording, 
+                                                     isPlaying: audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == recording.recordingURL,
+                                                     onPlayPause: {
+                                        let audioURL = recording.recordingURL
+                                        if audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == audioURL {
+                                            audioPlayerManager.pause()
+                                        } else {
+                                            guard audioURL.isFileURL, FileManager.default.fileExists(atPath: audioURL.path) else {
+                                                print("Audio file not found at \(audioURL.path)")
                                                 return
                                             }
                                             audioPlayerManager.play(url: audioURL)
                                         }
-                                    } label: {
-                                        Image(systemName: audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == audioURL ? "pause.circle.fill" : "play.circle.fill")
-                                            .font(.title2)
-                                            .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                                    })
+                                }
+                            }
+                        }
+                        .padding(.bottom, 16)
+                    }
+                    
+                    // 相关笔记
+                    if !relatedNotes.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Label("相关笔记 (\(relatedNotes.count))", systemImage: "doc.text")
+                                .font(.headline)
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .note))
+                            
+                            VStack(spacing: 10) {
+                                ForEach(relatedNotes) { note in
+                                    NoteItemView(note: note) {
+                                        selectedNoteForDetail = note
                                     }
                                 }
-                                .padding()
-                                .background(ThemeManager.shared.secondaryBackgroundColor)
-                                .cornerRadius(8)
+                            }
                         }
+                        .padding(.bottom, 16)
                     }
-                    .padding(.bottom) // Add some spacing after the audio section
-                }
-
-                // 新建关联笔记按钮 - 移至内容区，更符合"底部操作区"的感觉
-                Button(action: { showNoteEditor = true }) {
-                    Label("新建关联笔记", systemImage: "plus.circle.fill")
-                        .font(.headline)
-                        .padding()
+                    
+                    // 相关场景
+                    if !relatedScenes.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Label("相关场景 (\(relatedScenes.count))", systemImage: "film")
+                                .font(.headline)
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                            
+                            VStack(spacing: 10) {
+                                ForEach(relatedScenes) { scene in
+                                    SceneItemView(scene: scene) {
+                                        selectedSceneForDetail = scene
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.bottom, 16)
+                    }
+                    
+                    // 新建关联笔记按钮
+                    Button(action: { showNoteEditor = true }) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.headline)
+                            Text("新建关联笔记")
+                                .font(.headline)
+                        }
                         .frame(maxWidth: .infinity)
-                        .background(ThemeManager.shared.accentColor(for: .character))
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(ThemeManager.shared.accentColor(for: .character))
+                        )
                         .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                    .padding(.vertical, 8)
 
-                Spacer()
+                    Spacer(minLength: 40)
+                }
+                .padding(.horizontal)
             }
-        .onDisappear {
-            audioPlayerManager.stopAndDeactivateSession()
+            .background(ThemeManager.shared.backgroundColor)
+            .onDisappear {
+                audioPlayerManager.stopAndDeactivateSession()
+            }
         }
         .sheet(isPresented: $showNoteEditor) {
             NoteEditorView(
@@ -227,5 +275,200 @@ struct CharacterDetailView: View {
                 SceneDetailView(scene: sceneItem)
             }
         }
+    }
+}
+
+// MARK: - 辅助视图组件
+
+// 标签视图
+struct TagView: View {
+    let tag: String
+    let accentColor: Color
+    
+    var body: some View {
+        Text(tag)
+            .font(.caption)
+            .padding(EdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10))
+            .background(accentColor.opacity(0.15))
+            .foregroundColor(accentColor)
+            .clipShape(Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(accentColor.opacity(0.3), lineWidth: 1)
+            )
+    }
+}
+
+// 录音项视图
+struct RecordingItemView: View {
+    let recording: AudioRecording
+    let isPlaying: Bool
+    let onPlayPause: () -> Void
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // 播放按钮
+            Button(action: onPlayPause) {
+                ZStack {
+                    Circle()
+                        .fill(ThemeManager.shared.accentColor(for: .character).opacity(0.15))
+                        .frame(width: 44, height: 44)
+                    
+                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                }
+            }
+            .buttonStyle(ScaleButtonStyle())
+            
+            // 录音信息
+            VStack(alignment: .leading, spacing: 4) {
+                Text(recording.title)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(ThemeManager.shared.primaryTextColor)
+                
+                // 录音日期和时长
+                HStack(spacing: 8) {
+                    // if let duration = recording.duration {
+                    //     Label(formatDuration(duration), systemImage: "clock")
+                    //         .font(.caption)
+                    //         .foregroundColor(.secondary)
+                    // }
+                    
+                    // if var date = recording.date {
+                        Text(formatDate(recording.date))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    // }
+                }
+            }
+            
+            Spacer()
+            
+            // 波形图标
+            Image(systemName: "waveform")
+                .foregroundColor(isPlaying ? ThemeManager.shared.accentColor(for: .character) : .secondary)
+                .opacity(isPlaying ? 1.0 : 0.5)
+        }
+        .padding(EdgeInsets(top: 10, leading: 12, bottom: 10, trailing: 12))
+        .background(ThemeManager.shared.secondaryBackgroundColor)
+        .cornerRadius(12)
+        .contentShape(Rectangle())
+    }
+    
+    // 格式化录音时长
+    private func formatDuration(_ duration: TimeInterval) -> String {
+        let minutes = Int(duration) / 60
+        let seconds = Int(duration) % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+    
+    // 格式化日期
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
+    }
+}
+
+// 笔记项视图
+struct NoteItemView: View {
+    let note: NoteBlock
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .center, spacing: 12) {
+                // 图标
+                Image(systemName: "doc.text.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(ThemeManager.shared.accentColor(for: .note))
+                    .frame(width: 36, height: 36)
+                    .background(ThemeManager.shared.accentColor(for: .note).opacity(0.15))
+                    .cornerRadius(8)
+                
+                // 文本内容
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(note.title)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(ThemeManager.shared.primaryTextColor)
+                        .lineLimit(1)
+                    
+                    if !note.content.isEmpty {
+                        Text(note.content)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+            }
+            .padding(12)
+            .background(ThemeManager.shared.secondaryBackgroundColor)
+            .cornerRadius(12)
+        }
+        .buttonStyle(ScaleButtonStyle())
+    }
+}
+
+// 场景项视图
+struct SceneItemView: View {
+    let scene: AdventureScene
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .center, spacing: 12) {
+                // 场景封面或图标
+                if let coverImage = scene.coverImage {
+                    Image(uiImage: coverImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 48, height: 48)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                } else {
+                    Image(systemName: "film.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                        .frame(width: 48, height: 48)
+                        .background(ThemeManager.shared.accentColor(for: .scene).opacity(0.15))
+                        .cornerRadius(8)
+                }
+                
+                // 文本内容
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(scene.title)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(ThemeManager.shared.primaryTextColor)
+                        .lineLimit(1)
+                    
+                    if !scene.description.isEmpty {
+                        Text(scene.description)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+            }
+            .padding(12)
+            .background(ThemeManager.shared.secondaryBackgroundColor)
+            .cornerRadius(12)
+        }
+        .buttonStyle(ScaleButtonStyle())
     }
 }
