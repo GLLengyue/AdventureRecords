@@ -172,7 +172,7 @@ struct SceneDetailView: View {
                                 
                                 FlowLayout(spacing: 8) {
                                     ForEach(relatedCharacters) { character in
-                                        CharacterTagView(character: character) {
+                                        CharacterItemView(character: character) {
                                             selectedCharacterForDetail = character
                                         }
                                     }

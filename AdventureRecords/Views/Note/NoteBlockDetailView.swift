@@ -60,7 +60,7 @@ struct NoteBlockDetailView: View {
                             
                             FlowLayout(spacing: 8) {
                                 ForEach(relatedCharacters) { character in
-                                    CharacterTagView(character: character) {
+                                    CharacterItemView(character: character) {
                                         selectedCharacterForDetail = character
                                     }
                                 }
@@ -78,7 +78,7 @@ struct NoteBlockDetailView: View {
                             
                             FlowLayout(spacing: 8) {
                                 ForEach(relatedScenes) { scene in
-                                    SceneTagView(scene: scene) {
+                                    SceneItemView(scene: scene) {
                                         selectedSceneForDetail = scene
                                     }
                                 }
