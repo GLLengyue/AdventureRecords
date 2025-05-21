@@ -7,7 +7,7 @@ struct CharacterListView: View {
     @State private var selectedCharacter: Character? = nil
     
     // 使用单例
-    private let characterViewModel = CharacterViewModel.shared
+    @StateObject private var characterViewModel = CharacterViewModel.shared
 
     enum SortOrder: String, CaseIterable, Identifiable {
         case nameAscending = "名称升序"
@@ -17,7 +17,7 @@ struct CharacterListView: View {
     }
 
     var filteredAndSortedCharacters: [Character] {
-        let filtered = characterViewModel.getCharacters().filter { character in
+        let filtered = characterViewModel.characters.filter { character in
             searchText.isEmpty ? true : character.name.localizedCaseInsensitiveContains(searchText) || character.description.localizedCaseInsensitiveContains(searchText)
         }
 

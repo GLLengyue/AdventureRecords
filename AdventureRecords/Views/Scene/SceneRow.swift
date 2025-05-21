@@ -5,8 +5,8 @@ struct SceneRow: View {
     @State private var showEditor = false
     
     // 使用单例
-    private let characterViewModel = CharacterViewModel.shared
-    private let noteViewModel = NoteViewModel.shared
+    @StateObject private var characterViewModel = CharacterViewModel.shared
+    @StateObject private var noteViewModel = NoteViewModel.shared
     
     var onDelete: () -> Void
     var onEdit: (AdventureScene) -> Void
@@ -14,7 +14,7 @@ struct SceneRow: View {
     var relatedNotes: [NoteBlock] { scene.relatedNotes(in: noteViewModel.notes) }
     var relatedCharacters: [Character] {
         scene.relatedCharacters(in: noteViewModel.notes, characterProvider: { note in
-            note.relatedCharacters(in: characterViewModel.getCharacters())
+            note.relatedCharacters(in: characterViewModel.characters)
         })
     }
     // 移除 getRelatedCharacters/getRelatedNotes 参数，保持与调用方一致

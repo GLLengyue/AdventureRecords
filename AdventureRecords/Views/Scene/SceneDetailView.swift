@@ -9,9 +9,9 @@ struct SceneDetailView: View {
     let scene: AdventureScene
     
     // 使用单例
-    private let sceneViewModel = SceneViewModel.shared
-    private let noteViewModel = NoteViewModel.shared
-    private let characterViewModel = CharacterViewModel.shared
+    @StateObject private var sceneViewModel = SceneViewModel.shared
+    @StateObject private var noteViewModel = NoteViewModel.shared
+    @StateObject private var characterViewModel = CharacterViewModel.shared
 
     @State private var showImageViewer = false
     @State private var showNoteEditor = false
@@ -23,7 +23,7 @@ struct SceneDetailView: View {
     var relatedNotes: [NoteBlock] { scene.relatedNotes(in: noteViewModel.notes) }
     var relatedCharacters: [Character] {
         scene.relatedCharacters(in: noteViewModel.notes, characterProvider: { note in
-            note.relatedCharacters(in: characterViewModel.getCharacters())
+            note.relatedCharacters(in: characterViewModel.characters)
         })
     }
     

@@ -11,10 +11,10 @@ struct ContentView: View {
     @State private var selectedTab = 0
     
     // 使用单例
-    private let audioViewModel = AudioViewModel.shared
-    private let characterViewModel = CharacterViewModel.shared
-    private let noteViewModel = NoteViewModel.shared
-    private let sceneViewModel = SceneViewModel.shared
+    @StateObject private var audioViewModel = AudioViewModel.shared
+    @StateObject private var characterViewModel = CharacterViewModel.shared
+    @StateObject private var noteViewModel = NoteViewModel.shared
+    @StateObject private var sceneViewModel = SceneViewModel.shared
     
     // 控制各个模块编辑器 Sheet 显示的状态变量
     @State private var showingCharacterEditorSheet = false

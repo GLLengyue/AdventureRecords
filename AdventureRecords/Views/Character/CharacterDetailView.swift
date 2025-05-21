@@ -14,10 +14,10 @@ struct CharacterDetailView: View {
     // let character: Character
     
     // 使用单例
-    private let characterViewModel = CharacterViewModel.shared
-    private let noteViewModel = NoteViewModel.shared
-    private let sceneViewModel = SceneViewModel.shared
-    private let audioViewModel = AudioViewModel.shared
+    @StateObject private var characterViewModel = CharacterViewModel.shared
+    @StateObject private var noteViewModel = NoteViewModel.shared
+    @StateObject private var sceneViewModel = SceneViewModel.shared
+    @StateObject private var audioViewModel = AudioViewModel.shared
     
     @State private var showNoteEditor = false
     @State private var showCharacterEditor = false

@@ -8,7 +8,7 @@ struct NoteListView: View {
     @State private var selectedNote: NoteBlock? = nil
     
     // 使用单例
-    private let noteViewModel = NoteViewModel.shared
+    @StateObject private var noteViewModel = NoteViewModel.shared
 
     enum SortOrder: String, CaseIterable, Identifiable {
         case titleAscending = "标题升序"

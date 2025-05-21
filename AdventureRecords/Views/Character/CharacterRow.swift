@@ -5,8 +5,8 @@ struct CharacterRow: View {
     @State private var showEditor = false
     
     // 使用单例
-    private let noteViewModel = NoteViewModel.shared
-    private let sceneViewModel = SceneViewModel.shared
+    @StateObject private var noteViewModel = NoteViewModel.shared
+    @StateObject private var sceneViewModel = SceneViewModel.shared
     
     var onDelete: () -> Void
     var onEdit: (Character) -> Void

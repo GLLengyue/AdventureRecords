@@ -16,6 +16,7 @@ class NoteViewModel: ObservableObject {
     
     func loadNotes() {
         notes = coreDataManager.fetchNotes()
+        self.objectWillChange.send()
     }
     
     func addNote(_ note: NoteBlock) {

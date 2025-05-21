@@ -5,13 +5,13 @@ struct NoteBlockRow: View {
     @State private var showEditor = false
     
     // 使用单例
-    private let characterViewModel = CharacterViewModel.shared
-    private let sceneViewModel = SceneViewModel.shared
+    @StateObject private var characterViewModel = CharacterViewModel.shared
+    @StateObject private var sceneViewModel = SceneViewModel.shared
     
     var onDelete: () -> Void
     var onEdit: (NoteBlock) -> Void
     // 通过全局ViewModel和ID动态查找
-    var relatedCharacters: [Character] { note.relatedCharacters(in: characterViewModel.getCharacters()) }
+    var relatedCharacters: [Character] { note.relatedCharacters(in: characterViewModel.characters) }
     var relatedScenes: [AdventureScene] { note.relatedScenes(in: sceneViewModel.scenes) }
 
     var body: some View {

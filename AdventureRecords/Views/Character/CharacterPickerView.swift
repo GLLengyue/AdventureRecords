@@ -5,11 +5,11 @@ struct CharacterPickerView: View {
     @Environment(\.dismiss) var dismiss
     
     // 使用单例
-    private let viewModel = CharacterViewModel.shared
+    @StateObject private var viewModel = CharacterViewModel.shared
     
     var body: some View {
         NavigationStack {
-            List(viewModel.getCharacters()) { character in
+            List(viewModel.characters) { character in
                 HStack {
                     Text(character.name)
                     Spacer()

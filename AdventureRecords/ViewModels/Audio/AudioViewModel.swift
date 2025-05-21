@@ -24,6 +24,7 @@ class AudioViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     
     func loadRecordings() {
         recordings = coreDataManager.fetchAudioRecordings()
+        self.objectWillChange.send()
     }
     
     func startRecording() {

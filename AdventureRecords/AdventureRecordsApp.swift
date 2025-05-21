@@ -10,13 +10,13 @@ import SwiftUI
 @main
 struct AdventureRecordsApp: App {
     let persistenceController = CoreDataManager.shared
-    private let characterViewModel = CharacterViewModel.shared
-    private let sceneViewModel = SceneViewModel.shared
-    private let noteViewModel = NoteViewModel.shared
-    private let audioViewModel = AudioViewModel.shared
+    @StateObject private var characterViewModel = CharacterViewModel.shared
+    @StateObject private var sceneViewModel = SceneViewModel.shared
+    @StateObject private var noteViewModel = NoteViewModel.shared
+    @StateObject private var audioViewModel = AudioViewModel.shared
     
     // 主题管理器
-    private let themeManager = ThemeManager.shared
+    @State private var themeManager = ThemeManager.shared
     
     init() {
         // 检查并初始化示例数据

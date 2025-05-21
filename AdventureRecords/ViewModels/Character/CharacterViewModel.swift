@@ -18,13 +18,14 @@ class CharacterViewModel: ObservableObject {
         return characters.first(where: {$0.id == id})
     }
 
-    func getCharacters() -> [Character] {
-        loadCharacters()
-        return characters
-    }
+    // func characters -> [Character] {
+    //     loadCharacters()
+    //     return characters
+    // }
     
     func loadCharacters() {
         characters = coreDataManager.fetchCharacters()
+        self.objectWillChange.send()
     }
     
     func addCharacter(_ character: Character) {

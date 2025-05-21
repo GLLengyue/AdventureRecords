@@ -5,7 +5,7 @@ struct ScenePickerView: View {
     @Environment(\.dismiss) var dismiss
     
     // 使用单例
-    private let viewModel = SceneViewModel.shared
+    @StateObject private var viewModel = SceneViewModel.shared
     
     var body: some View {
         NavigationStack {

@@ -4,15 +4,15 @@ struct NoteBlockDetailView: View {
     let noteBlock: NoteBlock
     
     // 使用单例
-    private let noteViewModel = NoteViewModel.shared
-    private let characterViewModel = CharacterViewModel.shared
-    private let sceneViewModel = SceneViewModel.shared
+    @StateObject private var noteViewModel = NoteViewModel.shared
+    @StateObject private var characterViewModel = CharacterViewModel.shared
+    @StateObject private var sceneViewModel = SceneViewModel.shared
     @State private var showEditor = false
     @State private var selectedCharacterForDetail: Character? = nil
     @State private var selectedSceneForDetail: AdventureScene? = nil
 
     private var relatedCharacters: [Character] {
-        characterViewModel.getCharacters().filter { noteBlock.relatedCharacterIDs.contains($0.id) }
+        characterViewModel.characters.filter { noteBlock.relatedCharacterIDs.contains($0.id) }
     }
 
     private var relatedScenes: [AdventureScene] {

@@ -16,6 +16,7 @@ class SceneViewModel: ObservableObject {
     
     func loadScenes() {
         scenes = coreDataManager.fetchScenes()
+        self.objectWillChange.send()
     }
     
     func addScene(_ scene: AdventureScene) {

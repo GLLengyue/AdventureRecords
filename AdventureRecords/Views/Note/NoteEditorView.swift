@@ -7,9 +7,9 @@ struct NoteEditorView: View {
     @Environment(\.dismiss) var dismiss
     
     // 使用单例
-    private let noteViewModel = NoteViewModel.shared
-    private let characterViewModel = CharacterViewModel.shared
-    private let sceneViewModel = SceneViewModel.shared
+    @StateObject private var noteViewModel = NoteViewModel.shared
+    @StateObject private var characterViewModel = CharacterViewModel.shared
+    @StateObject private var sceneViewModel = SceneViewModel.shared
 
     @State private var title: String
     @State private var content: String

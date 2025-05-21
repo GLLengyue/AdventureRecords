@@ -8,7 +8,7 @@ struct CharacterEditorView: View {
     @Environment(\.dismiss) var dismiss
     
     // 使用单例
-    private let audioViewModel = AudioViewModel.shared
+    @StateObject private var audioViewModel = AudioViewModel.shared
     
     // 状态变量
     @State private var name: String

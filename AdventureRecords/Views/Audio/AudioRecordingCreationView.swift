@@ -4,7 +4,7 @@ struct AudioRecordingCreationView: View {
     @Environment(\.dismiss) var dismiss
     
     // 使用单例
-    private let viewModel = AudioViewModel.shared
+    @StateObject private var viewModel = AudioViewModel.shared
     @State private var title: String = ""
     // Timer to update recording duration display
     @State private var timer: Timer? = nil

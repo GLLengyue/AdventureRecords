@@ -9,7 +9,7 @@ struct SceneListView: View {
     @State private var showingSortMenu: Bool = false
     
     // 使用单例
-    private let sceneViewModel = SceneViewModel.shared
+    @StateObject private var sceneViewModel = SceneViewModel.shared
 
     enum SortOrder: String, CaseIterable, Identifiable {
         case titleAscending = "名称升序"
