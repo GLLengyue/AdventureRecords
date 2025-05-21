@@ -20,6 +20,7 @@ struct CharacterEditorView: View {
     @State private var recordingForDeleteSheet: AudioRecording? = nil
     @State private var newRecordingName: String = ""
     @State private var showingDeleteConfirmationFor: AudioRecording? = nil
+    @State private var showImmersiveMode = false // 新增状态：控制沉浸模式显示
 
     // Original Character card, if editing
     private var existingCharacter: Character?
@@ -99,8 +100,15 @@ struct CharacterEditorView: View {
                                 .padding(.top, 8)
                                 .padding(.leading, 5)
                         }
-                        TextEditor(text: $description)
-                            .frame(minHeight: 100)
+                        HStack{
+                            TextEditor(text: $description)
+                                .frame(minHeight: 100)
+                        Button(action: { showImmersiveMode = true }) {
+                            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                        }
+                        .buttonStyle(BorderlessButtonStyle())
+                        }
                     }
                 }
                 
@@ -292,6 +300,9 @@ struct CharacterEditorView: View {
             }
             .padding()
             .presentationDetents([.height(240)])
+        }
+        .fullScreenCover(isPresented: $showImmersiveMode) { // 使用 fullScreenCover 展示沉浸模式
+            ImmersiveEditorView(isPresented: $showImmersiveMode, content: $description)
         }
     }
 }

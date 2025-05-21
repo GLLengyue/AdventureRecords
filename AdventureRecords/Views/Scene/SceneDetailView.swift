@@ -17,7 +17,6 @@ struct SceneDetailView: View {
     @State private var selectedNoteForDetail: NoteBlock? = nil
     @State private var selectedCharacterForDetail: Character? = nil
     @State private var isDescriptionExpanded: Bool = false
-    @State private var showImmersiveMode = false // 新增状态：控制沉浸模式显示
     
     var relatedNotes: [NoteBlock] { scene.relatedNotes(in: noteViewModel.notes) }
     var relatedCharacters: [Character] {
@@ -119,17 +118,7 @@ struct SceneDetailView: View {
                         }
                     }
                 }
-                // 沉浸模式入口按钮
-                Button(action: { showImmersiveMode = true }) {
-                    Label("进入沉浸模式", systemImage: "arrow.up.left.and.arrow.down.right.circle.fill")
-                        .font(.headline)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(ThemeManager.shared.accentColor(for: .scene))
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-                .padding(.top)
+
                 // 新建关联笔记按钮
                 Button(action: { showNoteEditor = true }) {
                     Label("在当前场景下新建笔记", systemImage: "plus.circle.fill")
@@ -202,8 +191,6 @@ struct SceneDetailView: View {
                 NoteBlockDetailView(noteBlock: noteItem)
             }
         }
-        .fullScreenCover(isPresented: $showImmersiveMode) { // 使用 fullScreenCover 展示沉浸模式
-            ImmersiveModeView(content: .scene(scene))
-        }
+
     }
 }

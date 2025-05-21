@@ -11,6 +11,7 @@ struct SceneEditorView: View {
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var atmosphere: SceneAtmosphere
     @State private var showAudioPicker = false
+    @State private var showImmersiveMode = false // 控制沉浸模式显示
     
     private var onSave: (AdventureScene) -> Void
     private var onCancel: () -> Void
@@ -78,8 +79,16 @@ struct SceneEditorView: View {
                                 .padding(.top, 8)
                                 .padding(.leading, 5)
                         }
-                        TextEditor(text: $description)
-                            .frame(minHeight: 100)
+                        HStack {
+                            TextEditor(text: $description)
+                                .frame(minHeight: 100)
+                            
+                            Button(action: { showImmersiveMode = true }) {
+                                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                                    .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                            }
+                            .buttonStyle(BorderlessButtonStyle())
+                        }
                     }
                 }
                 
@@ -158,6 +167,13 @@ struct SceneEditorView: View {
                         }
                     }
                 }
+            }
+            .fullScreenCover(isPresented: $showImmersiveMode) {
+                ImmersiveEditorView(
+                    isPresented: $showImmersiveMode,
+                    content: $description,
+                    title: title.isEmpty ? "场景编辑" : title
+                )
             }
         }
     }

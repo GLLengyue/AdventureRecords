@@ -18,6 +18,7 @@ struct NoteEditorView: View {
     @State private var showScenePicker = false
     @State private var showingSceneEditor = false
     @State private var showingCharacterEditor = false
+    @State private var showImmersiveMode = false // 控制沉浸模式显示
     
     private var onSave: (NoteBlock) -> Void
     private var onCancel: () -> Void
@@ -89,8 +90,16 @@ struct NoteEditorView: View {
             Form {
                 Section(header: Text("基本信息")) {
                     TextField("标题", text: $title)
-                    TextEditor(text: $content)
-                        .frame(height: 100)
+                    HStack {
+                        TextEditor(text: $content)
+                            .frame(height: 100)
+                        
+                        Button(action: { showImmersiveMode = true }) {
+                            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .note))
+                        }
+                        .buttonStyle(BorderlessButtonStyle())
+                    }
                 }
                 
                 Section(header: Text("关联角色")) {
@@ -145,6 +154,13 @@ struct NoteEditorView: View {
                     onCancel: {
                         showingCharacterEditor = false
                     }
+                )
+            }
+            .fullScreenCover(isPresented: $showImmersiveMode) {
+                ImmersiveEditorView(
+                    isPresented: $showImmersiveMode,
+                    content: $content,
+                    title: title.isEmpty ? "笔记编辑" : title
                 )
             }
             
