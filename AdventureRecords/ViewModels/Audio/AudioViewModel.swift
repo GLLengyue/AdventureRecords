@@ -4,6 +4,8 @@ import Combine
 import AVFoundation
 
 class AudioViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
+    static let shared = AudioViewModel()
+    
     @Published var recordings: [AudioRecording] = []
     @Published var isRecording: Bool = false
     @Published var currentRecording: AudioRecording? // Represents the recording being actively captured or just captured
@@ -15,7 +17,7 @@ class AudioViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     private var cancellables = Set<AnyCancellable>()
     private let coreDataManager = CoreDataManager.shared
     
-    override init() {
+    private override init() {
         super.init()
         loadRecordings()
     }

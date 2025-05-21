@@ -1,11 +1,13 @@
 import SwiftUI
 
 struct CharacterListView: View {
-    @EnvironmentObject var characterViewModel: CharacterViewModel
     @Binding var showingCharacterEditor: Bool
     @State private var searchText: String = ""
     @State private var sortOrder: SortOrder = .nameAscending
     @State private var selectedCharacter: Character? = nil
+    
+    // 使用单例
+    private let characterViewModel = CharacterViewModel.shared
 
     enum SortOrder: String, CaseIterable, Identifiable {
         case nameAscending = "名称升序"
@@ -62,7 +64,7 @@ struct CharacterListView: View {
                 } label: {
                     CharacterRow(character: character,
                         onDelete: {
-                            characterViewModel.deleteCharacter(character)
+                            CharacterViewModel.shared.deleteCharacter(character)
                         },
                         onEdit: { editableCharacter in
                             characterViewModel.updateCharacter(editableCharacter)

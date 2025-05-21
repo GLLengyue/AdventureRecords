@@ -1,12 +1,14 @@
 import SwiftUI
 
 struct NoteListView: View {
-    @EnvironmentObject var noteViewModel: NoteViewModel
     @Binding var showingNoteEditor: Bool
 
     @State private var searchText: String = ""
     @State private var sortOrder: SortOrder = .titleAscending
     @State private var selectedNote: NoteBlock? = nil
+    
+    // 使用单例
+    private let noteViewModel = NoteViewModel.shared
 
     enum SortOrder: String, CaseIterable, Identifiable {
         case titleAscending = "标题升序"
@@ -67,7 +69,7 @@ struct NoteListView: View {
                     NoteBlockRow(
                         note: note,
                         onDelete: {
-                            noteViewModel.deleteNote(note)
+                            NoteViewModel.shared.deleteNote(note)
                         },
                         onEdit: { editableNote in
                             noteViewModel.updateNote(editableNote)

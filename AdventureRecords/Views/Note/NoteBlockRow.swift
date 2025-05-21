@@ -4,8 +4,10 @@ struct NoteBlockRow: View {
     let note: NoteBlock
     @State private var showEditor = false
     
-    @EnvironmentObject var characterViewModel: CharacterViewModel
-    @EnvironmentObject var sceneViewModel: SceneViewModel
+    // 使用单例
+    private let characterViewModel = CharacterViewModel.shared
+    private let sceneViewModel = SceneViewModel.shared
+    
     var onDelete: () -> Void
     var onEdit: (NoteBlock) -> Void
     // 通过全局ViewModel和ID动态查找

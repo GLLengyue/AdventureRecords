@@ -3,12 +3,14 @@ import SwiftUI
 import Combine
 
 class CharacterViewModel: ObservableObject {
+    static let shared = CharacterViewModel()
+    
     @Published var characters: [Character] = []
     
     private var cancellables = Set<AnyCancellable>()
     private let coreDataManager = CoreDataManager.shared
     
-    init() {
+    private init() {
         loadCharacters()
     }
     

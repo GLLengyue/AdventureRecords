@@ -12,10 +12,13 @@ import AVFoundation
 struct CharacterDetailView: View {
     @StateObject private var audioPlayerManager = AudioPlayerManager()
     let character: Character
-    @EnvironmentObject var characterViewModel: CharacterViewModel
-    @EnvironmentObject var noteViewModel: NoteViewModel
-    @EnvironmentObject var sceneViewModel: SceneViewModel
-
+    
+    // 使用单例
+    private let characterViewModel = CharacterViewModel.shared
+    private let noteViewModel = NoteViewModel.shared
+    private let sceneViewModel = SceneViewModel.shared
+    private let audioViewModel = AudioViewModel.shared
+    
     @State private var showNoteEditor = false
     @State private var showCharacterEditor = false
     @State private var selectedNoteForDetail: NoteBlock? = nil
@@ -25,14 +28,14 @@ struct CharacterDetailView: View {
     var relatedNotes: [NoteBlock] {
         character.relatedNotes(in: noteViewModel.notes)
     }
+    
     var relatedScenes: [AdventureScene] {
         character.relatedScenes(in: noteViewModel.notes, sceneProvider: { note in
             note.relatedScenes(in: sceneViewModel.scenes)
         })
     }
-
-    // 最佳实践：直接用全局音频数据过滤出属于当前角色的录音
-    @EnvironmentObject var audioViewModel: AudioViewModel
+    
+    // 获取与角色相关的录音
     private var relatedRecordings: [AudioRecording] {
         guard let ids = character.audioRecordings?.map({ $0.id }) else { return [] }
         return audioViewModel.recordings.filter { ids.contains($0.id) }
@@ -213,7 +216,6 @@ struct CharacterDetailView: View {
                     showCharacterEditor = false
                 }
             )
-            .environmentObject(characterViewModel)
         }
         .sheet(item: $selectedNoteForDetail) { noteItem in
             NavigationStack {

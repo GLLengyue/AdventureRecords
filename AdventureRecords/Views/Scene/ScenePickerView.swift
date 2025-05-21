@@ -2,8 +2,10 @@ import SwiftUI
 
 struct ScenePickerView: View {
     @Binding var selectedSceneIDs: [UUID]
-    @EnvironmentObject var viewModel: SceneViewModel
     @Environment(\.dismiss) var dismiss
+    
+    // 使用单例
+    private let viewModel = SceneViewModel.shared
     
     var body: some View {
         NavigationStack {

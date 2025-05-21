@@ -5,9 +5,11 @@ import SwiftUI
 
 struct NoteEditorView: View {
     @Environment(\.dismiss) var dismiss
-    @EnvironmentObject var noteViewModel: NoteViewModel
-    @EnvironmentObject var characterViewModel: CharacterViewModel
-    @EnvironmentObject var sceneViewModel: SceneViewModel
+    
+    // 使用单例
+    private let noteViewModel = NoteViewModel.shared
+    private let characterViewModel = CharacterViewModel.shared
+    private let sceneViewModel = SceneViewModel.shared
 
     @State private var title: String
     @State private var content: String
@@ -128,11 +130,9 @@ struct NoteEditorView: View {
             }
             .sheet(isPresented: $showCharacterPicker) {
                 CharacterPickerView(selectedCharacterIDs: $selectedCharacterIDs)
-                    .environmentObject(characterViewModel)
             }
             .sheet(isPresented: $showScenePicker) {
                 ScenePickerView(selectedSceneIDs: $selectedSceneIDs)
-                    .environmentObject(sceneViewModel)
             }
             .sheet(isPresented: $showingSceneEditor) {
                 SceneEditorView(

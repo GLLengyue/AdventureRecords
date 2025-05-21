@@ -3,12 +3,14 @@ import SwiftUI
 import Combine
 
 class NoteViewModel: ObservableObject {
+    static let shared = NoteViewModel()
+    
     @Published var notes: [NoteBlock] = []
     
     private var cancellables = Set<AnyCancellable>()
     private let coreDataManager = CoreDataManager.shared
     
-    init() {
+    private init() {
         loadNotes()
     }
     

@@ -1,13 +1,15 @@
 import SwiftUI
 
 struct SceneListView: View {
-    @EnvironmentObject var sceneViewModel: SceneViewModel
     @Binding var showingSceneEditor: Bool
 
     @State private var searchText: String = ""
     @State private var sortOrder: SortOrder = .titleAscending
     @State private var selectedScene: AdventureScene? = nil
     @State private var showingSortMenu: Bool = false
+    
+    // 使用单例
+    private let sceneViewModel = SceneViewModel.shared
 
     enum SortOrder: String, CaseIterable, Identifiable {
         case titleAscending = "名称升序"
@@ -62,7 +64,7 @@ struct SceneListView: View {
                 } label: {
                     SceneRow(scene: scene,
                         onDelete: {
-                            sceneViewModel.deleteScene(scene)
+                            SceneViewModel.shared.deleteScene(scene)
                         },
                         onEdit: { editableScene in
                             sceneViewModel.updateScene(editableScene)

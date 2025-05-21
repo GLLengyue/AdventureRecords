@@ -6,7 +6,9 @@ import PhotosUI
 
 struct CharacterEditorView: View {
     @Environment(\.dismiss) var dismiss
-    @EnvironmentObject var audioViewModel: AudioViewModel // Added for audio playback
+    
+    // 使用单例
+    private let audioViewModel = AudioViewModel.shared
     
     // 状态变量
     @State private var name: String

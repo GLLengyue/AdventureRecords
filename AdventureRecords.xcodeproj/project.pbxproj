@@ -35,16 +35,6 @@
 			path = AdventureRecords;
 			sourceTree = "<group>";
 		};
-		14E437F22DCE5EB2008DB7D5 /* AdventureRecordsTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = AdventureRecordsTests;
-			sourceTree = "<group>";
-		};
-		14E437FC2DCE5EB2008DB7D5 /* AdventureRecordsUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = AdventureRecordsUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,8 +66,6 @@
 			isa = PBXGroup;
 			children = (
 				14E437E42DCE5EB1008DB7D5 /* AdventureRecords */,
-				14E437F22DCE5EB2008DB7D5 /* AdventureRecordsTests */,
-				14E437FC2DCE5EB2008DB7D5 /* AdventureRecordsUITests */,
 				14E437E32DCE5EB1008DB7D5 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -130,9 +118,6 @@
 			dependencies = (
 				14E437F12DCE5EB2008DB7D5 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				14E437F22DCE5EB2008DB7D5 /* AdventureRecordsTests */,
-			);
 			name = AdventureRecordsTests;
 			packageProductDependencies = (
 			);
@@ -152,9 +137,6 @@
 			);
 			dependencies = (
 				14E437FB2DCE5EB2008DB7D5 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				14E437FC2DCE5EB2008DB7D5 /* AdventureRecordsUITests */,
 			);
 			name = AdventureRecordsUITests;
 			packageProductDependencies = (

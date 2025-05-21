@@ -5,9 +5,11 @@ import SwiftUI
 
 struct SceneDetailView: View {
     let scene: AdventureScene
-    @EnvironmentObject var sceneViewModel: SceneViewModel
-    @EnvironmentObject var noteViewModel: NoteViewModel
-    @EnvironmentObject var characterViewModel: CharacterViewModel
+    
+    // 使用单例
+    private let sceneViewModel = SceneViewModel.shared
+    private let noteViewModel = NoteViewModel.shared
+    private let characterViewModel = CharacterViewModel.shared
 
     @State private var showImageViewer = false
     @State private var showAudioPlayer = false

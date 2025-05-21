@@ -10,13 +10,13 @@ import SwiftUI
 @main
 struct AdventureRecordsApp: App {
     let persistenceController = CoreDataManager.shared
-    @StateObject private var characterViewModel = CharacterViewModel()
-    @StateObject private var sceneViewModel = SceneViewModel()
-    @StateObject private var noteViewModel = NoteViewModel()
-    @StateObject private var audioViewModel = AudioViewModel()
+    private let characterViewModel = CharacterViewModel.shared
+    private let sceneViewModel = SceneViewModel.shared
+    private let noteViewModel = NoteViewModel.shared
+    private let audioViewModel = AudioViewModel.shared
     
-    // 初始化主题管理器
-    @StateObject private var themeManager = ThemeManager.shared
+    // 主题管理器
+    private let themeManager = ThemeManager.shared
     
     init() {
         // 检查并初始化示例数据
@@ -30,10 +30,6 @@ struct AdventureRecordsApp: App {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.viewContext)
-                .environmentObject(characterViewModel)
-                .environmentObject(sceneViewModel)
-                .environmentObject(noteViewModel)
-                .environmentObject(audioViewModel)
         }
     }
 }

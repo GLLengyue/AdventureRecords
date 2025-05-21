@@ -2,8 +2,10 @@ import SwiftUI
 
 struct CharacterPickerView: View {
     @Binding var selectedCharacterIDs: [UUID]
-    @EnvironmentObject var viewModel: CharacterViewModel
     @Environment(\.dismiss) var dismiss
+    
+    // 使用单例
+    private let viewModel = CharacterViewModel.shared
     
     var body: some View {
         NavigationStack {

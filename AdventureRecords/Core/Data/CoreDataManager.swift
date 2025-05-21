@@ -65,7 +65,7 @@ class CoreDataManager {
                     name: entity.name ?? "",
                     description: entity.characterDescription ?? "",
                     avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
-                    audioRecordings: fetchAudioRecordings(for: entity.audioIDs as? [UUID] ?? []),
+                    audioRecordings: fetchAudioRecordings(for: entity.audioIDs ?? []),
                     tags: entity.tags ?? [],
                     relatedNoteIDs: entity.relatedNoteIDs ?? []
                 )
@@ -107,7 +107,7 @@ class CoreDataManager {
                     name: entity.name ?? "",
                     description: entity.characterDescription ?? "",
                     avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
-                    audioRecordings: fetchAudioRecordings(for: entity.audioIDs as? [UUID] ?? []),
+                    audioRecordings: fetchAudioRecordings(for: entity.audioIDs ?? []),
                     tags: entity.tags ?? [],
                     relatedNoteIDs: entity.relatedNoteIDs ?? []
             )
@@ -376,10 +376,10 @@ class CoreDataManager {
         entity.date = recording.date
 
         if let charID = characterID, let characterEntity = fetchCharacterEntity(by: charID) {
-            var ids = characterEntity.audioIDs as? [UUID] ?? []
+            var ids = characterEntity.audioIDs ?? []
             if !ids.contains(recording.id) {
                 ids.append(recording.id)
-                characterEntity.audioIDs = ids as NSArray
+                characterEntity.audioIDs = ids
             }
         }
         saveContext()

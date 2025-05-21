@@ -2,9 +2,11 @@ import SwiftUI
 
 struct NoteBlockDetailView: View {
     let noteBlock: NoteBlock
-    @EnvironmentObject var noteViewModel: NoteViewModel
-    @EnvironmentObject var characterViewModel: CharacterViewModel
-    @EnvironmentObject var sceneViewModel: SceneViewModel
+    
+    // 使用单例
+    private let noteViewModel = NoteViewModel.shared
+    private let characterViewModel = CharacterViewModel.shared
+    private let sceneViewModel = SceneViewModel.shared
     @State private var showEditor = false
     @State private var selectedCharacterForDetail: Character? = nil
     @State private var selectedSceneForDetail: AdventureScene? = nil
