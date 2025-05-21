@@ -10,6 +10,7 @@ struct AudioRecordingCreationView: View {
     @State private var timer: Timer? = nil
     @State private var recordingDuration: TimeInterval = 0
     let characterID: UUID? // To associate the recording with a character
+    var onSave: () -> Void
 
     var body: some View {
         NavigationStack {
@@ -111,6 +112,7 @@ struct AudioRecordingCreationView: View {
         viewModel.currentRecording = nil
         self.title = ""
         self.recordingDuration = 0
+        onSave()
     }
 
     private func startTimer() {

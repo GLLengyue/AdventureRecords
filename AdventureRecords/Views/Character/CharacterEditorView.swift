@@ -65,6 +65,24 @@ struct CharacterEditorView: View {
         self.existingCharacter = card
     }
     
+    func actionOnSave() {
+        if var editedCharacter = existingCharacter {
+            editedCharacter.name = name
+            editedCharacter.description = description
+            editedCharacter.avatar = avatar
+            editedCharacter.tags = tags
+            onSave(editedCharacter)
+        } else {
+            let cardToSave = Character(
+                name: name,
+                description: description,
+                avatar: avatar,
+                tags: tags
+            )
+            onSave(cardToSave)
+        }
+    }
+
     var body: some View {
         EditorContainer(
             module: .character,
@@ -73,21 +91,7 @@ struct CharacterEditorView: View {
                 onCancel()
             },
             saveAction: {
-                if var editedCharacter = existingCharacter {
-                    editedCharacter.name = name
-                    editedCharacter.description = description
-                    editedCharacter.avatar = avatar
-                    editedCharacter.tags = tags
-                    onSave(editedCharacter)
-                } else {
-                    let cardToSave = Character(
-                        name: name,
-                        description: description,
-                        avatar: avatar,
-                        tags: tags
-                    )
-                    onSave(cardToSave)
-                }
+                actionOnSave()
             },
             saveDisabled: name.isEmpty
         ) {
@@ -225,7 +229,9 @@ struct CharacterEditorView: View {
             }
         }
         .sheet(isPresented: $showRecordingSheet) {
-            AudioRecordingCreationView(characterID: existingCharacter!.id)
+            AudioRecordingCreationView(characterID: existingCharacter!.id, onSave: {
+                actionOnSave()
+            })
         }
         .sheet(item: $recordingForRenameSheet) { recordingToRename in
             VStack(spacing: 20) {
