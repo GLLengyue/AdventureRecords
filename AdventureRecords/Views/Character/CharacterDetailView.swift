@@ -346,10 +346,6 @@ struct RecordingItemView: View {
             
             Spacer()
             
-            // 波形图标
-            Image(systemName: "waveform")
-                .foregroundColor(isPlaying ? ThemeManager.shared.accentColor(for: .character) : .secondary)
-                .opacity(isPlaying ? 1.0 : 0.5)
         }
         .padding(EdgeInsets(top: 10, leading: 12, bottom: 10, trailing: 12))
         .background(ThemeManager.shared.secondaryBackgroundColor)

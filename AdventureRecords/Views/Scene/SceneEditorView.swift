@@ -69,49 +69,109 @@ struct SceneEditorView: View {
             saveDisabled: title.isEmpty
         ) {
             Form {
-                Section(header: Text("基本信息")) {
-                    TextField("场景名称", text: $title)
-                    
-                    ZStack(alignment: .topLeading) {
-                        if description.isEmpty {
-                            Text("场景描述")
-                                .foregroundColor(Color(UIColor.placeholderText))
-                                .padding(.top, 8)
-                                .padding(.leading, 5)
-                        }
-                        HStack {
-                            TextEditor(text: $description)
-                                .frame(minHeight: 100)
+                // 基本信息区域
+                Section {
+                    VStack(alignment: .leading, spacing: 16) {
+                        // 场景名称
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("场景名称").font(.caption).foregroundColor(.secondary)
                             
-                            Button(action: { showImmersiveMode = true }) {
-                                Image(systemName: "arrow.up.left.and.arrow.down.right")
-                                    .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                            TextField("输入场景名称", text: $title)
+                                .font(.headline)
+                                .padding(12)
+                                .background(ThemeManager.shared.secondaryBackgroundColor)
+                                .cornerRadius(10)
+                        }
+                        
+                        // 场景描述
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("场景描述").font(.caption).foregroundColor(.secondary)
+                                Spacer()
+                                Button(action: { showImmersiveMode = true }) {
+                                    Label("扩展编辑", systemImage: "arrow.up.left.and.arrow.down.right")
+                                        .font(.caption)
+                                        .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                                }
                             }
-                            .buttonStyle(BorderlessButtonStyle())
+                            
+                            ZStack(alignment: .topLeading) {
+                                if description.isEmpty {
+                                    Text("请输入场景的描述内容……")
+                                        .foregroundColor(Color(UIColor.placeholderText))
+                                        .padding(12)
+                                }
+                                TextEditor(text: $description)
+                                    .frame(minHeight: 120)
+                                    .padding(6)
+                                    .background(ThemeManager.shared.secondaryBackgroundColor)
+                                    .cornerRadius(10)
+                            }
                         }
                     }
                 }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
                 
-                Section(header: Text("场景图片")) {
-                    PhotosPicker(
-                        selection: $selectedItem,
-                        matching: .images,
-                        photoLibrary: .shared()
-                    ) {
-                        HStack {
+                // 场景图片区域
+                Section {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("场景封面").font(.caption).foregroundColor(.secondary)
+                        
+                        PhotosPicker(
+                            selection: $selectedItem,
+                            matching: .images,
+                            photoLibrary: .shared()
+                        ) {
                             if let image = coverImage {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(height: 200)
+                                ZStack(alignment: .topTrailing) {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(height: 200)
+                                        .clipShape(RoundedRectangle(cornerRadius: 15))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 15)
+                                                .stroke(ThemeManager.shared.accentColor(for: .scene).opacity(0.4), lineWidth: 1)
+                                        )
+                                    
+                                    // 更换图片图标
+                                    Image(systemName: "photo.badge.plus.fill")
+                                        .font(.title3)
+                                        .foregroundColor(.white)
+                                        .padding(8)
+                                        .background(
+                                            Circle()
+                                                .fill(ThemeManager.shared.accentColor(for: .scene).opacity(0.8))
+                                                .shadow(radius: 2)
+                                        )
+                                        .offset(x: -10, y: 10)
+                                }
                             } else {
-                                Label("添加场景图片", systemImage: "photo")
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 100)
-                                    .background(Color.gray.opacity(0.1))
-                                    .cornerRadius(8)
+                                HStack {
+                                    Spacer()
+                                    VStack(spacing: 16) {
+                                        Image(systemName: "photo.on.rectangle.angled")
+                                            .font(.system(size: 40))
+                                            .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                                        
+                                        Text("添加场景图片")
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
+                                    }
+                                    .padding(30)
+                                    Spacer()
+                                }
+                                .frame(height: 180)
+                                .background(ThemeManager.shared.secondaryBackgroundColor)
+                                .cornerRadius(15)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .stroke(ThemeManager.shared.accentColor(for: .scene).opacity(0.2), lineWidth: 1.5)
+                                )
                             }
                         }
+                        .buttonStyle(ScaleButtonStyle())
                     }
                     .onChange(of: selectedItem) {
                         Task {
@@ -122,6 +182,8 @@ struct SceneEditorView: View {
                         }
                     }
                 }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
             }
             .fullScreenCover(isPresented: $showImmersiveMode) {
                 ImmersiveEditorView(
@@ -131,5 +193,14 @@ struct SceneEditorView: View {
                 )
             }
         }
+    }
+}
+
+// 按钮缩放动画样式
+struct ScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
 }
