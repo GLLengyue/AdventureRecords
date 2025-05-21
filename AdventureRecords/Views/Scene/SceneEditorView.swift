@@ -122,51 +122,6 @@ struct SceneEditorView: View {
                         }
                     }
                 }
-                Section(header: Text("场景氛围")) {
-                    // 背景颜色选择
-                    ColorPicker("背景颜色", selection: Binding(
-                        get: { atmosphere.backgroundColor },
-                        set: { newColor in
-                            atmosphere.backgroundColor = newColor
-                        }
-                    ))
-                    
-                    // 光照效果选择
-                    Picker("光照效果", selection: $atmosphere.lightingEffect) {
-                        ForEach(LightingEffect.allCases, id: \.self) { effect in
-                            Text(effect.rawValue).tag(effect)
-                        }
-                    }
-                    
-                    // 粒子效果选择
-                    Picker("粒子效果", selection: $atmosphere.particleEffect) {
-                        ForEach(ParticleEffect.allCases, id: \.self) { effect in
-                            Text(effect.rawValue).tag(effect)
-                        }
-                    }
-                    
-                    // 环境音效选择
-                    Button(action: {
-                        showAudioPicker = true
-                    }) {
-                        HStack {
-                            Text("环境音效")
-                            Spacer()
-                            if atmosphere.ambientSound != nil {
-                                Text("已选择")
-                                    .foregroundColor(.secondary)
-                            } else {
-                                Text("未选择")
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                    .sheet(isPresented: $showAudioPicker) {
-                        AudioPickerView { selectedAudio in
-                            atmosphere.ambientSound = selectedAudio
-                        }
-                    }
-                }
             }
             .fullScreenCover(isPresented: $showImmersiveMode) {
                 ImmersiveEditorView(
