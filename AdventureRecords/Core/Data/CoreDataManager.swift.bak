@@ -284,7 +284,16 @@ class CoreDataManager {
             atmosphere: .default,
             tags: []
         )
-    }     
+    }
+    func createScene(title: String, description: String) -> AdventureScene {
+            }
+            
+            return AdventureScene(
+                id: entity.id ?? UUID(),
+                title: entity.title ?? "",
+                description: entity.sceneDescription ?? "",
+                relatedNoteIDs: entity.relatedNoteIDs ?? [],
+                coverImage: entity.coverImage != nil ? UIImage(data: entity.coverImage!) : nil,
     func fetchScenes() -> [AdventureScene] {
         let request: NSFetchRequest<SceneEntity> = SceneEntity.fetchRequest()
         do {
@@ -311,6 +320,7 @@ class CoreDataManager {
             return []
         }
     }
+}
     
     func fetchScenes(for sceneIDs: [UUID]) -> [AdventureScene] {
         let request: NSFetchRequest<SceneEntity> = SceneEntity.fetchRequest()

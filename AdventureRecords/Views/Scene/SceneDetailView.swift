@@ -166,6 +166,24 @@ struct SceneDetailView: View {
                         
                         Divider()
                         
+                        // 场景标签
+                        if !scene.tags.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Label("标签", systemImage: "tag")
+                                    .font(.headline)
+                                    .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                                
+                                FlowLayout(spacing: 8) {
+                                    ForEach(scene.tags, id: \.self) { tag in
+                                        TagView(tag: tag, accentColor: ThemeManager.shared.accentColor(for: .scene))
+                                    }
+                                }
+                            }
+                            .padding(.bottom, 8)
+                        }
+                        
+                        Divider()
+                        
                         // 相关角色
                         if !relatedCharacters.isEmpty {
                             VStack(alignment: .leading, spacing: 12) {

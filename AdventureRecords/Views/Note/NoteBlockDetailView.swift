@@ -92,6 +92,22 @@ struct NoteBlockDetailView: View {
                         .padding(.bottom, 8)
                     }
                     
+                    // 笔记标签
+                    if !noteBlock.tags.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Label("标签", systemImage: "tag")
+                                .font(.headline)
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .note))
+                            
+                            FlowLayout(spacing: 8) {
+                                ForEach(noteBlock.tags, id: \.self) { tag in
+                                    TagView(tag: tag, accentColor: ThemeManager.shared.accentColor(for: .note))
+                                }
+                            }
+                        }
+                        .padding(.bottom, 8)
+                    }
+                    
                     Divider()
                     
                     // 笔记内容

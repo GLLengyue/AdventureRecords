@@ -9,11 +9,12 @@ struct AdventureScene: Identifiable, Hashable {
     var relatedNoteIDs: [UUID]
     var coverImage: UIImage?
     var audioURL: URL?
+    var tags: [String]
     
     // 场景氛围设置
     var atmosphere: SceneAtmosphere
     
-    init(id: UUID = UUID(), title: String, description: String, relatedNoteIDs: [UUID] = [], coverImage: UIImage? = nil, audioURL: URL? = nil, atmosphere: SceneAtmosphere = .default) {
+    init(id: UUID = UUID(), title: String, description: String, relatedNoteIDs: [UUID] = [], coverImage: UIImage? = nil, audioURL: URL? = nil, atmosphere: SceneAtmosphere = .default, tags: [String] = []) {
         self.id = id
         self.title = title
         self.description = description
@@ -21,6 +22,7 @@ struct AdventureScene: Identifiable, Hashable {
         self.coverImage = coverImage
         self.audioURL = audioURL
         self.atmosphere = atmosphere
+        self.tags = tags
     }
     
     func hash(into hasher: inout Hasher) {

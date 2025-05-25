@@ -15,6 +15,8 @@ struct NoteEditorView: View {
     @State private var content: String
     @State private var selectedCharacterIDs: [UUID]
     @State private var selectedSceneIDs: [UUID]
+    @State private var tags: [String]
+    @State private var newTag: String
     
     @State private var showCharacterPicker = false
     @State private var showScenePicker = false
@@ -32,6 +34,8 @@ struct NoteEditorView: View {
         self._content = State(initialValue: "")
         self._selectedCharacterIDs = State(initialValue: [])
         self._selectedSceneIDs = State(initialValue: [])
+        self._tags = State(initialValue: [])
+        self._newTag = State(initialValue: "")
         self.onSave = onSave
         self.onCancel = onCancel
         self.existingNote = nil
@@ -44,6 +48,8 @@ struct NoteEditorView: View {
         self._content = State(initialValue: "")
         self._selectedCharacterIDs = State(initialValue: preselectedCharacterID != nil ? [preselectedCharacterID!] : [])
         self._selectedSceneIDs = State(initialValue: [])
+        self._tags = State(initialValue: [])
+        self._newTag = State(initialValue: "")
         self.onSave = onSave
         self.onCancel = onCancel
         self.existingNote = nil
@@ -55,6 +61,8 @@ struct NoteEditorView: View {
         self._content = State(initialValue: "")
         self._selectedCharacterIDs = State(initialValue: [])
         self._selectedSceneIDs = State(initialValue: preselectedSceneID != nil ? [preselectedSceneID!] : [])
+        self._tags = State(initialValue: [])
+        self._newTag = State(initialValue: "")
         self.onSave = onSave
         self.onCancel = onCancel
         self.existingNote = nil
@@ -71,6 +79,8 @@ struct NoteEditorView: View {
         }
         self._selectedCharacterIDs = State(initialValue: initialCharIDs)
         self._selectedSceneIDs = State(initialValue: note.relatedSceneIDs)
+        self._tags = State(initialValue: note.tags)
+        self._newTag = State(initialValue: "")
         self.onSave = onSave
         self.onCancel = onCancel
         self.existingNote = note
@@ -311,6 +321,94 @@ struct NoteEditorView: View {
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
+                
+                // 笔记标签区域
+                Section {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Label("笔记标签", systemImage: "tag")
+                                .font(.headline)
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .note))
+                            
+                            Spacer()
+                            
+                            if !tags.isEmpty {
+                                Text("\(tags.count)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.gray.opacity(0.1))
+                                    .cornerRadius(10)
+                            }
+                        }
+                        
+                        // 标签输入区
+                        HStack {
+                            TextField("输入新标签", text: $newTag)
+                                .padding(12)
+                                .background(ThemeManager.shared.secondaryBackgroundColor)
+                                .cornerRadius(10)
+                            
+                            Button(action: {
+                                let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
+                                if !trimmedTag.isEmpty && !tags.contains(trimmedTag) {
+                                    withAnimation {
+                                        tags.append(trimmedTag)
+                                        newTag = ""
+                                    }
+                                }
+                            }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(newTag.isEmpty ? .gray : ThemeManager.shared.accentColor(for: .note))
+                            }
+                            .disabled(newTag.isEmpty)
+                            .padding(.leading, 8)
+                        }
+                        
+                        // 现有标签显示
+                        if tags.isEmpty {
+                            Text("没有添加标签")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.vertical, 20)
+                        } else {
+                            ScrollView {
+                                FlowLayout(spacing: 8) {
+                                    ForEach(tags, id: \.self) { tag in
+                                        HStack(spacing: 4) {
+                                            Text(tag)
+                                                .font(.subheadline)
+                                            
+                                            Button(action: {
+                                                withAnimation {
+                                                    if let index = tags.firstIndex(of: tag) {
+                                                        tags.remove(at: index)
+                                                    }
+                                                }
+                                            }) {
+                                                Image(systemName: "xmark.circle.fill")
+                                                    .font(.caption)
+                                                    .foregroundColor(.secondary)
+                                            }
+                                            .buttonStyle(BorderlessButtonStyle())
+                                        }
+                                        .padding(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 8))
+                                        .background(ThemeManager.shared.accentColor(for: .note).opacity(0.15))
+                                        .foregroundColor(ThemeManager.shared.accentColor(for: .note))
+                                        .cornerRadius(16)
+                                    }
+                                }
+                                .padding(.vertical, 8)
+                            }
+                            .frame(maxHeight: 120)
+                        }
+                    }
+                }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
             }
             .sheet(isPresented: $showCharacterPicker) {
                 CharacterPickerView(selectedCharacterIDs: $selectedCharacterIDs)
@@ -357,6 +455,7 @@ struct NoteEditorView: View {
             noteToUpdate.content = content
             noteToUpdate.relatedCharacterIDs = selectedCharacterIDs
             noteToUpdate.relatedSceneIDs = selectedSceneIDs
+            noteToUpdate.tags = tags
             noteToUpdate.date = Date() // Update timestamp
             onSave(noteToUpdate)
         } else {
@@ -366,7 +465,8 @@ struct NoteEditorView: View {
                 content: content,
                 relatedCharacterIDs: selectedCharacterIDs,
                 relatedSceneIDs: selectedSceneIDs,
-                date: Date()
+                date: Date(),
+                tags: tags
             )
             onSave(newNote)
         }

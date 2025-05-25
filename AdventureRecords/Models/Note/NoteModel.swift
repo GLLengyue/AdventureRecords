@@ -7,6 +7,7 @@ struct NoteBlock: Identifiable, Hashable {
     var relatedCharacterIDs: [UUID]
     var relatedSceneIDs: [UUID]
     var date: Date
+    var tags: [String]
     
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)

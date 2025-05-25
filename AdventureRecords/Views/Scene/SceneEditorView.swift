@@ -12,6 +12,8 @@ struct SceneEditorView: View {
     @State private var atmosphere: SceneAtmosphere
     @State private var showAudioPicker = false
     @State private var showImmersiveMode = false // 控制沉浸模式显示
+    @State private var tags: [String]
+    @State private var newTag: String
     
     private var onSave: (AdventureScene) -> Void
     private var onCancel: () -> Void
@@ -27,6 +29,8 @@ struct SceneEditorView: View {
         self.isEditing = false
         self.existingScene = nil
         self._atmosphere = State(initialValue: .default)
+        self._tags = State(initialValue: [])
+        self._newTag = State(initialValue: "")
     }
     
     // 编辑现有场景
@@ -39,6 +43,8 @@ struct SceneEditorView: View {
         self.isEditing = true
         self.existingScene = scene
         self._atmosphere = State(initialValue: scene.atmosphere)
+        self._tags = State(initialValue: scene.tags)
+        self._newTag = State(initialValue: "")
     }
     
     var body: some View {
@@ -54,6 +60,7 @@ struct SceneEditorView: View {
                     sceneToUpdate.description = description
                     sceneToUpdate.coverImage = coverImage
                     sceneToUpdate.atmosphere = atmosphere
+                    sceneToUpdate.tags = tags
                     onSave(sceneToUpdate)
                 } else {
                     let newScene = AdventureScene(
@@ -61,7 +68,8 @@ struct SceneEditorView: View {
                         title: title,
                         description: description,
                         coverImage: coverImage,
-                        atmosphere: atmosphere
+                        atmosphere: atmosphere,
+                        tags: tags
                     )
                     onSave(newScene)
                 }
@@ -179,6 +187,94 @@ struct SceneEditorView: View {
                                let uiImage = UIImage(data: data) {
                                 coverImage = uiImage
                             }
+                        }
+                    }
+                }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                
+                // 场景标签区域
+                Section {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Label("场景标签", systemImage: "tag")
+                                .font(.headline)
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                            
+                            Spacer()
+                            
+                            if !tags.isEmpty {
+                                Text("\(tags.count)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.gray.opacity(0.1))
+                                    .cornerRadius(10)
+                            }
+                        }
+                        
+                        // 标签输入区
+                        HStack {
+                            TextField("输入新标签", text: $newTag)
+                                .padding(12)
+                                .background(ThemeManager.shared.secondaryBackgroundColor)
+                                .cornerRadius(10)
+                            
+                            Button(action: {
+                                let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
+                                if !trimmedTag.isEmpty && !tags.contains(trimmedTag) {
+                                    withAnimation {
+                                        tags.append(trimmedTag)
+                                        newTag = ""
+                                    }
+                                }
+                            }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(newTag.isEmpty ? .gray : ThemeManager.shared.accentColor(for: .scene))
+                            }
+                            .disabled(newTag.isEmpty)
+                            .padding(.leading, 8)
+                        }
+                        
+                        // 现有标签显示
+                        if tags.isEmpty {
+                            Text("没有添加标签")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.vertical, 20)
+                        } else {
+                            ScrollView {
+                                FlowLayout(spacing: 8) {
+                                    ForEach(tags, id: \.self) { tag in
+                                        HStack(spacing: 4) {
+                                            Text(tag)
+                                                .font(.subheadline)
+                                            
+                                            Button(action: {
+                                                withAnimation {
+                                                    if let index = tags.firstIndex(of: tag) {
+                                                        tags.remove(at: index)
+                                                    }
+                                                }
+                                            }) {
+                                                Image(systemName: "xmark.circle.fill")
+                                                    .font(.caption)
+                                                    .foregroundColor(.secondary)
+                                            }
+                                            .buttonStyle(BorderlessButtonStyle())
+                                        }
+                                        .padding(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 8))
+                                        .background(ThemeManager.shared.accentColor(for: .scene).opacity(0.15))
+                                        .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                                        .cornerRadius(16)
+                                    }
+                                }
+                                .padding(.vertical, 8)
+                            }
+                            .frame(maxHeight: 120)
                         }
                     }
                 }
