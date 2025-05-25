@@ -4,13 +4,13 @@ import CoreData
 import UniformTypeIdentifiers
 
 /// 数据管理器测试类
-/// 用于测试DataManager的各项功能，确保数据备份、恢复、导出和清理功能正常工作
+/// 用于测试CoreDataManager的各项功能，确保数据备份、恢复、导出和清理功能正常工作
 class DataManagerTests {
     // 单例实例
     static let shared = DataManagerTests()
     
     // 数据管理器实例
-    private let dataManager = DataManager.shared
+    private let coreDataManager = CoreDataManager.shared
     
     // 测试数据
     private var testCharacterData: CharacterData!
@@ -28,9 +28,9 @@ class DataManagerTests {
     
     // 初始化测试数据
     private func setupTestData() {
-        testCharacterData = CharacterData(id: "test-character-id", name: "测试角色", description: "这是一个用于测试的角色")
-        testSceneData = SceneData(id: "test-scene-id", name: "测试场景", description: "这是一个用于测试的场景")
-        testNoteData = NoteData(id: "test-note-id", title: "测试笔记", content: "这是一个用于测试的笔记内容")
+        testCharacterData = CharacterData(id: "test-character-id", name: "测试角色", description: "这是一个用于测试的角色", avatar: nil, tags: [], relatedNoteIDs: [])
+        testSceneData = SceneData(id: "test-scene-id", name: "测试场景", description: "这是一个用于测试的场景", tags: [], relatedNoteIDs: [])
+        testNoteData = NoteData(id: "test-note-id", title: "测试笔记", content: "这是一个用于测试的笔记内容", tags: [], relatedCharacterIDs: [], relatedSceneIDs: [])
     }
     
     // MARK: - 测试入口方法
@@ -113,12 +113,12 @@ class DataManagerTests {
         
         do {
             // 创建测试备份
-            let success = dataManager.createBackup(name: "测试备份", date: Date())
+            let backupData = coreDataManager.createBackup(name: "测试备份", date: Date())
             
             // 检查备份是否成功
-            if success {
+            if backupData != nil {
                 // 获取所有备份
-                let backups = dataManager.getAllBackups()
+                let backups = coreDataManager.getAllBackups()
                 
                 // 检查是否有备份文件
                 if !backups.isEmpty {
@@ -148,7 +148,7 @@ class DataManagerTests {
         
         do {
             // 从备份恢复
-            let success = dataManager.restoreFromBackup(backupFile: backupFilePath)
+            let success = coreDataManager.restoreFromBackup(BackupFile(url: backupFilePath, name: "测试备份", creationDate: Date()))
             
             // 检查恢复是否成功
             if success {
@@ -168,7 +168,7 @@ class DataManagerTests {
         let testName = "PDF导出测试"
         
         // 导出PDF
-        if let exportDoc = dataManager.exportData(type: .pdf, includeCharacters: true, includeScenes: true, includeNotes: true) {
+        if let exportDoc = coreDataManager.exportData(type: .pdf, includeCharacters: true, includeScenes: true, includeNotes: true) {
             // 检查导出文档
             if exportDoc.data.count > 0 && exportDoc.filename.hasSuffix(".pdf") {
                 return TestResult(name: testName, passed: true, message: "成功导出PDF文档，大小: \(exportDoc.data.count) 字节")
@@ -185,7 +185,7 @@ class DataManagerTests {
         let testName = "文本导出测试"
         
         // 导出文本
-        if let exportDoc = dataManager.exportData(type: .text, includeCharacters: true, includeScenes: true, includeNotes: true) {
+        if let exportDoc = coreDataManager.exportData(type: .text, includeCharacters: true, includeScenes: true, includeNotes: true) {
             // 检查导出文档
             if exportDoc.data.count > 0 && exportDoc.filename.hasSuffix(".txt") {
                 // 尝试将数据转换为字符串
@@ -207,7 +207,7 @@ class DataManagerTests {
         let testName = "JSON导出测试"
         
         // 导出JSON
-        if let exportDoc = dataManager.exportData(type: .json, includeCharacters: true, includeScenes: true, includeNotes: true) {
+        if let exportDoc = coreDataManager.exportData(type: .json, includeCharacters: true, includeScenes: true, includeNotes: true) {
             // 检查导出文档
             if exportDoc.data.count > 0 && exportDoc.filename.hasSuffix(".json") {
                 // 尝试解析JSON
@@ -235,7 +235,7 @@ class DataManagerTests {
         let testName = "清理所有数据测试"
         
         // 清理所有数据
-        let success = dataManager.cleanupData(type: .all)
+        let success = coreDataManager.cleanupData(type: .all)
         
         // 检查清理是否成功
         if success {
@@ -250,7 +250,7 @@ class DataManagerTests {
         let testName = "清理角色数据测试"
         
         // 清理角色数据
-        let success = dataManager.cleanupData(type: .character)
+        let success = coreDataManager.cleanupData(type: .character)
         
         // 检查清理是否成功
         if success {
@@ -265,7 +265,7 @@ class DataManagerTests {
         let testName = "清理场景数据测试"
         
         // 清理场景数据
-        let success = dataManager.cleanupData(type: .scene)
+        let success = coreDataManager.cleanupData(type: .scene)
         
         // 检查清理是否成功
         if success {
@@ -280,7 +280,7 @@ class DataManagerTests {
         let testName = "清理笔记数据测试"
         
         // 清理笔记数据
-        let success = dataManager.cleanupData(type: .note)
+        let success = coreDataManager.cleanupData(type: .note)
         
         // 检查清理是否成功
         if success {

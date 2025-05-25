@@ -2,70 +2,20 @@ import SwiftUI
 import UniformTypeIdentifiers
 import UIKit
 
-// 清理类型枚举
-enum CleanupType {
-    case all
-    case character
-    case scene
-    case note
-}
-
-// 导出类型枚举
-enum ExportType {
-    case pdf
-    case text
-    case json
+// 分享Sheet视图
+struct ShareSheet: UIViewControllerRepresentable {
+    var activityItems: [Any]
+    var applicationActivities: [UIActivity]? = nil
     
-    var description: String {
-        switch self {
-        case .pdf:
-            return "PDF文档 (.pdf)"
-        case .text:
-            return "纯文本文件 (.txt)"
-        case .json:
-            return "JSON文件 (.json)"
-        }
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(
+            activityItems: activityItems,
+            applicationActivities: applicationActivities
+        )
+        return controller
     }
     
-    var iconName: String {
-        switch self {
-        case .pdf:
-            return "doc.richtext"
-        case .text:
-            return "doc.text"
-        case .json:
-            return "curlybraces"
-        }
-    }
-    
-    var color: Color {
-        switch self {
-        case .pdf:
-            return .red
-        case .text:
-            return .gray
-        case .json:
-            return .blue
-        }
-    }
-    
-    var utType: UTType {
-        switch self {
-        case .pdf:
-            return .pdf
-        case .text:
-            return .plainText
-        case .json:
-            return .json
-        }
-    }
-}
-
-// 导出文档结构
-struct ExportDocument {
-    let data: Data
-    let filename: String
-    let contentType: UTType
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 struct DataManagementView: View {
@@ -75,8 +25,8 @@ struct DataManagementView: View {
     @State private var showExportSheet = false
     @State private var showDataCleanupSheet = false
     @State private var showCleanupConfirmation = false
-    @State private var cleanupType: CleanupType = .all
-    @State private var exportType: ExportType = .pdf
+    @State private var cleanupType: CleanupType = .none
+    @State private var exportType: ExportType = .none
     @State private var isExporting = false
     @State private var exportDocument: ExportDocument?
     @State private var isBackingUp = false
@@ -90,7 +40,7 @@ struct DataManagementView: View {
     @State private var backups: [BackupFile] = []
     
     let themeManager = ThemeManager.shared
-    let dataManager = DataManager.shared
+    let coreDataManager = CoreDataManager.shared
     
     var body: some View {
         NavigationView {
@@ -120,7 +70,6 @@ struct DataManagementView: View {
                 Section(header: Text("数据导出")) {
                     Button(action: {
                         exportType = .pdf
-                        showExportSheet = true
                     }) {
                         DataManagementRow(
                             icon: "doc.richtext",
@@ -132,7 +81,6 @@ struct DataManagementView: View {
                     
                     Button(action: {
                         exportType = .text
-                        showExportSheet = true
                     }) {
                         DataManagementRow(
                             icon: "doc.text",
@@ -144,7 +92,6 @@ struct DataManagementView: View {
                     
                     Button(action: {
                         exportType = .json
-                        showExportSheet = true
                     }) {
                         DataManagementRow(
                             icon: "curlybraces",
@@ -159,22 +106,20 @@ struct DataManagementView: View {
                 Section(header: Text("数据清理")) {
                     Button(action: {
                         cleanupType = .all
-                        showCleanupConfirmation = true
                     }) {
                         DataManagementRow(
                             icon: "trash",
                             iconColor: .red,
                             title: "清理所有数据",
-                            subtitle: "删除所有角色、场景和笔记"
+                            subtitle: "删除所有角色、场景和笔记数据"
                         )
                     }
                     
                     Button(action: {
                         cleanupType = .character
-                        showCleanupConfirmation = true
                     }) {
                         DataManagementRow(
-                            icon: "person.crop.circle.badge.minus",
+                            icon: "person.crop.circle.fill",
                             iconColor: themeManager.accentColor(for: .character),
                             title: "清理角色数据",
                             subtitle: "仅删除角色相关数据"
@@ -183,7 +128,6 @@ struct DataManagementView: View {
                     
                     Button(action: {
                         cleanupType = .scene
-                        showCleanupConfirmation = true
                     }) {
                         DataManagementRow(
                             icon: "theatermasks.circle.fill",
@@ -195,10 +139,9 @@ struct DataManagementView: View {
                     
                     Button(action: {
                         cleanupType = .note
-                        showCleanupConfirmation = true
                     }) {
                         DataManagementRow(
-                            icon: "note.text.badge.minus",
+                            icon: "note.text",
                             iconColor: themeManager.accentColor(for: .note),
                             title: "清理笔记数据",
                             subtitle: "仅删除笔记相关数据"
@@ -213,54 +156,75 @@ struct DataManagementView: View {
             })
             .onAppear {
                 // 加载备份列表
-                backups = dataManager.getAllBackups()
+                backups = coreDataManager.getAllBackups()
+            }
+            .onChange(of: exportType) {
+                // 当导出类型改变时，延迟一点显示导出表单，确保视图已更新
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.016) {
+                    showExportSheet = true
+                }
+            }
+            .onChange(of: cleanupType) {
+                if cleanupType != .none {
+                    // 当清理类型改变时，延迟一点显示确认对话框，确保视图已更新
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.016) {
+                        showCleanupConfirmation = true
+                    }
+                }
             }
             .sheet(isPresented: $showBackupSheet) {
-                BackupView(isBackingUp: $isBackingUp, backupDate: $backupDate, showSuccess: $showBackupSuccess, showError: $showBackupError)
+                BackupView(
+                    isBackingUp: $isBackingUp,
+                    backupDate: $backupDate,
+                    showSuccess: $showBackupSuccess,
+                    showError: $showBackupError
+                )
             }
             .sheet(isPresented: $showRestoreSheet) {
-                RestoreView(isRestoring: $isRestoring, showSuccess: $showRestoreSuccess, showError: $showRestoreError)
+                RestoreView(
+                    isRestoring: $isRestoring,
+                    showSuccess: $showRestoreSuccess,
+                    showError: $showRestoreError
+                )
             }
             .sheet(isPresented: $showExportSheet) {
                 ExportView(exportType: exportType)
             }
-            .alert(isPresented: $showCleanupConfirmation) {
-                Alert(
-                    title: Text("确认数据清理"),
-                    message: Text("您确定要清理\(cleanupTypeText)吗？此操作不可撤销。"),
-                    primaryButton: .destructive(Text("清理")) {
-                        performCleanup(type: cleanupType)
-                    },
-                    secondaryButton: .cancel(Text("取消"))
-                )
+            .alert(
+                "确认数据清理",
+                isPresented: $showCleanupConfirmation
+            ) {
+                Button("清理", role: .destructive) {
+                    performCleanup(type: cleanupType)
+                    cleanupType = .none
+                    showCleanupConfirmation = false
+                }
+                Button("取消", role: .cancel) {
+                    cleanupType = .none
+                    showCleanupConfirmation = false
+                }
+            } message: {
+                Text("您确定要清理\(cleanupTypeText)吗？此操作不可撤销。")
             }
-            .alert(isPresented: $showBackupSuccess) {
-                Alert(
-                    title: Text("备份成功"),
-                    message: Text("数据已成功备份至本地文件。"),
-                    dismissButton: .default(Text("确定"))
-                )
+            .alert("备份成功", isPresented: $showBackupSuccess) {
+                Button("确定") {}
+            } message: {
+                Text("数据已成功备份至本地文件。")
             }
-            .alert(isPresented: $showRestoreSuccess) {
-                Alert(
-                    title: Text("恢复成功"),
-                    message: Text("数据已成功从备份文件恢复。"),
-                    dismissButton: .default(Text("确定"))
-                )
+            .alert("恢复成功", isPresented: $showRestoreSuccess) {
+                Button("确定") {}
+            } message: {
+                Text("数据已成功从备份文件恢复。重启以应用更改。")
             }
-            .alert(isPresented: $showBackupError) {
-                Alert(
-                    title: Text("备份失败"),
-                    message: Text("备份数据时发生错误，请重试。"),
-                    dismissButton: .default(Text("确定"))
-                )
+            .alert("备份失败", isPresented: $showBackupError) {
+                Button("确定") {}
+            } message: {
+                Text("备份数据时发生错误，请重试。")
             }
-            .alert(isPresented: $showRestoreError) {
-                Alert(
-                    title: Text("恢复失败"),
-                    message: Text("从备份文件恢复数据时发生错误，请检查文件是否有效。"),
-                    dismissButton: .default(Text("确定"))
-                )
+            .alert("恢复失败", isPresented: $showRestoreError) {
+                Button("确定") {}
+            } message: {
+                Text("从备份文件恢复数据时发生错误，请检查文件是否有效。")
             }
         }
     }
@@ -275,6 +239,8 @@ struct DataManagementView: View {
             return "场景数据"
         case .note:
             return "笔记数据"
+        case .none:
+            return ""
         }
     }
     
@@ -283,7 +249,7 @@ struct DataManagementView: View {
         print("清理\(cleanupTypeText)")
         
         // 调用DataManager进行数据清理
-        let success = dataManager.cleanupData(type: type)
+        let success = coreDataManager.cleanupData(type: type)
         
         if success {
             print("\(cleanupTypeText)清理成功")
@@ -333,8 +299,10 @@ struct BackupView: View {
     @Binding var showSuccess: Bool
     @Binding var showError: Bool
     @State private var backupName = ""
+    @State private var showShareSheet = false
+    @State private var backupData: Data?
     
-    let dataManager = DataManager.shared
+    let coreDataManager = CoreDataManager.shared
     
     var body: some View {
         NavigationView {
@@ -370,27 +338,37 @@ struct BackupView: View {
             .navigationTitle("创建备份")
             .navigationBarItems(trailing: Button("取消") {
                 presentationMode.wrappedValue.dismiss()
+            }
+            .sheet(isPresented: $showShareSheet) {
+                if let backupData = backupData {
+                    ShareSheet(activityItems: [backupData])
+                }
             })
         }
     }
+    
+    // State variables are already declared at the top of the view
     
     func createBackup() {
         isBackingUp = true
         
         // 调用DataManager创建备份
         DispatchQueue.global(qos: .userInitiated).async {
-            let success = dataManager.createBackup(name: backupName, date: backupDate)
-            
-            DispatchQueue.main.async {
-                isBackingUp = false
-                
-                if success {
+            if let backupData = coreDataManager.createBackup(name: backupName, date: backupDate) {
+                // 备份成功，保存数据以便分享
+                DispatchQueue.main.async {
+                    self.backupData = backupData
+                    isBackingUp = false
                     showSuccess = true
-                } else {
-                    showError = true
+                    showShareSheet = true
                 }
-                
-                presentationMode.wrappedValue.dismiss()
+            } else {
+                // 备份失败
+                DispatchQueue.main.async {
+                    isBackingUp = false
+                    showError = true
+                    presentationMode.wrappedValue.dismiss()
+                }
             }
         }
     }
@@ -406,7 +384,7 @@ struct RestoreView: View {
     @State private var backups: [BackupFile] = []
     @State private var showDocumentPicker = false
     
-    let dataManager = DataManager.shared
+    let coreDataManager = CoreDataManager.shared
     
     var body: some View {
         NavigationView {
@@ -480,7 +458,7 @@ struct RestoreView: View {
             })
             .onAppear {
                 // 加载备份文件列表
-                backups = dataManager.getAllBackups()
+                backups = coreDataManager.getAllBackups()
             }
             .sheet(isPresented: $showDocumentPicker) {
                 DocumentPicker(completion: { url in
@@ -498,7 +476,7 @@ struct RestoreView: View {
         
         // 调用DataManager恢复备份
         DispatchQueue.global(qos: .userInitiated).async {
-            let success = dataManager.restoreFromBackup(backupFile: backup.url)
+            let success = coreDataManager.restoreFromBackup(backup)
             
             DispatchQueue.main.async {
                 isRestoring = false
@@ -573,7 +551,7 @@ struct ExportView: View {
     @State private var exportDocument: ExportDocument?
     @State private var showShareSheet = false
     
-    let dataManager = DataManager.shared
+    let coreDataManager = CoreDataManager.shared
     
     var body: some View {
         NavigationView {
@@ -619,7 +597,7 @@ struct ExportView: View {
             })
             .sheet(isPresented: $showShareSheet) {
                 if let document = exportDocument {
-                    ShareSheet(items: [document.data])
+                    ShareSheet(activityItems: [document.data])
                 }
             }
         }
@@ -630,7 +608,7 @@ struct ExportView: View {
         
         // 调用DataManager导出数据
         DispatchQueue.global(qos: .userInitiated).async {
-            let document = dataManager.exportData(
+            let document = coreDataManager.exportData(
                 type: exportType,
                 includeCharacters: includeCharacters,
                 includeScenes: includeScenes,
@@ -653,14 +631,14 @@ struct ExportView: View {
 }
 
 // 分享表单
-struct ShareSheet: UIViewControllerRepresentable {
-    var items: [Any]
+// struct ShareSheet: UIViewControllerRepresentable {
+//     var items: [Any]
     
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
-        return controller
-    }
+//     func makeUIViewController(context: Context) -> UIActivityViewController {
+//         let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
+//         return controller
+//     }
     
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {
-    }
-}
+//     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {
+//     }
+// }
