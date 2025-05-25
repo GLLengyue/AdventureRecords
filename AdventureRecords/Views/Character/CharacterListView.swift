@@ -42,35 +42,91 @@ struct CharacterListView: View {
                 Menu {
                     ForEach(SortOrder.allCases) { order in
                         Button(action: {
-                            sortOrder = order
+                            withAnimation {
+                                sortOrder = order
+                            }
                         }) {
                             HStack {
                                 Text(order.rawValue)
+                                    .font(.system(.body))
+                                Spacer()
                                 if sortOrder == order {
                                     Image(systemName: "checkmark")
+                                        .foregroundColor(ThemeManager.shared.accentColor(for: .character))
                                 }
                             }
+                            .contentShape(Rectangle())
                         }
                     }
                 } label: {
                     Image(systemName: "arrow.up.arrow.down")
-                        .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                        .font(.system(size: 16, weight: .semibold))
+                        .padding(8)
+                        .background(ThemeManager.shared.accentColor(for: .character).opacity(0.1))
+                        .clipShape(Circle())
                 }
             }
         ) {
-            List(filteredAndSortedCharacters) { character in
-                Button {
-                    selectedCharacter = character
-                } label: {
-                    CharacterRow(character: character,
-                        onDelete: {
-                            CharacterViewModel.shared.deleteCharacter(character)
-                        },
-                        onEdit: { editableCharacter in
-                            characterViewModel.updateCharacter(editableCharacter)
+            if filteredAndSortedCharacters.isEmpty {
+                VStack(spacing: 20) {
+                    Spacer()
+                    
+                    VStack(spacing: 16) {
+                        Image(systemName: "person.crop.circle.badge.questionmark")
+                            .font(.system(size: 64))
+                            .foregroundColor(ThemeManager.shared.accentColor(for: .character).opacity(0.6))
+                        
+                        Text(searchText.isEmpty ? "暂无角色" : "没有找到相关角色")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        if searchText.isEmpty {
+                            Button {
+                                showingCharacterEditor = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "plus.circle.fill")
+                                    Text("创建角色")
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(ThemeManager.shared.accentColor(for: .character))
+                                .foregroundColor(.white)
+                                .cornerRadius(20)
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+                            .padding(.top, 8)
                         }
-                    )
+                    }
+                    
+                    Spacer()
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal)
+            } else {
+                List {
+                    ForEach(filteredAndSortedCharacters) { character in
+                        Button {
+                            selectedCharacter = character
+                        } label: {
+                            CharacterRow(character: character,
+                                onDelete: {
+                                    withAnimation {
+                                        CharacterViewModel.shared.deleteCharacter(character)
+                                    }
+                                },
+                                onEdit: { editableCharacter in
+                                    characterViewModel.updateCharacter(editableCharacter)
+                                }
+                            )
+                            .contentShape(Rectangle())
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .listStyle(PlainListStyle())
             }
         }
         .sheet(item: $selectedCharacter) { character in

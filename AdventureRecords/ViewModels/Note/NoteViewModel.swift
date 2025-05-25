@@ -13,7 +13,11 @@ class NoteViewModel: ObservableObject {
     private init() {
         loadNotes()
     }
-    
+
+    func getNote(id: UUID) -> NoteBlock? {
+        return notes.first(where: {$0.id == id})
+    }
+
     func loadNotes() {
         notes = coreDataManager.fetchNotes()
         self.objectWillChange.send()

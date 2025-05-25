@@ -21,77 +21,138 @@ struct SceneRow: View {
 
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text(scene.title)
-                .font(.headline)
-            Text(scene.description)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .lineLimit(2)
-
-            // Display related characters
-            if !relatedCharacters.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        Text("角色:")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        ForEach(relatedCharacters, id: \.id) { character in
-                            Text(character.name)
-                                .font(.caption)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.blue.opacity(0.1))
-                                .cornerRadius(12)
-                        }
-                    }
+        HStack(alignment: .top, spacing: 12) {
+            // 场景图标部分
+            ZStack {
+                Circle()
+                    .fill(ThemeManager.shared.accentColor(for: .scene).opacity(0.1))
+                    .frame(width: 56, height: 56)
+                
+                if let coverImage = scene.coverImage {
+                    Image(uiImage: coverImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 50, height: 50)
+                        .clipShape(Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(ThemeManager.shared.accentColor(for: .scene).opacity(0.3), lineWidth: 2)
+                        )
+                } else {
+                    Image(systemName: "photo.on.rectangle.angled.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
                 }
-                .padding(.top, 4)
             }
+            
+            // 场景信息部分
+            VStack(alignment: .leading, spacing: 4) {
+                Text(scene.title)
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(ThemeManager.shared.primaryTextColor)
+                
+                if !scene.description.isEmpty {
+                    Text(scene.description)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
 
-            // Display related notes
-            if !relatedNotes.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        Text("笔记:")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        ForEach(relatedNotes, id: \.id) { note in
-                            Text(note.title)
-                                .font(.caption)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.orange.opacity(0.1))
-                                .cornerRadius(12)
+                // 相关条目部分
+                VStack(alignment: .leading) {
+                    // 相关角色
+                    if !relatedCharacters.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(relatedCharacters, id: \.id) { character in
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "person.circle.fill")
+                                            .font(.system(size: 10))
+                                        Text(character.name)
+                                            .lineLimit(1)
+                                    }
+                                    .font(.caption2)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(ThemeManager.shared.accentColor(for: .character).opacity(0.1))
+                                    .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                                    .cornerRadius(8)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(ThemeManager.shared.accentColor(for: .character).opacity(0.3), lineWidth: 1)
+                                    )
+                                }
+                            }
+                        }
+                        .padding(.bottom, 4)
+                    }
+
+                    // 相关笔记
+                    if !relatedNotes.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(relatedNotes, id: \.id) { note in
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "doc.text.fill")
+                                            .font(.system(size: 10))
+                                        Text(note.title)
+                                            .lineLimit(1)
+                                    }
+                                    .font(.caption2)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(ThemeManager.shared.accentColor(for: .note).opacity(0.1))
+                                    .foregroundColor(ThemeManager.shared.accentColor(for: .note))
+                                    .cornerRadius(8)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(ThemeManager.shared.accentColor(for: .note).opacity(0.3), lineWidth: 1)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
                 .padding(.top, 4)
             }
         }
-        .swipeActions {
+        .padding(.vertical, 6)
+        .background(Color.clear)
+        .swipeActions(edge: .trailing) {
             Button(role: .destructive) {
-                onDelete()
+                withAnimation {
+                    onDelete()
+                }
             } label: {
                 Label("删除", systemImage: "trash")
             }
+            
             Button {
                 showEditor = true
             } label: {
                 Label("编辑", systemImage: "pencil")
             }
-            .tint(.blue)
+            .tint(ThemeManager.shared.accentColor(for: .scene))
         }
         .contextMenu {
             Button {
                 showEditor = true
             } label: {
                 Label("编辑", systemImage: "pencil")
+                    .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
             }
+            
+            Divider()
+            
             Button(role: .destructive) {
-                onDelete()
+                withAnimation {
+                    onDelete()
+                }
             } label: {
-                Label("删除", systemImage: "trash")
+                Label("删除", systemImage: "trash.fill")
             }
         }
 

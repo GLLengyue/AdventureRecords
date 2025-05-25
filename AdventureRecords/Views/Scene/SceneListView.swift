@@ -42,39 +42,95 @@ struct SceneListView: View {
                 Menu {
                     ForEach(SortOrder.allCases) { order in
                         Button(action: {
-                            sortOrder = order
+                            withAnimation {
+                                sortOrder = order
+                            }
                         }) {
                             HStack {
                                 Text(order.rawValue)
+                                    .font(.system(.body))
+                                Spacer()
                                 if sortOrder == order {
                                     Image(systemName: "checkmark")
+                                        .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
                                 }
                             }
+                            .contentShape(Rectangle())
                         }
                     }
                 } label: {
                     Image(systemName: "arrow.up.arrow.down")
-                        .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                        .font(.system(size: 16, weight: .semibold))
+                        .padding(8)
+                        .background(ThemeManager.shared.accentColor(for: .scene).opacity(0.1))
+                        .clipShape(Circle())
                 }
             }
         ) {
-            List(filteredAndSortedScenes) { scene in
-                Button {
-                    selectedScene = scene
-                } label: {
-                    SceneRow(scene: scene,
-                        onDelete: {
-                            SceneViewModel.shared.deleteScene(scene)
-                        },
-                        onEdit: { editableScene in
-                            sceneViewModel.updateScene(editableScene)
+            if filteredAndSortedScenes.isEmpty {
+                VStack(spacing: 20) {
+                    Spacer()
+                    
+                    VStack(spacing: 16) {
+                        Image(systemName: "photo.on.rectangle.angled")
+                            .font(.system(size: 64))
+                            .foregroundColor(ThemeManager.shared.accentColor(for: .scene).opacity(0.6))
+                        
+                        Text(searchText.isEmpty ? "暂无场景" : "没有找到相关场景")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        if searchText.isEmpty {
+                            Button {
+                                showingSceneEditor = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "plus.circle.fill")
+                                    Text("创建场景")
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(ThemeManager.shared.accentColor(for: .scene))
+                                .foregroundColor(.white)
+                                .cornerRadius(20)
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+                            .padding(.top, 8)
                         }
-                    )
+                    }
+                    
+                    Spacer()
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal)
+            } else {
+                List {
+                    ForEach(filteredAndSortedScenes) { scene in
+                        Button {
+                            selectedScene = scene
+                        } label: {
+                            SceneRow(scene: scene,
+                                onDelete: {
+                                    withAnimation {
+                                        SceneViewModel.shared.deleteScene(scene)
+                                    }
+                                },
+                                onEdit: { editableScene in
+                                    sceneViewModel.updateScene(editableScene)
+                                }
+                            )
+                            .contentShape(Rectangle())
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .listStyle(PlainListStyle())
             }
         }
         .sheet(item: $selectedScene) { scene in
-            SceneDetailView(scene: scene)
+            SceneDetailView(sceneID: scene.id)
         }
         .sheet(isPresented: $showingSceneEditor) {
             SceneEditorView(

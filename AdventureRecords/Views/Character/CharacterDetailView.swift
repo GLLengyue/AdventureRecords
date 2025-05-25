@@ -267,12 +267,12 @@ struct CharacterDetailView: View {
         }
         .sheet(item: $selectedNoteForDetail) { noteItem in
             NavigationStack {
-                NoteBlockDetailView(noteBlock: noteItem)
+                NoteBlockDetailView(noteID: noteItem.id)
             }
         }
         .sheet(item: $selectedSceneForDetail) { sceneItem in
             NavigationStack {
-                SceneDetailView(scene: sceneItem)
+                SceneDetailView(sceneID: sceneItem.id)
             }
         }
     }

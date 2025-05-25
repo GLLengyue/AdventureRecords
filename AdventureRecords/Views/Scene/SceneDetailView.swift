@@ -6,7 +6,7 @@ import AVFoundation
 
 struct SceneDetailView: View {
     @StateObject private var audioPlayerManager = AudioPlayerManager()
-    let scene: AdventureScene
+    let sceneID : UUID
     
     // 使用单例
     @StateObject private var sceneViewModel = SceneViewModel.shared
@@ -20,6 +20,9 @@ struct SceneDetailView: View {
     @State private var selectedCharacterForDetail: Character? = nil
     @State private var isDescriptionExpanded: Bool = false
     
+    private var scene: AdventureScene {
+        sceneViewModel.getScene(id: sceneID)!
+    }
     var relatedNotes: [NoteBlock] { scene.relatedNotes(in: noteViewModel.notes) }
     var relatedCharacters: [Character] {
         scene.relatedCharacters(in: noteViewModel.notes, characterProvider: { note in
@@ -297,7 +300,7 @@ struct SceneDetailView: View {
         }
         .sheet(item: $selectedNoteForDetail) { noteItem in
             NavigationStack {
-                NoteBlockDetailView(noteBlock: noteItem)
+                NoteBlockDetailView(noteID: noteItem.id)
             }
         }
 

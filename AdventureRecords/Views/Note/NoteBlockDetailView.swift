@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct NoteBlockDetailView: View {
-    let noteBlock: NoteBlock
+    let noteID : UUID
+    // let noteBlock: NoteBlock
     
     // 使用单例
     @StateObject private var noteViewModel = NoteViewModel.shared
@@ -10,6 +11,10 @@ struct NoteBlockDetailView: View {
     @State private var showEditor = false
     @State private var selectedCharacterForDetail: Character? = nil
     @State private var selectedSceneForDetail: AdventureScene? = nil
+
+    private var noteBlock: NoteBlock {
+        noteViewModel.getNote(id: noteID)!
+    }
 
     private var relatedCharacters: [Character] {
         characterViewModel.characters.filter { noteBlock.relatedCharacterIDs.contains($0.id) }
@@ -127,7 +132,7 @@ struct NoteBlockDetailView: View {
         }
         .sheet(item: $selectedSceneForDetail) { scene in
             NavigationStack {
-                SceneDetailView(scene: scene)
+                SceneDetailView(sceneID: scene.id)
             }
         }
     }

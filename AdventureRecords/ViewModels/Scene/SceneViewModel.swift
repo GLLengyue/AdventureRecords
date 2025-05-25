@@ -13,6 +13,10 @@ class SceneViewModel: ObservableObject {
     private init() {
         loadScenes()
     }
+
+    func getScene(id: UUID) -> AdventureScene? {
+        return scenes.first(where: {$0.id == id})
+    }
     
     func loadScenes() {
         scenes = coreDataManager.fetchScenes()
