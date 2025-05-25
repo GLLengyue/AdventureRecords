@@ -12,6 +12,8 @@ struct MoreView: View {
     @State private var showTermsOfService = false
     @State private var showSubscriptionSheet = false
     @State private var showResetConfirmation = false
+    @State private var showDataManagement = false
+    @State private var showDataManagerTest = false
     
     // 应用设置
     @AppStorage("isDarkMode") private var isDarkMode = false
@@ -63,11 +65,21 @@ struct MoreView: View {
                 
                 // 功能部分
                 Section(header: Text("功能")) {
+                    // 数据管理
+                    Button(action: { showDataManagement = true }) {
+                        MoreMenuRow(
+                            icon: "externaldrive",
+                            iconColor: themeManager.accentColor(for: .character),
+                            title: "数据管理",
+                            subtitle: "备份、恢复和导出数据"
+                        )
+                    }
+                    
                     // 设置
                     Button(action: { showSettings = true }) {
                         MoreMenuRow(
                             icon: "gear",
-                            iconColor: themeManager.accentColor(for: .character),
+                            iconColor: themeManager.accentColor(for: .scene),
                             title: "设置",
                             subtitle: "应用设置和偏好"
                         )
@@ -164,6 +176,15 @@ struct MoreView: View {
                                 subtitle: "查看应用运行日志"
                             )
                         }
+                        
+                        Button(action: { showDataManagerTest = true }) {
+                            MoreMenuRow(
+                                icon: "hammer",
+                                iconColor: themeManager.accentColor(for: .scene),
+                                title: "数据管理测试",
+                                subtitle: "测试备份、恢复和清理功能"
+                            )
+                        }
                     }
                     
                     Button(action: { showResetConfirmation = true }) {
@@ -201,6 +222,12 @@ struct MoreView: View {
         }
         .sheet(isPresented: $showSubscriptionSheet) {
             SubscriptionView(subscriptionManager: subscriptionManager)
+        }
+        .sheet(isPresented: $showDataManagement) {
+            DataManagementView()
+        }
+        .sheet(isPresented: $showDataManagerTest) {
+            DataManagerTestView()
         }
         .alert(isPresented: $showResetConfirmation) {
             Alert(
