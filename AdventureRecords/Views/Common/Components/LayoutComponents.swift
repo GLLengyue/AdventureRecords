@@ -50,8 +50,8 @@ public struct ModuleTabBar: View {
             }
             
             TabButton(
-                title: "设置",
-                icon: "gear",
+                title: "更多",
+                icon: "ellipsis",
                 module: .character, // 使用角色模块的颜色
                 isSelected: selectedTab == 4
             ) {

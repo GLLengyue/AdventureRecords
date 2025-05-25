@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UIKit
+import Combine
 
 /// 主题管理器，负责管理应用的颜色方案和主题设置
 public class ThemeManager: ObservableObject {
@@ -39,16 +40,33 @@ public class ThemeManager: ObservableObject {
     // MARK: - 主题模式
     @Published public var isDarkMode: Bool = false {
         didSet {
+            // 将值存储到 UserDefaults
+            UserDefaults.standard.set(isDarkMode, forKey: "isDarkMode")
             updateColorScheme()
+            // 设置系统外观模式
+            setSystemAppearance()
         }
     }
     
+    // 用于存储订阅
+    private var cancellables = Set<AnyCancellable>()
+    
     private init() {
-        // 初始化时检测系统当前的外观模式
-        if UITraitCollection.current.userInterfaceStyle == .dark {
-            isDarkMode = true
-        }
+        // 从 UserDefaults 中读取设置
+        isDarkMode = UserDefaults.standard.bool(forKey: "isDarkMode")
+        
+        // 监听 UserDefaults 中 isDarkMode 的变化
+        NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
+            .sink { [weak self] _ in
+                let newValue = UserDefaults.standard.bool(forKey: "isDarkMode")
+                if self?.isDarkMode != newValue {
+                    self?.isDarkMode = newValue
+                }
+            }
+            .store(in: &cancellables)
+        
         updateColorScheme()
+        setSystemAppearance()
     }
     
     /// 更新颜色方案
@@ -63,6 +81,19 @@ public class ThemeManager: ObservableObject {
             secondaryBackgroundColor = Color(UIColor.secondarySystemBackground)
             primaryTextColor = Color(UIColor.label)
             secondaryTextColor = Color(UIColor.secondaryLabel)
+        }
+    }
+    
+    /// 设置系统外观模式
+    private func setSystemAppearance() {
+        let windows = UIApplication.shared.connectedScenes
+            .filter { $0.activationState == .foregroundActive }
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+        
+        let appearance = isDarkMode ? UIUserInterfaceStyle.dark : UIUserInterfaceStyle.light
+        windows.forEach { window in
+            window.overrideUserInterfaceStyle = appearance
         }
     }
     

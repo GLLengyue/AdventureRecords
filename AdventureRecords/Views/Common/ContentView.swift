@@ -15,7 +15,6 @@ struct ContentView: View {
     @StateObject private var characterViewModel = CharacterViewModel.shared
     @StateObject private var noteViewModel = NoteViewModel.shared
     @StateObject private var sceneViewModel = SceneViewModel.shared
-    @StateObject private var themeManager = ThemeManager.shared
     
     // 控制各个模块编辑器 Sheet 显示的状态变量
     @State private var showingCharacterEditorSheet = false
@@ -33,13 +32,8 @@ struct ContentView: View {
                 SceneListView(showingSceneEditor: $showingSceneEditorSheet)
             } else if selectedTab == 3 { // 标签云视图
                 TagCloudView()
-            } else { // 假设 selectedTab == 4 是设置
-                // TODO: 实现设置视图
-                Text("设置")
-                    .font(.largeTitle)
-                    .foregroundColor(themeManager.primaryTextColor)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(themeManager.backgroundColor)
+            } else { // 假设 selectedTab == 4 是更多
+                MoreView()
             }
             
             ModuleTabBar(selectedTab: $selectedTab)
