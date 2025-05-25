@@ -38,6 +38,37 @@ struct TagCloudView: View {
         return Array(tags).sorted()
     }
     
+    // 获取热门标签（使用频率最高的5个标签）
+    var popularTags: [String] {
+        // 创建标签频率字典
+        var tagFrequency: [String: Int] = [:]
+        
+        // 计算角色标签频率
+        for character in characterViewModel.characters {
+            for tag in character.tags {
+                tagFrequency[tag, default: 0] += 1
+            }
+        }
+        
+        // 计算场景标签频率
+        for scene in sceneViewModel.scenes {
+            for tag in scene.tags {
+                tagFrequency[tag, default: 0] += 1
+            }
+        }
+        
+        // 计算笔记标签频率
+        for note in noteViewModel.notes {
+            for tag in note.tags {
+                tagFrequency[tag, default: 0] += 1
+            }
+        }
+        
+        // 按频率排序并取前5个
+        let sortedTags = tagFrequency.sorted { $0.value > $1.value }.prefix(5).map { $0.key }
+        return sortedTags
+    }
+    
     // 获取与标签相关的内容
     var filteredCharacters: [Character] {
         guard let tag = selectedTag else { return [] }
@@ -62,43 +93,116 @@ struct TagCloudView: View {
             content: {
                 // 标签云
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("标签云")
-                            .font(.headline)
-                            .padding(.horizontal)
+                    VStack(alignment: .leading, spacing: 20) {
+                        // 标签云标题
+                        HStack {
+                            Label("标签云", systemImage: "tag.fill")
+                                .font(.title2.bold())
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .note))
+                            
+                            Spacer()
+                            
+                            if !allTags.isEmpty {
+                                Text("共 \(allTags.count) 个标签")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.gray.opacity(0.1))
+                                    .cornerRadius(10)
+                            }
+                        }
+                        .padding(.horizontal)
                         
                         if allTags.isEmpty {
+                            // 无标签时的提示
                             VStack(spacing: 20) {
                                 Spacer()
                                 
-                                Image(systemName: "tag.slash")
-                                    .font(.system(size: 64))
-                                    .foregroundColor(.gray.opacity(0.6))
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.gray.opacity(0.1))
+                                        .frame(width: 120, height: 120)
+                                    
+                                    Image(systemName: "tag.slash")
+                                        .font(.system(size: 50))
+                                        .foregroundColor(.gray.opacity(0.6))
+                                }
                                 
                                 Text("暂无标签")
                                     .font(.headline)
                                     .foregroundColor(.secondary)
                                 
+                                Text("在编辑角色、场景或笔记时添加标签")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary.opacity(0.8))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                                
                                 Spacer()
                             }
-                            .frame(maxWidth: .infinity, minHeight: 200)
+                            .frame(maxWidth: .infinity, minHeight: 300)
                         } else {
-                            FlowLayout(spacing: 10) {
-                                ForEach(allTags, id: \.self) { tag in
-                                    TagButton(
-                                        tag: tag,
-                                        isSelected: selectedTag == tag,
-                                        onTap: {
-                                            if selectedTag == tag {
-                                                selectedTag = nil
-                                            } else {
-                                                selectedTag = tag
+                            // 标签组
+                            VStack(alignment: .leading, spacing: 16) {
+                                // 热门标签区域
+                                if !popularTags.isEmpty {
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        Text("热门标签")
+                                            .font(.headline)
+                                            .foregroundColor(ThemeManager.shared.primaryTextColor)
+                                            .padding(.horizontal)
+                                        
+                                        ScrollView(.horizontal, showsIndicators: false) {
+                                            HStack(spacing: 10) {
+                                                ForEach(popularTags, id: \.self) { tag in
+                                                    TagButton(
+                                                        tag: tag,
+                                                        isSelected: selectedTag == tag,
+                                                        onTap: {
+                                                            if selectedTag == tag {
+                                                                selectedTag = nil
+                                                            } else {
+                                                                selectedTag = tag
+                                                            }
+                                                        }
+                                                    )
+                                                }
                                             }
+                                            .padding(.horizontal)
                                         }
-                                    )
+                                    }
+                                    .padding(.bottom, 8)
+                                    
+                                    Divider()
+                                        .padding(.horizontal)
+                                }
+                                
+                                // 所有标签区域
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text("所有标签")
+                                        .font(.headline)
+                                        .foregroundColor(ThemeManager.shared.primaryTextColor)
+                                        .padding(.horizontal)
+                                    
+                                    FlowLayout(spacing: 10) {
+                                        ForEach(allTags, id: \.self) { tag in
+                                            TagButton(
+                                                tag: tag,
+                                                isSelected: selectedTag == tag,
+                                                onTap: {
+                                                    if selectedTag == tag {
+                                                        selectedTag = nil
+                                                    } else {
+                                                        selectedTag = tag
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    }
+                                    .padding(.horizontal)
                                 }
                             }
-                            .padding(.horizontal)
                         }
                     }
                     .padding(.vertical)
@@ -106,14 +210,59 @@ struct TagCloudView: View {
                 
                 // 分隔线
                 Divider()
+                    .padding(.horizontal)
                 
                 // 内容区域
                 if let selectedTag = selectedTag {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 20) {
-                            Text("标签：\(selectedTag)")
-                                .font(.headline)
-                                .padding(.horizontal)
+                            // 标签标题
+                            HStack {
+                                Label("标签：\(selectedTag)", systemImage: "tag.circle.fill")
+                                    .font(.title3.bold())
+                                    .foregroundColor(tagColor(for: selectedTag))
+                                
+                                Spacer()
+                                
+                                // 总数统计
+                                let totalItems = filteredCharacters.count + filteredScenes.count + filteredNotes.count
+                                Text("\(totalItems) 个相关项目")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.gray.opacity(0.1))
+                                    .cornerRadius(10)
+                            }
+                            .padding(.horizontal)
+                            
+                            // 内容统计卡片
+                            HStack(spacing: 12) {
+                                // 角色统计
+                                StatCard(
+                                    title: "角色",
+                                    count: filteredCharacters.count,
+                                    icon: "person.2",
+                                    color: ThemeManager.shared.accentColor(for: .character)
+                                )
+                                
+                                // 场景统计
+                                StatCard(
+                                    title: "场景",
+                                    count: filteredScenes.count,
+                                    icon: "film",
+                                    color: ThemeManager.shared.accentColor(for: .scene)
+                                )
+                                
+                                // 笔记统计
+                                StatCard(
+                                    title: "笔记",
+                                    count: filteredNotes.count,
+                                    icon: "note.text",
+                                    color: ThemeManager.shared.accentColor(for: .note)
+                                )
+                            }
+                            .padding(.horizontal)
                             
                             // 角色部分
                             if !filteredCharacters.isEmpty {
@@ -124,31 +273,30 @@ struct TagCloudView: View {
                                             .foregroundColor(ThemeManager.shared.accentColor(for: .character))
                                         
                                         Spacer()
-                                        
-                                        Text("\(filteredCharacters.count)")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 4)
-                                            .background(Color.gray.opacity(0.1))
-                                            .cornerRadius(10)
                                     }
                                     .padding(.horizontal)
                                     
                                     ScrollView(.horizontal, showsIndicators: false) {
                                         HStack(spacing: 12) {
                                             ForEach(filteredCharacters) { character in
-                                                CharacterItemView(character: character) {
+                                                TagCloudCharacterItemView(character: character) {
                                                     selectedCharacter = character
                                                 }
+                                                .transition(.scale)
                                             }
                                         }
                                         .padding(.horizontal)
+                                        .animation(.spring(), value: filteredCharacters.count)
                                     }
                                 }
-                                .padding(.bottom, 8)
+                                .padding(.vertical, 8)
+                                .background(Color.gray.opacity(0.05))
+                                .cornerRadius(12)
+                                .padding(.horizontal)
                                 
                                 Divider()
+                                    .padding(.horizontal)
+                                    .padding(.vertical, 8)
                             }
                             
                             // 场景部分
@@ -160,31 +308,30 @@ struct TagCloudView: View {
                                             .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
                                         
                                         Spacer()
-                                        
-                                        Text("\(filteredScenes.count)")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 4)
-                                            .background(Color.gray.opacity(0.1))
-                                            .cornerRadius(10)
                                     }
                                     .padding(.horizontal)
                                     
                                     ScrollView(.horizontal, showsIndicators: false) {
                                         HStack(spacing: 12) {
                                             ForEach(filteredScenes) { scene in
-                                                SceneItemView(scene: scene) {
+                                                TagCloudSceneItemView(scene: scene) {
                                                     selectedScene = scene
                                                 }
+                                                .transition(.scale)
                                             }
                                         }
                                         .padding(.horizontal)
+                                        .animation(.spring(), value: filteredScenes.count)
                                     }
                                 }
-                                .padding(.bottom, 8)
+                                .padding(.vertical, 8)
+                                .background(Color.gray.opacity(0.05))
+                                .cornerRadius(12)
+                                .padding(.horizontal)
                                 
                                 Divider()
+                                    .padding(.horizontal)
+                                    .padding(.vertical, 8)
                             }
                             
                             // 笔记部分
@@ -196,46 +343,54 @@ struct TagCloudView: View {
                                             .foregroundColor(ThemeManager.shared.accentColor(for: .note))
                                         
                                         Spacer()
-                                        
-                                        Text("\(filteredNotes.count)")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 4)
-                                            .background(Color.gray.opacity(0.1))
-                                            .cornerRadius(10)
                                     }
                                     .padding(.horizontal)
                                     
                                     ScrollView(.horizontal, showsIndicators: false) {
                                         HStack(spacing: 12) {
                                             ForEach(filteredNotes) { note in
-                                                NoteItemView(note: note) {
+                                                TagCloudNoteItemView(note: note) {
                                                     selectedNote = note
                                                 }
+                                                .transition(.scale)
                                             }
                                         }
                                         .padding(.horizontal)
+                                        .animation(.spring(), value: filteredNotes.count)
                                     }
                                 }
-                                .padding(.bottom, 8)
+                                .padding(.vertical, 8)
+                                .background(Color.gray.opacity(0.05))
+                                .cornerRadius(12)
+                                .padding(.horizontal)
                             }
                             
                             if filteredCharacters.isEmpty && filteredScenes.isEmpty && filteredNotes.isEmpty {
                                 VStack(spacing: 20) {
                                     Spacer()
                                     
-                                    Image(systemName: "magnifyingglass")
-                                        .font(.system(size: 64))
-                                        .foregroundColor(.gray.opacity(0.6))
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.gray.opacity(0.1))
+                                            .frame(width: 120, height: 120)
+                                        
+                                        Image(systemName: "magnifyingglass")
+                                            .font(.system(size: 50))
+                                            .foregroundColor(.gray.opacity(0.6))
+                                    }
                                     
                                     Text("没有找到相关内容")
                                         .font(.headline)
                                         .foregroundColor(.secondary)
                                     
+                                    Text("尝试选择其他标签")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary.opacity(0.8))
+                                    
                                     Spacer()
                                 }
-                                .frame(maxWidth: .infinity, minHeight: 200)
+                                .frame(maxWidth: .infinity, minHeight: 300)
+                                .padding(.top, 20)
                             }
                         }
                         .padding(.vertical)
@@ -244,17 +399,30 @@ struct TagCloudView: View {
                     VStack(spacing: 20) {
                         Spacer()
                         
-                        Image(systemName: "tag")
-                            .font(.system(size: 64))
-                            .foregroundColor(.gray.opacity(0.6))
+                        ZStack {
+                            Circle()
+                                .fill(Color.gray.opacity(0.1))
+                                .frame(width: 120, height: 120)
+                            
+                            Image(systemName: "hand.tap")
+                                .font(.system(size: 50))
+                                .foregroundColor(.gray.opacity(0.6))
+                        }
                         
                         Text("请选择一个标签查看相关内容")
                             .font(.headline)
                             .foregroundColor(.secondary)
                         
+                        Text("点击上方的标签以查看相关的角色、场景和笔记")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary.opacity(0.8))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                        
                         Spacer()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.top, 20)
                 }
             }
         )
@@ -274,46 +442,128 @@ struct TagCloudView: View {
     }
 }
 
+// 根据标签生成颜色
+func tagColor(for tag: String) -> Color {
+    let colors: [Color] = [
+        .blue, .purple, .green, .orange, .pink, .teal, .indigo, .cyan
+    ]
+    
+    // 使用标签字符串的哈希值来确定颜色
+    let hash = abs(tag.hashValue)
+    return colors[hash % colors.count]
+}
+
+// 统计卡片组件
+struct StatCard: View {
+    let title: String
+    let count: Int
+    let icon: String
+    let color: Color
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .semibold))
+                Text(title)
+                    .font(.system(size: 14, weight: .medium))
+            }
+            .foregroundColor(color)
+            
+            Text("\(count)")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(count > 0 ? color : .secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(color.opacity(0.1))
+        .cornerRadius(12)
+    }
+}
+
 // 标签按钮组件
 struct TagButton: View {
     let tag: String
     let isSelected: Bool
     let onTap: () -> Void
+    @State private var scale: CGFloat = 1.0
+    
+    // 根据标签长度生成不同的颜色
+    private var tagColor: Color {
+        let colors: [Color] = [
+            .blue, .purple, .green, .orange, .pink, .teal, .indigo, .cyan
+        ]
+        
+        // 使用标签字符串的哈希值来确定颜色
+        let hash = abs(tag.hashValue)
+        return colors[hash % colors.count]
+    }
+    
+    // 根据标签长度调整字体大小
+    private var fontSize: CGFloat {
+        let length = tag.count
+        if length <= 2 {
+            return 16
+        } else if length <= 4 {
+            return 14
+        } else {
+            return 12
+        }
+    }
     
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 4) {
+            HStack(spacing: 6) {
                 if isSelected {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 10))
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: fontSize - 2))
+                        .foregroundColor(tagColor)
                 }
                 
                 Text(tag)
                     .lineLimit(1)
+                    .font(.system(size: fontSize, weight: isSelected ? .semibold : .regular))
             }
-            .font(.subheadline)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(
                 isSelected ?
-                Color.accentColor.opacity(0.2) :
+                tagColor.opacity(0.15) :
                 ThemeManager.shared.secondaryBackgroundColor
             )
             .foregroundColor(
                 isSelected ?
-                Color.accentColor :
+                tagColor :
                 ThemeManager.shared.primaryTextColor
             )
-            .cornerRadius(16)
+            .cornerRadius(20)
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 20)
                     .stroke(
                         isSelected ?
-                        Color.accentColor :
+                        tagColor :
                         Color.gray.opacity(0.3),
-                        lineWidth: 1
+                        lineWidth: isSelected ? 1.5 : 1
                     )
             )
+            .shadow(color: isSelected ? tagColor.opacity(0.3) : Color.clear, radius: 3, x: 0, y: 1)
+            .scaleEffect(scale)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: scale)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .onHover { isHovered in
+            scale = isHovered ? 1.05 : 1.0
+        }
+        .onTapGesture {
+            withAnimation(.spring(response: 0.2, dampingFraction: 0.5)) {
+                scale = 0.95
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    withAnimation(.spring(response: 0.2, dampingFraction: 0.5)) {
+                        scale = 1.0
+                    }
+                }
+            }
+            onTap()
         }
     }
 }
