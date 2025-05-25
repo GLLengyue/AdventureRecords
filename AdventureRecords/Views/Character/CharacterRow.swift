@@ -60,6 +60,48 @@ struct CharacterRow: View {
                         .foregroundColor(.secondary)
                         .lineLimit(2)
                 }
+                
+                // 标签预览
+                if !character.tags.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 6) {
+                            ForEach(Array(character.tags.prefix(3)), id: \.self) { tag in
+                                HStack(spacing: 4) {
+                                    Image(systemName: "tag.fill")
+                                        .font(.system(size: 8))
+                                    Text(tag)
+                                        .lineLimit(1)
+                                }
+                                .font(.caption2)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                                .background(ThemeManager.shared.accentColor(for: .character).opacity(0.1))
+                                .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                                .cornerRadius(6)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .stroke(ThemeManager.shared.accentColor(for: .character).opacity(0.3), lineWidth: 1)
+                                )
+                            }
+                            
+                            if character.tags.count > 3 {
+                                Text("+\(character.tags.count - 3)")
+                                    .font(.caption2)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 3)
+                                    .background(ThemeManager.shared.accentColor(for: .character).opacity(0.1))
+                                    .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                                    .cornerRadius(6)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(ThemeManager.shared.accentColor(for: .character).opacity(0.3), lineWidth: 1)
+                                    )
+                            }
+                        }
+                    }
+                    .padding(.top, 2)
+                    .padding(.bottom, 2)
+                }
 
                 // 相关条目部分
                 VStack(alignment: .leading) {

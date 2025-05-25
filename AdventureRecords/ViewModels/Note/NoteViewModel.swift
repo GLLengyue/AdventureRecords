@@ -40,6 +40,17 @@ class NoteViewModel: ObservableObject {
         removeRelationship(for: note)
         loadNotes()
     }
+    
+    /// 获取所有笔记中使用的标签
+    func getAllTags() -> [String] {
+        var allTags = Set<String>()
+        for note in notes {
+            for tag in note.tags {
+                allTags.insert(tag)
+            }
+        }
+        return Array(allTags).sorted()
+    }
 
     func removeRelationship(for note: NoteBlock) {
         let characters = coreDataManager.fetchCharacters(for: note.relatedCharacterIDs)

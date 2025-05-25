@@ -42,5 +42,15 @@ class CharacterViewModel: ObservableObject {
         coreDataManager.deleteCharacter(character.id)
         loadCharacters()
     }
-
+    
+    /// 获取所有角色中使用的标签
+    func getAllTags() -> [String] {
+        var allTags = Set<String>()
+        for character in characters {
+            for tag in character.tags {
+                allTags.insert(tag)
+            }
+        }
+        return Array(allTags).sorted()
+    }
 }

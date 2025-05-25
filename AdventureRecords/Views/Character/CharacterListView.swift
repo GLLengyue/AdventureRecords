@@ -5,6 +5,7 @@ struct CharacterListView: View {
     @State private var searchText: String = ""
     @State private var sortOrder: SortOrder = .nameAscending
     @State private var selectedCharacter: Character? = nil
+    @State private var selectedTags: [String] = []
     
     // 使用单例
     @StateObject private var characterViewModel = CharacterViewModel.shared
@@ -16,9 +17,28 @@ struct CharacterListView: View {
         var id: String { self.rawValue }
     }
 
+    // 获取所有角色中的标签
+    var allTags: [String] {
+        var tags = Set<String>()
+        for character in characterViewModel.characters {
+            for tag in character.tags {
+                tags.insert(tag)
+            }
+        }
+        return Array(tags).sorted()
+    }
+    
     var filteredAndSortedCharacters: [Character] {
         let filtered = characterViewModel.characters.filter { character in
-            searchText.isEmpty ? true : character.name.localizedCaseInsensitiveContains(searchText) || character.description.localizedCaseInsensitiveContains(searchText)
+            let matchesSearch = searchText.isEmpty ? true : 
+                character.name.localizedCaseInsensitiveContains(searchText) || 
+                character.description.localizedCaseInsensitiveContains(searchText) ||
+                character.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+            
+            let matchesTags = selectedTags.isEmpty ? true : 
+                character.tags.contains { selectedTags.contains($0) }
+            
+            return matchesSearch && matchesTags
         }
 
         switch sortOrder {
@@ -104,7 +124,18 @@ struct CharacterListView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal)
             } else {
-                List {
+                VStack(spacing: 0) {
+                    // 标签筛选视图
+                    if !allTags.isEmpty {
+                        TagFilterView(
+                            allTags: allTags,
+                            selectedTags: $selectedTags,
+                            accentColor: ThemeManager.shared.accentColor(for: .character)
+                        )
+                        .padding(.bottom, 8)
+                    }
+                    
+                    List {
                     ForEach(filteredAndSortedCharacters) { character in
                         Button {
                             selectedCharacter = character
@@ -127,6 +158,7 @@ struct CharacterListView: View {
                     }
                 }
                 .listStyle(PlainListStyle())
+                }
             }
         }
         .sheet(item: $selectedCharacter) { character in

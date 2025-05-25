@@ -36,5 +36,16 @@ class SceneViewModel: ObservableObject {
     func deleteScene(_ scene: AdventureScene) {
         coreDataManager.deleteScene(scene.id)
         loadScenes()
-    }    
+    }
+    
+    /// 获取所有场景中使用的标签
+    func getAllTags() -> [String] {
+        var allTags = Set<String>()
+        for scene in scenes {
+            for tag in scene.tags {
+                allTags.insert(tag)
+            }
+        }
+        return Array(allTags).sorted()
+    }
 }

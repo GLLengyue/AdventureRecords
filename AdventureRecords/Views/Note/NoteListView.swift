@@ -6,6 +6,7 @@ struct NoteListView: View {
     @State private var searchText: String = ""
     @State private var sortOrder: SortOrder = .titleAscending
     @State private var selectedNote: NoteBlock? = nil
+    @State private var selectedTags: [String] = []
     
     // 使用单例
     @StateObject private var noteViewModel = NoteViewModel.shared
@@ -18,9 +19,28 @@ struct NoteListView: View {
         var id: String { self.rawValue }
     }
 
+    // 获取所有笔记中的标签
+    var allTags: [String] {
+        var tags = Set<String>()
+        for note in noteViewModel.notes {
+            for tag in note.tags {
+                tags.insert(tag)
+            }
+        }
+        return Array(tags).sorted()
+    }
+    
     var filteredAndSortedNotes: [NoteBlock] {
         let filtered = noteViewModel.notes.filter { note in
-            searchText.isEmpty ? true : note.title.localizedCaseInsensitiveContains(searchText) || note.content.localizedCaseInsensitiveContains(searchText)
+            let matchesSearch = searchText.isEmpty ? true : 
+                note.title.localizedCaseInsensitiveContains(searchText) || 
+                note.content.localizedCaseInsensitiveContains(searchText) ||
+                note.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+            
+            let matchesTags = selectedTags.isEmpty ? true : 
+                note.tags.contains { selectedTags.contains($0) }
+            
+            return matchesSearch && matchesTags
         }
 
         switch sortOrder {
@@ -108,7 +128,18 @@ struct NoteListView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal)
             } else {
-                List {
+                VStack(spacing: 0) {
+                    // 标签筛选视图
+                    if !allTags.isEmpty {
+                        TagFilterView(
+                            allTags: allTags,
+                            selectedTags: $selectedTags,
+                            accentColor: ThemeManager.shared.accentColor(for: .note)
+                        )
+                        .padding(.bottom, 8)
+                    }
+                    
+                    List {
                     ForEach(filteredAndSortedNotes) { note in
                         Button {
                             selectedNote = note
@@ -132,6 +163,7 @@ struct NoteListView: View {
                     }
                 }
                 .listStyle(PlainListStyle())
+                }
             }
         }
         .sheet(item: $selectedNote) { note in

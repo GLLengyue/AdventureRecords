@@ -2,10 +2,10 @@ import SwiftUI
 
 struct SceneListView: View {
     @Binding var showingSceneEditor: Bool
-
     @State private var searchText: String = ""
     @State private var sortOrder: SortOrder = .titleAscending
     @State private var selectedScene: AdventureScene? = nil
+    @State private var selectedTags: [String] = []
     @State private var showingSortMenu: Bool = false
     
     // 使用单例
@@ -18,9 +18,28 @@ struct SceneListView: View {
         var id: String { self.rawValue }
     }
 
+    // 获取所有场景中的标签
+    var allTags: [String] {
+        var tags = Set<String>()
+        for scene in sceneViewModel.scenes {
+            for tag in scene.tags {
+                tags.insert(tag)
+            }
+        }
+        return Array(tags).sorted()
+    }
+    
     var filteredAndSortedScenes: [AdventureScene] {
         let filtered = sceneViewModel.scenes.filter { scene in
-            searchText.isEmpty ? true : scene.title.localizedCaseInsensitiveContains(searchText) || scene.description.localizedCaseInsensitiveContains(searchText)
+            let matchesSearch = searchText.isEmpty ? true : 
+                scene.title.localizedCaseInsensitiveContains(searchText) || 
+                scene.description.localizedCaseInsensitiveContains(searchText) ||
+                scene.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
+            
+            let matchesTags = selectedTags.isEmpty ? true : 
+                scene.tags.contains { selectedTags.contains($0) }
+            
+            return matchesSearch && matchesTags
         }
 
         switch sortOrder {
@@ -104,7 +123,18 @@ struct SceneListView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal)
             } else {
-                List {
+                VStack(spacing: 0) {
+                    // 标签筛选视图
+                    if !allTags.isEmpty {
+                        TagFilterView(
+                            allTags: allTags,
+                            selectedTags: $selectedTags,
+                            accentColor: ThemeManager.shared.accentColor(for: .scene)
+                        )
+                        .padding(.bottom, 8)
+                    }
+                    
+                    List {
                     ForEach(filteredAndSortedScenes) { scene in
                         Button {
                             selectedScene = scene
@@ -127,6 +157,7 @@ struct SceneListView: View {
                     }
                 }
                 .listStyle(PlainListStyle())
+                }
             }
         }
         .sheet(item: $selectedScene) { scene in

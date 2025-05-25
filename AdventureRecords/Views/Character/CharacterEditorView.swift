@@ -14,7 +14,9 @@ struct CharacterEditorView: View {
     // 状态变量
     @State private var name: String
     @State private var description: String
-    @State private var tags: [String]
+    @State private var tags: [String] = []
+    @State private var tagSuggestions: [String] = []
+    @State private var showTagSuggestions: Bool = false
     @State private var avatar: UIImage?
     @State private var selectedItem: PhotosPickerItem?
     @State private var showRecordingSheet: Bool
@@ -43,6 +45,7 @@ struct CharacterEditorView: View {
         self._name = State(initialValue: "")
         self._description = State(initialValue: "")
         self._tags = State(initialValue: [])
+        self._tagSuggestions = State(initialValue: CharacterViewModel.shared.getAllTags())
         self._avatar = State(initialValue: nil)
         self._selectedItem = State(initialValue: nil)
 
@@ -52,18 +55,44 @@ struct CharacterEditorView: View {
     }
     
     // 编辑现有角色卡
-    init(card: Character!, onSave: @escaping (Character) -> Void, onCancel: @escaping () -> Void) {
+    init(card: Character? = nil, onSave: @escaping (Character) -> Void, onCancel: @escaping () -> Void) {
         self.onSave = onSave
         self.onCancel = onCancel
-        self._name = State(initialValue: card.name)
-        self._description = State(initialValue: card.description)
-        self._tags = State(initialValue: card.tags)
-        self._avatar = State(initialValue: card.avatar)
-        self._selectedItem = State(initialValue: nil)
-
+        
+        if let card = card {
+            self._name = State(initialValue: card.name)
+            self._description = State(initialValue: card.description)
+            self._tags = State(initialValue: card.tags)
+            self._avatar = State(initialValue: card.avatar)
+            self.existingCharacter = card
+        } else {
+            self._name = State(initialValue: "")
+            self._description = State(initialValue: "")
+            self._tags = State(initialValue: [])
+            self._avatar = State(initialValue: nil)
+            self.existingCharacter = nil
+        }
+        
+        self._tagSuggestions = State(initialValue: CharacterViewModel.shared.getAllTags())
         self._showRecordingSheet = State(initialValue: false)
         self._newTag = State(initialValue: "")
-        self.existingCharacter = card
+    }
+    
+    var filteredTagSuggestions: [String] {
+        if newTag.isEmpty {
+            // 当输入为空时，显示所有尚未添加的标签
+            return tagSuggestions.filter { !tags.contains($0) }
+        } else {
+            // 当有输入时，过滤出匹配的标签
+            return tagSuggestions.filter { 
+                $0.localizedCaseInsensitiveContains(newTag) && !tags.contains($0)
+            }
+        }
+    }
+    
+    func updateTagSuggestions() {
+        // 更新标签建议列表
+        tagSuggestions = CharacterViewModel.shared.getAllTags()
     }
     
     func actionOnSave() {
@@ -237,27 +266,53 @@ struct CharacterEditorView: View {
                         }
                         
                         // 标签输入区
-                        HStack {
-                            TextField("输入新标签", text: $newTag)
+                        VStack(spacing: 8) {
+                            HStack {
+                                TextField("输入新标签", text: $newTag, onEditingChanged: { isEditing in
+                                    showTagSuggestions = isEditing
+                                    updateTagSuggestions()
+                                })
+                                .onChange(of: newTag) { _ in
+                                    updateTagSuggestions()
+                                }
                                 .padding(12)
                                 .background(ThemeManager.shared.secondaryBackgroundColor)
                                 .cornerRadius(10)
-                            
-                            Button(action: {
-                                let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
-                                if !trimmedTag.isEmpty && !tags.contains(trimmedTag) {
-                                    withAnimation {
-                                        tags.append(trimmedTag)
-                                        newTag = ""
+                                
+                                Button(action: {
+                                    let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
+                                    if !trimmedTag.isEmpty && !tags.contains(trimmedTag) {
+                                        withAnimation {
+                                            tags.append(trimmedTag)
+                                            newTag = ""
+                                            updateTagSuggestions()
+                                        }
                                     }
+                                }) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(newTag.isEmpty ? .gray : ThemeManager.shared.accentColor(for: .character))
                                 }
-                            }) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 24))
-                                    .foregroundColor(newTag.isEmpty ? .gray : ThemeManager.shared.accentColor(for: .character))
+                                .disabled(newTag.isEmpty)
+                                .padding(.leading, 8)
                             }
-                            .disabled(newTag.isEmpty)
-                            .padding(.leading, 8)
+                            
+                            // 标签建议
+                            if showTagSuggestions && !filteredTagSuggestions.isEmpty {
+                                TagSuggestionView(
+                                    suggestions: filteredTagSuggestions,
+                                    onSelectSuggestion: { suggestion in
+                                        if !tags.contains(suggestion) {
+                                            withAnimation {
+                                                tags.append(suggestion)
+                                                newTag = ""
+                                                updateTagSuggestions()
+                                            }
+                                        }
+                                    },
+                                    accentColor: ThemeManager.shared.accentColor(for: .character)
+                                )
+                            }
                         }
                         
                         // 现有标签显示

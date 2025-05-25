@@ -15,7 +15,9 @@ struct NoteEditorView: View {
     @State private var content: String
     @State private var selectedCharacterIDs: [UUID]
     @State private var selectedSceneIDs: [UUID]
-    @State private var tags: [String]
+    @State private var tags: [String] = []
+    @State private var tagSuggestions: [String] = []
+    @State private var showTagSuggestions: Bool = false
     @State private var newTag: String
     
     @State private var showCharacterPicker = false
@@ -29,12 +31,30 @@ struct NoteEditorView: View {
     private var existingNote: NoteBlock?
     private var isEditing: Bool
     
+    var filteredTagSuggestions: [String] {
+        if newTag.isEmpty {
+            // 当输入为空时，显示所有尚未添加的标签
+            return tagSuggestions.filter { !tags.contains($0) }
+        } else {
+            // 当有输入时，过滤出匹配的标签
+            return tagSuggestions.filter { 
+                $0.localizedCaseInsensitiveContains(newTag) && !tags.contains($0)
+            }
+        }
+    }
+    
+    func updateTagSuggestions() {
+        // 更新标签建议列表
+        tagSuggestions = NoteViewModel.shared.getAllTags()
+    }
+    
     init(onSave: @escaping (NoteBlock) -> Void, onCancel: @escaping () -> Void) {
         self._title = State(initialValue: "")
         self._content = State(initialValue: "")
         self._selectedCharacterIDs = State(initialValue: [])
         self._selectedSceneIDs = State(initialValue: [])
         self._tags = State(initialValue: [])
+        self._tagSuggestions = State(initialValue: NoteViewModel.shared.getAllTags())
         self._newTag = State(initialValue: "")
         self.onSave = onSave
         self.onCancel = onCancel
@@ -49,6 +69,7 @@ struct NoteEditorView: View {
         self._selectedCharacterIDs = State(initialValue: preselectedCharacterID != nil ? [preselectedCharacterID!] : [])
         self._selectedSceneIDs = State(initialValue: [])
         self._tags = State(initialValue: [])
+        self._tagSuggestions = State(initialValue: NoteViewModel.shared.getAllTags())
         self._newTag = State(initialValue: "")
         self.onSave = onSave
         self.onCancel = onCancel
@@ -344,27 +365,53 @@ struct NoteEditorView: View {
                         }
                         
                         // 标签输入区
-                        HStack {
-                            TextField("输入新标签", text: $newTag)
+                        VStack(spacing: 8) {
+                            HStack {
+                                TextField("输入新标签", text: $newTag, onEditingChanged: { isEditing in
+                                    showTagSuggestions = isEditing
+                                    updateTagSuggestions()
+                                })
+                                .onChange(of: newTag) { _ in
+                                    updateTagSuggestions()
+                                }
                                 .padding(12)
                                 .background(ThemeManager.shared.secondaryBackgroundColor)
                                 .cornerRadius(10)
-                            
-                            Button(action: {
-                                let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
-                                if !trimmedTag.isEmpty && !tags.contains(trimmedTag) {
-                                    withAnimation {
-                                        tags.append(trimmedTag)
-                                        newTag = ""
+                                
+                                Button(action: {
+                                    let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
+                                    if !trimmedTag.isEmpty && !tags.contains(trimmedTag) {
+                                        withAnimation {
+                                            tags.append(trimmedTag)
+                                            newTag = ""
+                                            updateTagSuggestions()
+                                        }
                                     }
+                                }) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(newTag.isEmpty ? .gray : ThemeManager.shared.accentColor(for: .note))
                                 }
-                            }) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 24))
-                                    .foregroundColor(newTag.isEmpty ? .gray : ThemeManager.shared.accentColor(for: .note))
+                                .disabled(newTag.isEmpty)
+                                .padding(.leading, 8)
                             }
-                            .disabled(newTag.isEmpty)
-                            .padding(.leading, 8)
+                            
+                            // 标签建议
+                            if showTagSuggestions && !filteredTagSuggestions.isEmpty {
+                                TagSuggestionView(
+                                    suggestions: filteredTagSuggestions,
+                                    onSelectSuggestion: { suggestion in
+                                        if !tags.contains(suggestion) {
+                                            withAnimation {
+                                                tags.append(suggestion)
+                                                newTag = ""
+                                                updateTagSuggestions()
+                                            }
+                                        }
+                                    },
+                                    accentColor: ThemeManager.shared.accentColor(for: .note)
+                                )
+                            }
                         }
                         
                         // 现有标签显示

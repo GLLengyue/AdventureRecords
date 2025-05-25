@@ -41,12 +41,21 @@ public struct ModuleTabBar: View {
             }
             
             TabButton(
-                title: "设置",
-                icon: "gear",
-                module: .character, // 使用角色模块的颜色
+                title: "标签云",
+                icon: "tag",
+                module: .note, // 使用笔记模块的颜色
                 isSelected: selectedTab == 3
             ) {
                 selectedTab = 3
+            }
+            
+            TabButton(
+                title: "设置",
+                icon: "gear",
+                module: .character, // 使用角色模块的颜色
+                isSelected: selectedTab == 4
+            ) {
+                selectedTab = 4
             }
         }
         .padding(.vertical, 8)
