@@ -20,6 +20,7 @@ struct CharacterEditorView: View {
     @State private var avatar: UIImage?
     @State private var selectedItem: PhotosPickerItem?
     @State private var showRecordingSheet: Bool
+    @State private var showImportAudioSheet: Bool = false // 新增状态：控制音频导入界面显示
     @State private var newTag: String
     @State private var recordingForRenameSheet: AudioRecording? = nil
     @State private var recordingForDeleteSheet: AudioRecording? = nil
@@ -50,6 +51,7 @@ struct CharacterEditorView: View {
         self._selectedItem = State(initialValue: nil)
 
         self._showRecordingSheet = State(initialValue: false)
+        self._showImportAudioSheet = State(initialValue: false) // 初始化音频导入状态
         self._newTag = State(initialValue: "")
         self.existingCharacter = nil
     }
@@ -75,6 +77,7 @@ struct CharacterEditorView: View {
         
         self._tagSuggestions = State(initialValue: CharacterViewModel.shared.getAllTags())
         self._showRecordingSheet = State(initialValue: false)
+        self._showImportAudioSheet = State(initialValue: false) // 初始化音频导入状态
         self._newTag = State(initialValue: "")
     }
     
@@ -367,19 +370,24 @@ struct CharacterEditorView: View {
                     Section {
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
-                                Label("录音列表", systemImage: "waveform")
-                                    .font(.headline)
-                                    .foregroundColor(ThemeManager.shared.accentColor(for: .character))
-                                
+                                Text("录音").font(.headline)
                                 Spacer()
-                                
-                                Text("\(relatedRecordings.count)")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.gray.opacity(0.1))
-                                    .cornerRadius(10)
+                                Menu {
+                                    Button(action: {
+                                        showRecordingSheet = true
+                                    }) {
+                                        Label("录制新音频", systemImage: "mic")
+                                    }
+                                    
+                                    Button(action: {
+                                        showImportAudioSheet = true
+                                    }) {
+                                        Label("导入音频文件", systemImage: "square.and.arrow.down")
+                                    }
+                                } label: {
+                                    Label("添加", systemImage: "plus")
+                                        .foregroundColor(.accentColor)
+                                }
                             }
                             
                             if relatedRecordings.isEmpty {
@@ -452,21 +460,17 @@ struct CharacterEditorView: View {
                                 }
                             }
                         }
-                        Button("添加录音") {
-                            showRecordingSheet = true
-                        }
-                        .font(.headline)
-                        .foregroundColor(ThemeManager.shared.accentColor(for: .character))
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.vertical, 12)
-                        .background(ThemeManager.shared.secondaryBackgroundColor)
-                        .cornerRadius(12)
                     }
                 }
             }
         }
         .sheet(isPresented: $showRecordingSheet) {
             AudioRecordingCreationView(characterID: existingCharacter!.id, onSave: {
+                actionOnSave()
+            })
+        }
+        .sheet(isPresented: $showImportAudioSheet) {
+            AudioFileImportView(characterID: existingCharacter?.id, onSave: {
                 actionOnSave()
             })
         }

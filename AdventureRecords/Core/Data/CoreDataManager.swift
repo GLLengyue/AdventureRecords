@@ -83,10 +83,13 @@ class CoreDataManager {
         do {
             let entities = try viewContext.fetch(request)
             return entities.map { entity in
-                AudioRecording(
+                let storedURL = entity.recordingURL ?? URL(fileURLWithPath: "")
+                let audioURL = getAbsoluteAudioURL(from: storedURL)
+                
+                return AudioRecording(
                     id: entity.id ?? UUID(),
                     title: entity.title ?? "",
-                    recordingURL: entity.recordingURL ?? URL(fileURLWithPath: ""),
+                    recordingURL: audioURL,
                     date: entity.date ?? Date()
                 )
             }
@@ -392,7 +395,7 @@ class CoreDataManager {
         let entity = AudioRecordingEntity(context: viewContext)
         entity.id = recording.id
         entity.title = recording.title
-        entity.recordingURL = recording.recordingURL
+        entity.recordingURL = getRelativeAudioURL(from: recording.recordingURL)
         entity.date = recording.date
 
         if let charID = characterID, let characterEntity = fetchCharacterEntity(by: charID) {
@@ -410,10 +413,13 @@ class CoreDataManager {
         do {
             let entities = try viewContext.fetch(request)
             return entities.map { entity in
-                AudioRecording(
+                let storedURL = entity.recordingURL ?? URL(fileURLWithPath: "")
+                let audioURL = getAbsoluteAudioURL(from: storedURL)
+                
+                return AudioRecording(
                     id: entity.id ?? UUID(),
                     title: entity.title ?? "",
-                    recordingURL: entity.recordingURL ?? URL(fileURLWithPath: ""),
+                    recordingURL: audioURL,
                     date: entity.date ?? Date()
                 )
             }
@@ -451,7 +457,7 @@ class CoreDataManager {
     func updateAudioRecording(_ recording: AudioRecording) {
         if let entity = fetchAudioRecordingEntity(by: recording.id) {
             entity.title = recording.title
-            entity.recordingURL = recording.recordingURL
+            entity.recordingURL = getRelativeAudioURL(from: recording.recordingURL)
             entity.date = recording.date
             saveContext()
         }
@@ -468,5 +474,34 @@ class CoreDataManager {
         } catch {
             print("删除实体失败: \(error)")
         }
+    }
+    
+    // 辅助方法：获取相对音频URL（只保留文件名）
+    private func getRelativeAudioURL(from url: URL) -> URL {
+        if url.pathComponents.count <= 2 {
+            return url
+        }
+        return URL(fileURLWithPath: url.lastPathComponent)
+    }
+    
+    // 辅助方法：从相对URL获取绝对URL
+    private func getAbsoluteAudioURL(from url: URL) -> URL {
+        if url.path.starts(with: "/") && FileManager.default.fileExists(atPath: url.path) {
+            return url
+        }
+        
+        let audioDirectoryName = "AudioRecordings" 
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let audioDirectory = documentsPath.appendingPathComponent(audioDirectoryName)
+        
+        if !FileManager.default.fileExists(atPath: audioDirectory.path) {
+            do {
+                try FileManager.default.createDirectory(at: audioDirectory, withIntermediateDirectories: true)
+            } catch {
+                print("创建音频目录失败: \(error)")
+            }
+        }
+        
+        return audioDirectory.appendingPathComponent(url.lastPathComponent)
     }
 }
