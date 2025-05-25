@@ -5,10 +5,42 @@ struct TagCloudView: View {
     @StateObject private var sceneViewModel = SceneViewModel.shared
     @StateObject private var noteViewModel = NoteViewModel.shared
     
+    @State private var searchText: String = ""
     @State private var selectedTag: String? = nil
     @State private var selectedCharacter: Character? = nil
     @State private var selectedScene: AdventureScene? = nil
     @State private var selectedNote: NoteBlock? = nil
+    @State private var sortOrder: SortOrder = .alphabetical
+    
+    // 获取所有标签
+    // 根据搜索文本过滤并排序标签
+    var filteredTags: [String] {
+        let filtered = searchText.isEmpty ? allTags : allTags.filter { $0.localizedCaseInsensitiveContains(searchText) }
+        
+        switch sortOrder {
+        case .alphabetical:
+            return filtered.sorted()
+        case .popularity:
+            // 按标签出现频率排序
+            let tagFrequency = getTagFrequency()
+            return filtered.sorted { tagFrequency[$0, default: 0] > tagFrequency[$1, default: 0] }
+        case .count:
+            // 按每个标签相关项目数量排序
+            return filtered.sorted {
+                let count1 = countItemsForTag($0)
+                let count2 = countItemsForTag($1)
+                return count1 > count2
+            }
+        }
+    }
+    
+    // 排序选项
+    enum SortOrder: String, CaseIterable, Identifiable {
+        case alphabetical = "按字母排序"
+        case popularity = "按热度排序"
+        case count = "按数量排序"
+        var id: String { self.rawValue }
+    }
     
     // 获取所有标签
     var allTags: [String] {
@@ -39,8 +71,17 @@ struct TagCloudView: View {
     }
     
     // 获取热门标签（使用频率最高的5个标签）
-    var popularTags: [String] {
-        // 创建标签频率字典
+    // 根据搜索文本过滤热门标签
+    var filteredPopularTags: [String] {
+        if searchText.isEmpty {
+            return popularTags
+        } else {
+            return popularTags.filter { $0.localizedCaseInsensitiveContains(searchText) }
+        }
+    }
+    
+    // 获取标签频率字典
+    func getTagFrequency() -> [String: Int] {
         var tagFrequency: [String: Int] = [:]
         
         // 计算角色标签频率
@@ -64,7 +105,21 @@ struct TagCloudView: View {
             }
         }
         
+        return tagFrequency
+    }
+    
+    // 计算标签相关项目数量
+    func countItemsForTag(_ tag: String) -> Int {
+        let characterCount = characterViewModel.characters.filter { $0.tags.contains(tag) }.count
+        let sceneCount = sceneViewModel.scenes.filter { $0.tags.contains(tag) }.count
+        let noteCount = noteViewModel.notes.filter { $0.tags.contains(tag) }.count
+        return characterCount + sceneCount + noteCount
+    }
+    
+    // 获取热门标签（使用频率最高的5个标签）
+    var popularTags: [String] {
         // 按频率排序并取前5个
+        let tagFrequency = getTagFrequency()
         let sortedTags = tagFrequency.sorted { $0.value > $1.value }.prefix(5).map { $0.key }
         return sortedTags
     }
@@ -89,21 +144,51 @@ struct TagCloudView: View {
         ListContainer(
             module: .note,
             title: "标签云",
-            searchText: .constant(""),
+            searchText: $searchText,
+            onSearch: { _ in },
+            addAction: nil,
+            trailingContent: {
+                Menu {
+                    ForEach(SortOrder.allCases) { order in
+                        Button(action: {
+                            withAnimation {
+                                sortOrder = order
+                            }
+                        }) {
+                            HStack {
+                                Text(order.rawValue)
+                                    .font(.system(.body))
+                                Spacer()
+                                if sortOrder == order {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(ThemeManager.shared.accentColor(for: .note))
+                                }
+                            }
+                            .contentShape(Rectangle())
+                        }
+                    }
+                } label: {
+                    Image(systemName: "arrow.up.arrow.down")
+                        .font(.system(size: 16, weight: .semibold))
+                        .padding(8)
+                        .background(ThemeManager.shared.accentColor(for: .note).opacity(0.1))
+                        .clipShape(Circle())
+                }
+            },
             content: {
                 // 标签云
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         // 标签云标题
                         HStack {
-                            Label("标签云", systemImage: "tag.fill")
-                                .font(.title2.bold())
-                                .foregroundColor(ThemeManager.shared.accentColor(for: .note))
+                            // Label("标签云", systemImage: "tag.fill")
+                            //     .font(.title2.bold())
+                            //     .foregroundColor(ThemeManager.shared.accentColor(for: .note))
                             
-                            Spacer()
+                            // Spacer()
                             
-                            if !allTags.isEmpty {
-                                Text("共 \(allTags.count) 个标签")
+                            if !filteredTags.isEmpty {
+                                Text(searchText.isEmpty ? "共 \(allTags.count) 个标签" : "找到 \(filteredTags.count) 个标签")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                     .padding(.horizontal, 8)
@@ -114,7 +199,7 @@ struct TagCloudView: View {
                         }
                         .padding(.horizontal)
                         
-                        if allTags.isEmpty {
+                        if searchText.isEmpty && allTags.isEmpty {
                             // 无标签时的提示
                             VStack(spacing: 20) {
                                 Spacer()
@@ -142,11 +227,39 @@ struct TagCloudView: View {
                                 Spacer()
                             }
                             .frame(maxWidth: .infinity, minHeight: 300)
+                        } else if !searchText.isEmpty && filteredTags.isEmpty {
+                            // 搜索无结果时的提示
+                            VStack(spacing: 20) {
+                                Spacer()
+                                
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.gray.opacity(0.1))
+                                        .frame(width: 120, height: 120)
+                                    
+                                    Image(systemName: "magnifyingglass")
+                                        .font(.system(size: 50))
+                                        .foregroundColor(.gray.opacity(0.6))
+                                }
+                                
+                                Text("没有找到相关标签")
+                                    .font(.headline)
+                                    .foregroundColor(.secondary)
+                                
+                                Text("尝试使用其他关键词搜索")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary.opacity(0.8))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                                
+                                Spacer()
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 300)
                         } else {
                             // 标签组
                             VStack(alignment: .leading, spacing: 16) {
                                 // 热门标签区域
-                                if !popularTags.isEmpty {
+                                if !filteredPopularTags.isEmpty {
                                     VStack(alignment: .leading, spacing: 12) {
                                         Text("热门标签")
                                             .font(.headline)
@@ -155,7 +268,7 @@ struct TagCloudView: View {
                                         
                                         ScrollView(.horizontal, showsIndicators: false) {
                                             HStack(spacing: 10) {
-                                                ForEach(popularTags, id: \.self) { tag in
+                                                ForEach(filteredPopularTags, id: \.self) { tag in
                                                     TagButton(
                                                         tag: tag,
                                                         isSelected: selectedTag == tag,
@@ -186,7 +299,7 @@ struct TagCloudView: View {
                                         .padding(.horizontal)
                                     
                                     FlowLayout(spacing: 10) {
-                                        ForEach(allTags, id: \.self) { tag in
+                                        ForEach(filteredTags, id: \.self) { tag in
                                             TagButton(
                                                 tag: tag,
                                                 isSelected: selectedTag == tag,

@@ -144,7 +144,7 @@ public struct ListContainer<Content: View, TrailingContent: View>: View {
         VStack(spacing: 0) {
             ModuleNavigationBar(title: title, module: module) {
                 HStack(spacing: 8) {
-                    trailingContent
+                    trailingContent                    
                     if showSearchField {
                         TextField("请输入关键词", text: $searchText, onCommit: {dismissSearch()})
                             .padding(10)
@@ -191,6 +191,7 @@ public struct ListContainer<Content: View, TrailingContent: View>: View {
             .padding(.top, 8)
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.horizontal)
         }
     }
 

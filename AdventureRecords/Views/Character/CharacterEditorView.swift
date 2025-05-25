@@ -317,7 +317,7 @@ struct CharacterEditorView: View {
                                 )
                             }
                         }
-                        
+
                         // 现有标签显示
                         if tags.isEmpty {
                             Text("没有添加标签")
@@ -364,14 +364,17 @@ struct CharacterEditorView: View {
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                
                 // 录音区域
                 if existingCharacter != nil {
                     Section {
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
-                                Text("录音").font(.headline)
+                                Label("录音", systemImage: "waveform")
+                                    .font(.headline)
+                                    .foregroundColor(ThemeManager.shared.accentColor(for: .character))
+                                
                                 Spacer()
+
                                 Menu {
                                     Button(action: {
                                         showRecordingSheet = true
@@ -385,85 +388,86 @@ struct CharacterEditorView: View {
                                         Label("导入音频文件", systemImage: "square.and.arrow.down")
                                     }
                                 } label: {
-                                    Label("添加", systemImage: "plus")
-                                        .foregroundColor(.accentColor)
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.system(size: 22))
+                                        .foregroundColor(ThemeManager.shared.accentColor(for: .character))
                                 }
                             }
                             
+                            // 空状态显示
                             if relatedRecordings.isEmpty {
-                                VStack(spacing: 10) {
+                                VStack(spacing: 16) {
                                     Image(systemName: "waveform.slash")
-                                        .font(.system(size: 32))
-                                        .foregroundColor(.secondary.opacity(0.7))
+                                        .font(.system(size: 40))
+                                        .foregroundColor(ThemeManager.shared.accentColor(for: .character).opacity(0.6))
                                         .padding(.bottom, 6)
                                     
                                     Text("暂无录音")
-                                        .font(.subheadline)
+                                        .font(.headline)
                                         .foregroundColor(.secondary)
+                                    
+                                    Text("为角色添加录音可以更好地展示角色的声音特点")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary.opacity(0.8))
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal)
+                                    
+                                    Button(action: {
+                                        showRecordingSheet = true
+                                    }) {
+                                        Label("录制新音频", systemImage: "mic.fill")
+                                            .font(.headline)
+                                            .foregroundColor(.white)
+                                            .padding(.vertical, 12)
+                                            .padding(.horizontal, 20)
+                                            .background(ThemeManager.shared.accentColor(for: .character))
+                                            .cornerRadius(10)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                    .padding(.top, 8)
                                 }
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 24)
+                                .padding(.vertical, 30)
                                 .background(ThemeManager.shared.secondaryBackgroundColor.opacity(0.5))
-                                .cornerRadius(12)
+                                .cornerRadius(16)
                             }
                             
-                            ForEach(relatedRecordings) { recording in
-                                HStack {
-                                    // 录音项视图（左侧主区域）
-                                    RecordingItemView(recording: recording, 
-                                                    isPlaying: audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == recording.recordingURL,
-                                                    onPlayPause: {
-                                        let audioURL = recording.recordingURL
-                                        if audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == audioURL {
-                                            audioPlayerManager.pause()
-                                        } else {
-                                            guard audioURL.isFileURL, FileManager.default.fileExists(atPath: audioURL.path) else {
-                                                print("Audio file not found at \(audioURL.path)")
-                                                return
+                            // 录音列表
+                            LazyVStack(spacing: 12) {
+                                ForEach(relatedRecordings) { recording in
+                                    RecordingListItemView(
+                                        recording: recording,
+                                        isPlaying: audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == recording.recordingURL,
+                                        onPlayPause: {
+                                            let audioURL = recording.recordingURL
+                                            if audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == audioURL {
+                                                audioPlayerManager.pause()
+                                            } else {
+                                                guard audioURL.isFileURL, FileManager.default.fileExists(atPath: audioURL.path) else {
+                                                    print("Audio file not found at \(audioURL.path)")
+                                                    return
+                                                }
+                                                audioPlayerManager.play(url: audioURL)
                                             }
-                                            audioPlayerManager.play(url: audioURL)
-                                        }
-                                    })                                    
-                                    Spacer(minLength: 8)
-                                    
-                                    // 重命名按钮
-                                    ZStack {
-                                        Color.clear
-                                            .frame(width: 44, height: 44)
-                                            .contentShape(Rectangle())
-                                        
-                                        Button(action: {
+                                        },
+                                        onRename: {
                                             newRecordingName = recording.title
                                             recordingForRenameSheet = recording
-                                        }) {
-                                            Image(systemName: "pencil")
-                                                .frame(width: 44, height: 44)
-                                        }
-                                        .buttonStyle(BorderlessButtonStyle())
-                                    }
-                                    
-                                    // 删除按钮
-                                    ZStack {
-                                        Color.clear
-                                            .frame(width: 44, height: 44)
-                                            .contentShape(Rectangle())
-                                        
-                                        Button(action: {
+                                        },
+                                        onDelete: {
                                             recordingForDeleteSheet = recording
-                                        }) {
-                                            Image(systemName: "trash")
-                                                .foregroundColor(.red)
-                                                .frame(width: 44, height: 44)
                                         }
-                                        .buttonStyle(BorderlessButtonStyle())
-                                    }
+                                    )
                                 }
                             }
                         }
                     }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
                 }
             }
         }
+
         .sheet(isPresented: $showRecordingSheet) {
             AudioRecordingCreationView(characterID: existingCharacter!.id, onSave: {
                 actionOnSave()
