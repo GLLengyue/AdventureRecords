@@ -14,10 +14,6 @@ public class ThemeManager: ObservableObject {
     public static let shared = ThemeManager()
 
     // MARK: - 颜色方案
-
-    // 主色调
-    public let themeColor = Color("PrimaryColor")
-
     // 模块强调色
     public let characterAccentColor = Color.purple
     public let noteAccentColor = Color.green

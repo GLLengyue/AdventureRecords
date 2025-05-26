@@ -371,7 +371,7 @@ struct NoteEditorView: View {
                                     showTagSuggestions = isEditing
                                     updateTagSuggestions()
                                 })
-                                .onChange(of: newTag) { _ in
+                                .onChange(of: newTag) {
                                     updateTagSuggestions()
                                 }
                                 .padding(12)

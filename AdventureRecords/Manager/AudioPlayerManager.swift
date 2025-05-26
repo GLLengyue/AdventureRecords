@@ -4,6 +4,7 @@ import Foundation
 
 class AudioPlayerManager: ObservableObject {
     private var audioPlayer: AVAudioPlayer?
+    private var delegateWrapper: DelegateWrapper? // Keep a strong reference to the delegate
     private var audioSession: AVAudioSession = .sharedInstance()
 
     @Published var isPlaying: Bool = false
@@ -35,7 +36,8 @@ class AudioPlayerManager: ObservableObject {
         do {
             try audioSession.setActive(true) // Activate session before playing
             audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer?.delegate = DelegateWrapper(manager: self) // Using a wrapper for delegate
+            delegateWrapper = DelegateWrapper(manager: self)
+            audioPlayer?.delegate = delegateWrapper // Using a wrapper for delegate
             audioPlayer?.prepareToPlay()
             audioPlayer?.play()
 

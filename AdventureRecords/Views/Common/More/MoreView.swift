@@ -134,7 +134,9 @@ struct MoreView: View {
                         if let scene = UIApplication.shared.connectedScenes
                             .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
                         {
-                            SKStoreReviewController.requestReview(in: scene)
+                            Task {
+                                await AppStore.requestReview(in: scene)
+                            }
                         }
                     }) {
                         MoreMenuRow(icon: "star",
