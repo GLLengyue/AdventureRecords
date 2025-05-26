@@ -163,6 +163,9 @@ struct NoteListView: View {
                     }
                 }
                 .listStyle(PlainListStyle())
+                .refreshable {
+                    refreshData()
+                }
                 }
             }
         }
@@ -180,6 +183,10 @@ struct NoteListView: View {
                 }
             )
         }
+    }
+
+    private func refreshData() {
+        noteViewModel.loadNotes()
     }
 
     private func deleteNotes(at offsets: IndexSet) {

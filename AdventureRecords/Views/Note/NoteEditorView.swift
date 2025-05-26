@@ -319,7 +319,7 @@ struct NoteEditorView: View {
                         
                         HStack {
                             Button(action: { showScenePicker = true }) {
-                                Label("选择场景", systemImage: "map.badge.plus")
+                                Label("选择场景", systemImage: "rectangle.stack.badge.plus")
                                     .padding(.vertical, 10)
                                     .padding(.horizontal, 12)
                                     .background(ThemeManager.shared.accentColor(for: .scene).opacity(0.1))

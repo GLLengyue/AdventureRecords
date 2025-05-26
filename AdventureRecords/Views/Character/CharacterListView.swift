@@ -136,12 +136,12 @@ struct CharacterListView: View {
                     }
                     
                     List {
-                    ForEach(filteredAndSortedCharacters) { character in
-                        Button {
-                            selectedCharacter = character
-                        } label: {
-                            CharacterRow(character: character,
-                                onDelete: {
+                        ForEach(filteredAndSortedCharacters) { character in
+                            Button {
+                                selectedCharacter = character
+                            } label: {
+                                CharacterRow(character: character,
+                                    onDelete: {
                                     withAnimation {
                                         CharacterViewModel.shared.deleteCharacter(character)
                                     }
@@ -155,9 +155,12 @@ struct CharacterListView: View {
                             .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         }
                         .buttonStyle(PlainButtonStyle())
+                        }
                     }
-                }
-                .listStyle(PlainListStyle())
+                    .listStyle(PlainListStyle())
+                    .refreshable {
+                        refreshData()
+                    }
                 }
             }
         }
@@ -177,9 +180,7 @@ struct CharacterListView: View {
         }
     }
 
-    private func deleteCharacters(at offsets: IndexSet) {
-        offsets.map { filteredAndSortedCharacters[$0] }.forEach {
-            characterViewModel.deleteCharacter($0)
-        }
+    private func refreshData() {
+        characterViewModel.loadCharacters()
     }
 }

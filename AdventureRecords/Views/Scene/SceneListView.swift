@@ -157,6 +157,9 @@ struct SceneListView: View {
                     }
                 }
                 .listStyle(PlainListStyle())
+                .refreshable {
+                    refreshData()
+                }
                 }
             }
         }
@@ -174,6 +177,10 @@ struct SceneListView: View {
                 }
             )
         }
+    }
+
+    private func refreshData() {
+        sceneViewModel.loadScenes()
     }
 
     private func deleteScenes(at offsets: IndexSet) {

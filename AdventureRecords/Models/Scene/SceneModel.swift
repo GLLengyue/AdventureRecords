@@ -52,7 +52,8 @@ extension AdventureScene {
 
     func relatedCharacters(in notes: [NoteBlock], characterProvider: (NoteBlock) -> [Character]) -> [Character] {
         let relatedNotes = relatedNotes(in: notes)
-        return relatedNotes.flatMap(characterProvider)
+        let characters = relatedNotes.flatMap(characterProvider)
+        return Array(Set(characters)).sorted { $0.id.uuidString < $1.id.uuidString }
     }
 }
 
