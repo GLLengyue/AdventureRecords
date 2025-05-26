@@ -4,7 +4,7 @@ import SwiftUI
 struct SceneItemView: View {
     let scene: AdventureScene
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             HStack(alignment: .center, spacing: 12) {
@@ -23,7 +23,7 @@ struct SceneItemView: View {
                         .background(ThemeManager.shared.accentColor(for: .scene).opacity(0.15))
                         .cornerRadius(8)
                 }
-                
+
                 // 文本内容
                 VStack(alignment: .leading, spacing: 4) {
                     Text(scene.title)
@@ -31,7 +31,7 @@ struct SceneItemView: View {
                         .fontWeight(.medium)
                         .foregroundColor(ThemeManager.shared.primaryTextColor)
                         .lineLimit(1)
-                    
+
                     if !scene.description.isEmpty {
                         Text(scene.description)
                             .font(.caption)
@@ -39,9 +39,9 @@ struct SceneItemView: View {
                             .lineLimit(1)
                     }
                 }
-                
+
                 Spacer()
-                
+
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14))
                     .foregroundColor(.secondary)

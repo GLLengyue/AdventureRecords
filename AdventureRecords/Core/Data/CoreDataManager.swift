@@ -1,8 +1,8 @@
 import CoreData
 import Foundation
+import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
-import SwiftUI
 
 // MARK: - 数据模型
 
@@ -21,7 +21,7 @@ enum ExportType {
     case text
     case json
     case none
-    
+
     var description: String {
         switch self {
         case .pdf:
@@ -34,7 +34,7 @@ enum ExportType {
             return ""
         }
     }
-    
+
     var iconName: String {
         switch self {
         case .pdf:
@@ -47,7 +47,7 @@ enum ExportType {
             return ""
         }
     }
-    
+
     var color: Color {
         switch self {
         case .pdf:
@@ -60,7 +60,7 @@ enum ExportType {
             return .gray
         }
     }
-    
+
     var utType: UTType {
         switch self {
         case .pdf:
@@ -88,7 +88,7 @@ struct BackupFile: Identifiable {
     let url: URL
     let name: String
     let creationDate: Date
-    
+
     var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -137,14 +137,15 @@ struct NoteData: Codable {
 }
 
 // MARK: - 数据管理器
+
 class CoreDataManager {
     static let shared = CoreDataManager()
-    
+
     private init() {
         // 确保备份目录存在
         setupBackupDirectory()
     }
-    
+
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "AdventureRecords")
         container.loadPersistentStores { description, error in
@@ -154,12 +155,13 @@ class CoreDataManager {
         }
         return container
     }()
-    
+
     var viewContext: NSManagedObjectContext {
         persistentContainer.viewContext
     }
-    
+
     // MARK: - 保存上下文
+
     func saveContext() {
         if viewContext.hasChanges {
             do {
@@ -169,8 +171,9 @@ class CoreDataManager {
             }
         }
     }
-    
+
     // MARK: - 角色卡操作
+
     func createCharacter(name: String, description: String, avatar: Data? = nil) -> Character {
         let entity = CharacterEntity(context: viewContext)
         entity.id = UUID()
@@ -179,34 +182,30 @@ class CoreDataManager {
         entity.avatar = avatar
         entity.tags = []
         entity.relatedNoteIDs = []
-        
+
         saveContext()
-        
-        return Character(
-            id: entity.id ?? UUID(),
-            name: entity.name ?? "",
-            description: entity.characterDescription ?? "",
-            avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
-            audioRecordings: nil,
-            tags: [],
-            relatedNoteIDs: []
-        )
+
+        return Character(id: entity.id ?? UUID(),
+                         name: entity.name ?? "",
+                         description: entity.characterDescription ?? "",
+                         avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
+                         audioRecordings: nil,
+                         tags: [],
+                         relatedNoteIDs: [])
     }
-    
+
     func fetchCharacters() -> [Character] {
         let request: NSFetchRequest<CharacterEntity> = CharacterEntity.fetchRequest()
         do {
             let entities = try viewContext.fetch(request)
             return entities.map { entity in
-                Character(
-                    id: entity.id ?? UUID(),
-                    name: entity.name ?? "",
-                    description: entity.characterDescription ?? "",
-                    avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
-                    audioRecordings: fetchAudioRecordings(for: entity.audioIDs ?? []),
-                    tags: entity.tags ?? [],
-                    relatedNoteIDs: entity.relatedNoteIDs ?? []
-                )
+                Character(id: entity.id ?? UUID(),
+                          name: entity.name ?? "",
+                          description: entity.characterDescription ?? "",
+                          avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
+                          audioRecordings: fetchAudioRecordings(for: entity.audioIDs ?? []),
+                          tags: entity.tags ?? [],
+                          relatedNoteIDs: entity.relatedNoteIDs ?? [])
             }
         } catch {
             print("获取角色数据失败: \(error)")
@@ -223,13 +222,11 @@ class CoreDataManager {
             return entities.map { entity in
                 let storedURL = entity.recordingURL ?? URL(fileURLWithPath: "")
                 let audioURL = getAbsoluteAudioURL(from: storedURL)
-                
-                return AudioRecording(
-                    id: entity.id ?? UUID(),
-                    title: entity.title ?? "",
-                    recordingURL: audioURL,
-                    date: entity.date ?? Date()
-                )
+
+                return AudioRecording(id: entity.id ?? UUID(),
+                                      title: entity.title ?? "",
+                                      recordingURL: audioURL,
+                                      date: entity.date ?? Date())
             }
         } catch {
             print("获取录音数据失败: \(error)")
@@ -243,21 +240,20 @@ class CoreDataManager {
         do {
             let entities = try viewContext.fetch(request)
             return entities.map { entity in
-                Character(
-                    id: entity.id ?? UUID(),
-                    name: entity.name ?? "",
-                    description: entity.characterDescription ?? "",
-                    avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
-                    audioRecordings: fetchAudioRecordings(for: entity.audioIDs ?? []),
-                    tags: entity.tags ?? [],
-                    relatedNoteIDs: entity.relatedNoteIDs ?? []
-            )
+                Character(id: entity.id ?? UUID(),
+                          name: entity.name ?? "",
+                          description: entity.characterDescription ?? "",
+                          avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
+                          audioRecordings: fetchAudioRecordings(for: entity.audioIDs ?? []),
+                          tags: entity.tags ?? [],
+                          relatedNoteIDs: entity.relatedNoteIDs ?? [])
             }
         } catch {
             print("获取角色数据失败: \(error)")
             return []
         }
     }
+
     func fetchCharacterEntity(by id: UUID) -> CharacterEntity? {
         let request: NSFetchRequest<CharacterEntity> = CharacterEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -282,21 +278,21 @@ class CoreDataManager {
             print("角色未找到，无法更新")
         }
     }
-    
+
     // MARK: - 数据管理功能
-    
+
     // MARK: - 备份与恢复
-    
+
     /// 获取备份目录
     private var backupDirectory: URL {
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         return documentsDirectory.appendingPathComponent("Backups", isDirectory: true)
     }
-    
+
     /// 创建备份目录
     private func setupBackupDirectory() {
         let fileManager = FileManager.default
-        
+
         do {
             // 如果备份目录不存在，则创建
             if !fileManager.fileExists(atPath: backupDirectory.path) {
@@ -306,32 +302,32 @@ class CoreDataManager {
             print("创建备份目录失败: \(error.localizedDescription)")
         }
     }
-    
+
     /// 创建备份
     func createBackup(name: String, date: Date) -> Data? {
         do {
             // 生成备份数据
             let backupData = try createBackupData()
-            
+
             // 生成文件名
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
             let dateString = dateFormatter.string(from: date)
             let fileName = "\(name)_\(dateString).adrbackup"
-            
+
             // 创建备份文件
             let backupURL = backupDirectory.appendingPathComponent(fileName)
             try backupData.write(to: backupURL)
-            
+
             print("备份成功: \(backupURL.path)")
-            
+
             return backupData
         } catch {
             print("创建备份失败: \(error.localizedDescription)")
             return nil
         }
     }
-    
+
     /// 从备份恢复
     func restoreFromBackup(_ backupFile: BackupFile) -> Bool {
         do {
@@ -340,7 +336,7 @@ class CoreDataManager {
             print("备份数据: \(backupData)")
             // 恢复数据
             try restoreFromBackupData(backupData)
-            
+
             print("恢复成功: \(backupFile.name)")
             return true
         } catch {
@@ -348,24 +344,26 @@ class CoreDataManager {
             return false
         }
     }
-    
+
     /// 获取所有备份
     func getAllBackups() -> [BackupFile] {
         let fileManager = FileManager.default
-        
+
         do {
             // 获取备份目录中的所有文件
-            let fileURLs = try fileManager.contentsOfDirectory(at: backupDirectory, includingPropertiesForKeys: [.creationDateKey], options: .skipsHiddenFiles)
-            
+            let fileURLs = try fileManager.contentsOfDirectory(at: backupDirectory,
+                                                               includingPropertiesForKeys: [.creationDateKey],
+                                                               options: .skipsHiddenFiles)
+
             // 过滤备份文件
             let backupFiles = fileURLs.filter { $0.pathExtension == "adrbackup" }
-            
+
             // 创建备份文件对象
             return backupFiles.compactMap { url in
                 let name = url.deletingPathExtension().lastPathComponent
                 let attributes = try? fileManager.attributesOfItem(atPath: url.path)
                 let creationDate = attributes?[.creationDate] as? Date ?? Date()
-                
+
                 return BackupFile(url: url, name: name, creationDate: creationDate)
             }.sorted { $0.creationDate > $1.creationDate } // 按创建时间降序排序
         } catch {
@@ -373,38 +371,43 @@ class CoreDataManager {
             return []
         }
     }
-    
+
     // MARK: - 数据导出
-    
+
     /// 导出数据
-    func exportData(type: ExportType, includeCharacters: Bool, includeScenes: Bool, includeNotes: Bool) -> ExportDocument? {
+    func exportData(type: ExportType, includeCharacters: Bool, includeScenes: Bool,
+                    includeNotes: Bool) -> ExportDocument?
+    {
         do {
             var exportData: Data
             var fileName: String
-            
+
             switch type {
             case .pdf:
-                exportData = try generatePDFData(includeCharacters: includeCharacters, includeScenes: includeScenes, includeNotes: includeNotes)
+                exportData = try generatePDFData(includeCharacters: includeCharacters, includeScenes: includeScenes,
+                                                 includeNotes: includeNotes)
                 fileName = "冒险记录_\(getCurrentDateString()).pdf"
             case .text:
-                exportData = try generateTextData(includeCharacters: includeCharacters, includeScenes: includeScenes, includeNotes: includeNotes)
+                exportData = try generateTextData(includeCharacters: includeCharacters, includeScenes: includeScenes,
+                                                  includeNotes: includeNotes)
                 fileName = "冒险记录_\(getCurrentDateString()).txt"
             case .json:
-                exportData = try generateJSONData(includeCharacters: includeCharacters, includeScenes: includeScenes, includeNotes: includeNotes)
+                exportData = try generateJSONData(includeCharacters: includeCharacters, includeScenes: includeScenes,
+                                                  includeNotes: includeNotes)
                 fileName = "冒险记录_\(getCurrentDateString()).json"
             case .none:
                 return nil
             }
-            
+
             return ExportDocument(data: exportData, filename: fileName, contentType: type.utType)
         } catch {
             print("导出数据失败: \(error.localizedDescription)")
             return nil
         }
     }
-    
+
     // MARK: - 数据清理
-    
+
     /// 清理数据
     func cleanupData(type: CleanupType) -> Bool {
         do {
@@ -424,7 +427,7 @@ class CoreDataManager {
             case .none:
                 return false
             }
-            
+
             // 保存更改
             saveContext()
             return true
@@ -433,95 +436,88 @@ class CoreDataManager {
             return false
         }
     }
-    
+
     /// 创建备份数据
     private func createBackupData() throws -> Data {
         // 从数据库获取真实数据
         let characters = fetchCharacters()
         let scenes = fetchScenes()
         let notes = fetchNotes()
-        
+
         // 创建备份数据结构
-        let backup = BackupData(
-            version: "1.0.0",
-            timestamp: Date(),
-            characters: characters.map { character in
-                // 获取角色关联的笔记ID
-                let noteIDs = character.relatedNoteIDs.map { $0.uuidString }
-                return CharacterData(
-                    id: character.id.uuidString,
-                    name: character.name,
-                    description: character.description,
-                    avatar: character.avatar?.jpegData(compressionQuality: 0.8),
-                    tags: character.tags,
-                    relatedNoteIDs: noteIDs
-                )
-            },
-            scenes: scenes.map { scene in
-                // 获取场景关联的笔记ID
-                let noteIDs = scene.relatedNoteIDs.map { $0.uuidString }
-                return SceneData(
-                    id: scene.id.uuidString,
-                    name: scene.title,
-                    description: scene.description,
-                    tags: scene.tags,
-                    relatedNoteIDs: noteIDs
-                )
-            },
-            notes: notes.map { note in
-                // 获取笔记关联的场景ID
-                let sceneIDs = note.relatedSceneIDs.map { $0.uuidString }
-                let characterIDs = note.relatedCharacterIDs.map { $0.uuidString }
-                return NoteData(
-                    id: note.id.uuidString,
-                    title: note.title,
-                    content: note.content,
-                    tags: note.tags,
-                    relatedCharacterIDs: characterIDs,
-                    relatedSceneIDs: sceneIDs
-                )
-            },
-            settings: fetchSettings()
-        )
-        
+        let backup = BackupData(version: "1.0.0",
+                                timestamp: Date(),
+                                characters: characters.map { character in
+                                    // 获取角色关联的笔记ID
+                                    let noteIDs = character.relatedNoteIDs.map { $0.uuidString }
+                                    return CharacterData(id: character.id.uuidString,
+                                                         name: character.name,
+                                                         description: character.description,
+                                                         avatar: character.avatar?.jpegData(compressionQuality: 0.8),
+                                                         tags: character.tags,
+                                                         relatedNoteIDs: noteIDs)
+                                },
+                                scenes: scenes.map { scene in
+                                    // 获取场景关联的笔记ID
+                                    let noteIDs = scene.relatedNoteIDs.map { $0.uuidString }
+                                    return SceneData(id: scene.id.uuidString,
+                                                     name: scene.title,
+                                                     description: scene.description,
+                                                     tags: scene.tags,
+                                                     relatedNoteIDs: noteIDs)
+                                },
+                                notes: notes.map { note in
+                                    // 获取笔记关联的场景ID
+                                    let sceneIDs = note.relatedSceneIDs.map { $0.uuidString }
+                                    let characterIDs = note.relatedCharacterIDs.map { $0.uuidString }
+                                    return NoteData(id: note.id.uuidString,
+                                                    title: note.title,
+                                                    content: note.content,
+                                                    tags: note.tags,
+                                                    relatedCharacterIDs: characterIDs,
+                                                    relatedSceneIDs: sceneIDs)
+                                },
+                                settings: fetchSettings())
+
         // 编码为JSON数据
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         return try encoder.encode(backup)
     }
+
     private func restoreFromBackupData(_ data: Data) throws {
         // 解码备份数据
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        
+
         do {
             let backup = try decoder.decode(BackupData.self, from: data)
-            
+
             // 检查版本兼容性
             if !isBackupVersionCompatible(backup.version) {
                 throw NSError(domain: "CoreDataManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "备份版本不兼容"])
             }
-            
+
             // 创建临时上下文进行恢复操作
             let tempContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
             tempContext.persistentStoreCoordinator = viewContext.persistentStoreCoordinator
-            
+
             // 开始恢复过程
             try tempContext.performAndWait {
                 // 清理现有数据
                 try cleanupAllData(context: tempContext)
-                
+
                 // 恢复数据
                 try restoreCharacters(backup.characters, context: tempContext)
                 try restoreScenes(backup.scenes, context: tempContext)
                 try restoreNotes(backup.notes, context: tempContext)
-                
+
                 // 验证并保存更改
                 if tempContext.hasChanges {
                     try tempContext.save()
                 }
             }
-            
+
             // 在主上下文上保存最终更改
             viewContext.performAndWait {
                 if viewContext.hasChanges {
@@ -533,14 +529,14 @@ class CoreDataManager {
             throw error
         }
     }
-    
+
     /// 检查备份版本兼容性
     private func isBackupVersionCompatible(_ version: String) -> Bool {
         // 实现版本兼容性检查逻辑
         // 简单示例：只接受1.x版本的备份
         return version.starts(with: "1.")
     }
-    
+
     /// 生成PDF数据
     private func generatePDFData(includeCharacters: Bool, includeScenes: Bool, includeNotes: Bool) throws -> Data {
         // 这里需要实现PDF生成逻辑
@@ -548,12 +544,12 @@ class CoreDataManager {
         let pdfData = Data("冒险记录PDF导出".utf8)
         return pdfData
     }
-    
+
     /// 生成文本数据
     private func generateTextData(includeCharacters: Bool, includeScenes: Bool, includeNotes: Bool) throws -> Data {
         var textContent = "冒险记录导出\n"
         textContent += "导出时间: \(getCurrentDateString())\n\n"
-        
+
         if includeCharacters {
             textContent += "== 角色 ==\n"
             // 添加角色数据
@@ -563,7 +559,7 @@ class CoreDataManager {
                 textContent += "描述: \(character.description)\n\n"
             }
         }
-        
+
         if includeScenes {
             textContent += "== 场景 ==\n"
             // 添加场景数据
@@ -573,7 +569,7 @@ class CoreDataManager {
                 textContent += "描述: \(scene.description)\n\n"
             }
         }
-        
+
         if includeNotes {
             textContent += "== 笔记 ==\n"
             // 添加笔记数据
@@ -583,106 +579,106 @@ class CoreDataManager {
                 textContent += "内容: \(note.content)\n\n"
             }
         }
-        
+
         return Data(textContent.utf8)
     }
-    
+
     /// 生成JSON数据
     private func generateJSONData(includeCharacters: Bool, includeScenes: Bool, includeNotes: Bool) throws -> Data {
         // 创建导出数据结构
         var exportData: [String: Any] = [
             "version": "1.0.0",
-            "timestamp": ISO8601DateFormatter().string(from: Date())
+            "timestamp": ISO8601DateFormatter().string(from: Date()),
         ]
-        
+
         if includeCharacters {
             exportData["characters"] = fetchCharacters().map { character in
                 return [
                     "id": character.id.uuidString,
                     "name": character.name,
-                    "description": character.description
+                    "description": character.description,
                 ]
             }
         }
-        
+
         if includeScenes {
             exportData["scenes"] = fetchScenes().map { scene in
                 return [
                     "id": scene.id.uuidString,
                     "title": scene.title,
-                    "description": scene.description
+                    "description": scene.description,
                 ]
             }
         }
-        
+
         if includeNotes {
             exportData["notes"] = fetchNotes().map { note in
                 return [
                     "id": note.id.uuidString,
                     "title": note.title,
-                    "content": note.content
+                    "content": note.content,
                 ]
             }
         }
-        
+
         // 编码为JSON
         let jsonData = try JSONSerialization.data(withJSONObject: exportData, options: .prettyPrinted)
         return jsonData
     }
-    
+
     /// 获取当前日期字符串
     private func getCurrentDateString() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
         return dateFormatter.string(from: Date())
     }
-    
+
     /// 清理所有数据
     private func cleanupAllData(context: NSManagedObjectContext) throws {
         try cleanupCharacterData(context: context)
         try cleanupSceneData(context: context)
         try cleanupNoteData(context: context)
     }
-    
+
     /// 清理角色数据
     private func cleanupCharacterData(context: NSManagedObjectContext) throws {
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "CharacterEntity")
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         try context.execute(deleteRequest)
     }
-    
+
     /// 清理场景数据
     private func cleanupSceneData(context: NSManagedObjectContext) throws {
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "SceneEntity")
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         try context.execute(deleteRequest)
     }
-    
+
     /// 清理笔记数据
     private func cleanupNoteData(context: NSManagedObjectContext) throws {
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "NoteEntity")
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         try context.execute(deleteRequest)
     }
-    
+
     /// 获取设置数据
     private func fetchSettings() -> [String: String] {
         // 从用户默认值获取设置数据
         let userDefaults = UserDefaults.standard
         var settings: [String: String] = [:]
-        
+
         // 获取常用设置
         if let theme = userDefaults.string(forKey: "theme") {
             settings["theme"] = theme
         }
-        
+
         if let language = userDefaults.string(forKey: "language") {
             settings["language"] = language
         }
-        
+
         return settings
     }
-    
+
     /// 恢复角色数据
     private func restoreCharacters(_ characters: [CharacterData], context: NSManagedObjectContext) throws {
         for characterData in characters {
@@ -695,7 +691,7 @@ class CoreDataManager {
             entity.relatedNoteIDs = characterData.relatedNoteIDs.compactMap { UUID(uuidString: $0) }
         }
     }
-    
+
     /// 恢复场景数据
     private func restoreScenes(_ scenes: [SceneData], context: NSManagedObjectContext) throws {
         for sceneData in scenes {
@@ -707,7 +703,7 @@ class CoreDataManager {
             entity.relatedNoteIDs = sceneData.relatedNoteIDs.compactMap { UUID(uuidString: $0) }
         }
     }
-    
+
     /// 恢复笔记数据
     private func restoreNotes(_ notes: [NoteData], context: NSManagedObjectContext) throws {
         for noteData in notes {
@@ -723,10 +719,10 @@ class CoreDataManager {
         }
     }
 
-// 以下是原有的CoreDataManager方法，已移至上面的类定义中
-/*
-    // MARK: - 笔记操作
-*/
+    // 以下是原有的CoreDataManager方法，已移至上面的类定义中
+    /*
+     // MARK: - 笔记操作
+     */
     func createNote(title: String, content: String) -> NoteBlock {
         let entity = NoteEntity(context: viewContext)
         entity.id = UUID()
@@ -736,18 +732,16 @@ class CoreDataManager {
         entity.relatedCharacterIDs = []
         entity.relatedSceneIDs = []
         entity.tags = []
-        
+
         saveContext()
-        
-        return NoteBlock(
-            id: entity.id ?? UUID(),
-            title: entity.title ?? "",
-            content: entity.content ?? "",
-            relatedCharacterIDs: [],
-            relatedSceneIDs: [],
-            date: entity.date ?? Date(),
-            tags: []
-        )
+
+        return NoteBlock(id: entity.id ?? UUID(),
+                         title: entity.title ?? "",
+                         content: entity.content ?? "",
+                         relatedCharacterIDs: [],
+                         relatedSceneIDs: [],
+                         date: entity.date ?? Date(),
+                         tags: [])
     }
 
     func fetchNotes() -> [NoteBlock] {
@@ -755,45 +749,40 @@ class CoreDataManager {
         do {
             let entities = try viewContext.fetch(request)
             return entities.map { entity in
-                NoteBlock(
-                    id: entity.id ?? UUID(),
-                    title: entity.title ?? "",
-                    content: entity.content ?? "",
-                    relatedCharacterIDs: entity.relatedCharacterIDs ?? [],
-                    relatedSceneIDs: entity.relatedSceneIDs ?? [],
-                    date: entity.date ?? Date(),
-                    tags: entity.tags ?? []
-                )
+                NoteBlock(id: entity.id ?? UUID(),
+                          title: entity.title ?? "",
+                          content: entity.content ?? "",
+                          relatedCharacterIDs: entity.relatedCharacterIDs ?? [],
+                          relatedSceneIDs: entity.relatedSceneIDs ?? [],
+                          date: entity.date ?? Date(),
+                          tags: entity.tags ?? [])
             }
         } catch {
             print("获取笔记数据失败: \(error)")
             return []
         }
-
     }
-    
+
     func fetchNotes(for noteIDs: [UUID]) -> [NoteBlock] {
         let request: NSFetchRequest<NoteEntity> = NoteEntity.fetchRequest()
-        request.predicate = NSPredicate(format: "id IN %@", noteIDs)            
+        request.predicate = NSPredicate(format: "id IN %@", noteIDs)
         do {
             let entities = try viewContext.fetch(request)
             return entities.map { entity in
-                NoteBlock(
-                    id: entity.id ?? UUID(),
-                    title: entity.title ?? "",
-                    content: entity.content ?? "",
-                    relatedCharacterIDs: entity.relatedCharacterIDs ?? [],
-                    relatedSceneIDs: entity.relatedSceneIDs ?? [],
-                    date: entity.date ?? Date(),
-                    tags: entity.tags ?? []
-                )
+                NoteBlock(id: entity.id ?? UUID(),
+                          title: entity.title ?? "",
+                          content: entity.content ?? "",
+                          relatedCharacterIDs: entity.relatedCharacterIDs ?? [],
+                          relatedSceneIDs: entity.relatedSceneIDs ?? [],
+                          date: entity.date ?? Date(),
+                          tags: entity.tags ?? [])
             }
         } catch {
             print("获取笔记数据失败: \(error)")
             return []
         }
     }
-    
+
     func fetchNoteEntity(by id: UUID) -> NoteEntity? {
         let request: NSFetchRequest<NoteEntity> = NoteEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -845,8 +834,9 @@ class CoreDataManager {
             print("场景未找到，无法更新")
         }
     }
-    
+
     // MARK: - 场景操作
+
     func createScene(title: String, description: String) -> AdventureScene {
         let entity = SceneEntity(context: viewContext)
         entity.id = UUID()
@@ -855,20 +845,19 @@ class CoreDataManager {
         entity.relatedNoteIDs = []
         entity.tags = []
         entity.atmosphereData = try? JSONEncoder().encode(SceneAtmosphere.default)
-        
+
         saveContext()
-        
-        return AdventureScene(
-            id: entity.id ?? UUID(),
-            title: entity.title ?? "",
-            description: entity.sceneDescription ?? "",
-            relatedNoteIDs: [],
-            coverImage: nil,
-            audioURL: nil,
-            atmosphere: .default,
-            tags: []
-        )
-    }     
+
+        return AdventureScene(id: entity.id ?? UUID(),
+                              title: entity.title ?? "",
+                              description: entity.sceneDescription ?? "",
+                              relatedNoteIDs: [],
+                              coverImage: nil,
+                              audioURL: nil,
+                              atmosphere: .default,
+                              tags: [])
+    }
+
     func fetchScenes() -> [AdventureScene] {
         let request: NSFetchRequest<SceneEntity> = SceneEntity.fetchRequest()
         do {
@@ -878,24 +867,22 @@ class CoreDataManager {
                 if let data = entity.atmosphereData {
                     atmosphere = (try? JSONDecoder().decode(SceneAtmosphere.self, from: data)) ?? .default
                 }
-                
-                return AdventureScene(
-                    id: entity.id ?? UUID(),
-                    title: entity.title ?? "",
-                    description: entity.sceneDescription ?? "",
-                    relatedNoteIDs: entity.relatedNoteIDs ?? [],
-                    coverImage: entity.coverImage != nil ? UIImage(data: entity.coverImage!) : nil,
-                    audioURL: nil,
-                    atmosphere: atmosphere,
-                    tags: entity.tags ?? []
-                )
+
+                return AdventureScene(id: entity.id ?? UUID(),
+                                      title: entity.title ?? "",
+                                      description: entity.sceneDescription ?? "",
+                                      relatedNoteIDs: entity.relatedNoteIDs ?? [],
+                                      coverImage: entity.coverImage != nil ? UIImage(data: entity.coverImage!) : nil,
+                                      audioURL: nil,
+                                      atmosphere: atmosphere,
+                                      tags: entity.tags ?? [])
             }
         } catch {
             print("获取场景数据失败: \(error)")
             return []
         }
     }
-    
+
     func fetchScenes(for sceneIDs: [UUID]) -> [AdventureScene] {
         let request: NSFetchRequest<SceneEntity> = SceneEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id IN %@", sceneIDs)
@@ -906,17 +893,15 @@ class CoreDataManager {
                 if let data = entity.atmosphereData {
                     atmosphere = (try? JSONDecoder().decode(SceneAtmosphere.self, from: data)) ?? .default
                 }
-                
-                return AdventureScene(
-                    id: entity.id ?? UUID(),
-                    title: entity.title ?? "",
-                    description: entity.sceneDescription ?? "",
-                    relatedNoteIDs: entity.relatedNoteIDs ?? [],
-                    coverImage: entity.coverImage != nil ? UIImage(data: entity.coverImage!) : nil,
-                    audioURL: nil,
-                    atmosphere: atmosphere,
-                    tags: entity.tags ?? []
-                )
+
+                return AdventureScene(id: entity.id ?? UUID(),
+                                      title: entity.title ?? "",
+                                      description: entity.sceneDescription ?? "",
+                                      relatedNoteIDs: entity.relatedNoteIDs ?? [],
+                                      coverImage: entity.coverImage != nil ? UIImage(data: entity.coverImage!) : nil,
+                                      audioURL: nil,
+                                      atmosphere: atmosphere,
+                                      tags: entity.tags ?? [])
             }
         } catch {
             print("获取场景数据失败: \(error)")
@@ -925,6 +910,7 @@ class CoreDataManager {
     }
 
     // MARK: - Character 相关方法
+
     func saveCharacter(_ character: Character) {
         let entity = CharacterEntity(context: viewContext)
         entity.id = character.id
@@ -935,8 +921,9 @@ class CoreDataManager {
         entity.relatedNoteIDs = character.relatedNoteIDs
         saveContext()
     }
-    
+
     // MARK: - Scene 相关方法
+
     func saveScene(_ scene: AdventureScene) {
         let entity = SceneEntity(context: viewContext)
         entity.id = scene.id
@@ -947,8 +934,9 @@ class CoreDataManager {
         entity.atmosphereData = try? JSONEncoder().encode(scene.atmosphere)
         saveContext()
     }
-    
+
     // MARK: - Note 相关方法
+
     func saveNote(_ note: NoteBlock) {
         let entity = NoteEntity(context: viewContext)
         entity.id = note.id
@@ -959,8 +947,9 @@ class CoreDataManager {
         entity.relatedSceneIDs = note.relatedSceneIDs
         saveContext()
     }
-    
+
     // MARK: - Audio 相关方法
+
     func fetchAudioRecordingEntity(by id: UUID) -> AudioRecordingEntity? {
         let request: NSFetchRequest<AudioRecordingEntity> = AudioRecordingEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -988,7 +977,7 @@ class CoreDataManager {
         }
         saveContext()
     }
-    
+
     func fetchAudioRecordings() -> [AudioRecording] {
         let request: NSFetchRequest<AudioRecordingEntity> = AudioRecordingEntity.fetchRequest()
         do {
@@ -996,39 +985,38 @@ class CoreDataManager {
             return entities.map { entity in
                 let storedURL = entity.recordingURL ?? URL(fileURLWithPath: "")
                 let audioURL = getAbsoluteAudioURL(from: storedURL)
-                
-                return AudioRecording(
-                    id: entity.id ?? UUID(),
-                    title: entity.title ?? "",
-                    recordingURL: audioURL,
-                    date: entity.date ?? Date()
-                )
+
+                return AudioRecording(id: entity.id ?? UUID(),
+                                      title: entity.title ?? "",
+                                      recordingURL: audioURL,
+                                      date: entity.date ?? Date())
             }
         } catch {
             print("获取录音数据失败: \(error)")
             return []
         }
     }
-    
+
     // MARK: - 删除方法
+
     func deleteCharacter(_ id: UUID) {
         let request: NSFetchRequest<CharacterEntity> = CharacterEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         deleteEntities(request)
     }
-    
+
     func deleteScene(_ id: UUID) {
         let request: NSFetchRequest<SceneEntity> = SceneEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         deleteEntities(request)
     }
-    
+
     func deleteNote(_ id: UUID) {
         let request: NSFetchRequest<NoteEntity> = NoteEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         deleteEntities(request)
     }
-    
+
     func deleteAudioRecording(_ id: UUID) {
         let request: NSFetchRequest<AudioRecordingEntity> = AudioRecordingEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -1041,8 +1029,7 @@ class CoreDataManager {
             entity.recordingURL = getRelativeAudioURL(from: recording.recordingURL)
             entity.date = recording.date
             saveContext()
-        }
-        else {
+        } else {
             print("录音未找到，无法更新")
         }
     }
@@ -1056,7 +1043,7 @@ class CoreDataManager {
             print("删除实体失败: \(error)")
         }
     }
-    
+
     // 辅助方法：获取相对音频URL（只保留文件名）
     private func getRelativeAudioURL(from url: URL) -> URL {
         if url.pathComponents.count <= 2 {
@@ -1064,17 +1051,17 @@ class CoreDataManager {
         }
         return URL(fileURLWithPath: url.lastPathComponent)
     }
-    
+
     // 辅助方法：从相对URL获取绝对URL
     private func getAbsoluteAudioURL(from url: URL) -> URL {
         if url.path.starts(with: "/") && FileManager.default.fileExists(atPath: url.path) {
             return url
         }
-        
-        let audioDirectoryName = "AudioRecordings" 
+
+        let audioDirectoryName = "AudioRecordings"
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let audioDirectory = documentsPath.appendingPathComponent(audioDirectoryName)
-        
+
         if !FileManager.default.fileExists(atPath: audioDirectory.path) {
             do {
                 try FileManager.default.createDirectory(at: audioDirectory, withIntermediateDirectories: true)
@@ -1082,7 +1069,7 @@ class CoreDataManager {
                 print("创建音频目录失败: \(error)")
             }
         }
-        
+
         return audioDirectory.appendingPathComponent(url.lastPathComponent)
     }
 }

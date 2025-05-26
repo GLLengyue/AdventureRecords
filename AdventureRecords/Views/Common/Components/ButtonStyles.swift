@@ -15,7 +15,7 @@ public struct ModuleButton: View {
     public var icon: String? = nil
     public var isProminent: Bool = false
     public var size: ButtonSize = .medium
-    
+
     public var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
@@ -23,7 +23,7 @@ public struct ModuleButton: View {
                     Image(systemName: icon)
                         .font(size.iconFont)
                 }
-                
+
                 Text(title)
                     .font(size.textFont)
             }
@@ -31,14 +31,11 @@ public struct ModuleButton: View {
             .frame(height: size.height)
             .frame(maxWidth: size.maxWidth ? .infinity : nil)
             .foregroundColor(isProminent ? .white : ThemeManager.shared.accentColor(for: module))
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isProminent ? ThemeManager.shared.accentColor(for: module) : ThemeManager.shared.accentColor(for: module).opacity(0.1))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(ThemeManager.shared.accentColor(for: module), lineWidth: isProminent ? 0 : 1)
-            )
+            .background(RoundedRectangle(cornerRadius: 8)
+                .fill(isProminent ? ThemeManager.shared.accentColor(for: module) : ThemeManager.shared
+                    .accentColor(for: module).opacity(0.1)))
+            .overlay(RoundedRectangle(cornerRadius: 8)
+                .stroke(ThemeManager.shared.accentColor(for: module), lineWidth: isProminent ? 0 : 1))
         }
     }
 }
@@ -48,7 +45,7 @@ public enum ButtonSize {
     case small
     case medium
     case large
-    
+
     public var padding: EdgeInsets {
         switch self {
         case .small: return EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8)
@@ -56,7 +53,7 @@ public enum ButtonSize {
         case .large: return EdgeInsets(top: 12, leading: 24, bottom: 12, trailing: 24)
         }
     }
-    
+
     public var height: CGFloat {
         switch self {
         case .small: return 28
@@ -64,14 +61,14 @@ public enum ButtonSize {
         case .large: return 56
         }
     }
-    
+
     public var maxWidth: Bool {
         switch self {
         case .large: return true
         default: return false
         }
     }
-    
+
     public var textFont: Font {
         switch self {
         case .small: return .caption
@@ -79,7 +76,7 @@ public enum ButtonSize {
         case .large: return .headline
         }
     }
-    
+
     public var iconFont: Font {
         switch self {
         case .small: return .caption
@@ -96,17 +93,16 @@ public struct IconButton: View {
     public let action: () -> Void
     public var size: CGFloat = 44
     public var isProminent: Bool = false
-    
+
     public var body: some View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: size / 2.5))
                 .frame(width: size, height: size)
                 .foregroundColor(isProminent ? .white : ThemeManager.shared.accentColor(for: module))
-                .background(
-                    Circle()
-                        .fill(isProminent ? ThemeManager.shared.accentColor(for: module) : ThemeManager.shared.accentColor(for: module).opacity(0.1))
-                )
+                .background(Circle()
+                    .fill(isProminent ? ThemeManager.shared.accentColor(for: module) : ThemeManager.shared
+                        .accentColor(for: module).opacity(0.1)))
         }
     }
 }
@@ -118,7 +114,7 @@ public struct TabButton: View {
     public let module: ModuleType
     public let isSelected: Bool
     public let action: () -> Void
-    
+
     public var body: some View {
         Button(action: action) {
             VStack(spacing: 4) {
@@ -128,7 +124,8 @@ public struct TabButton: View {
                     .font(.caption)
             }
             .frame(maxWidth: .infinity)
-            .foregroundColor(isSelected ? ThemeManager.shared.accentColor(for: module) : ThemeManager.shared.secondaryTextColor)
+            .foregroundColor(isSelected ? ThemeManager.shared.accentColor(for: module) : ThemeManager.shared
+                .secondaryTextColor)
         }
     }
 }

@@ -5,7 +5,7 @@ struct SceneCreationView: View {
     @State private var description: String = ""
     @Environment(\.dismiss) var dismiss
     var onSave: (AdventureScene) -> Void
-    
+
     var body: some View {
         NavigationStack {
             Form {
@@ -17,12 +17,10 @@ struct SceneCreationView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存") {
-                        let newScene = AdventureScene(
-                            id: UUID(),
-                            title: title,
-                            description: description,
-                            relatedNoteIDs: []
-                        )
+                        let newScene = AdventureScene(id: UUID(),
+                                                      title: title,
+                                                      description: description,
+                                                      relatedNoteIDs: [])
                         onSave(newScene)
                     }
                     .disabled(title.isEmpty)

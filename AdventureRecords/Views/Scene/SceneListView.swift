@@ -7,7 +7,7 @@ struct SceneListView: View {
     @State private var selectedScene: AdventureScene? = nil
     @State private var selectedTags: [String] = []
     @State private var showingSortMenu: Bool = false
-    
+
     // 使用单例
     @StateObject private var sceneViewModel = SceneViewModel.shared
 
@@ -28,17 +28,17 @@ struct SceneListView: View {
         }
         return Array(tags).sorted()
     }
-    
+
     var filteredAndSortedScenes: [AdventureScene] {
         let filtered = sceneViewModel.scenes.filter { scene in
-            let matchesSearch = searchText.isEmpty ? true : 
-                scene.title.localizedCaseInsensitiveContains(searchText) || 
+            let matchesSearch = searchText.isEmpty ? true :
+                scene.title.localizedCaseInsensitiveContains(searchText) ||
                 scene.description.localizedCaseInsensitiveContains(searchText) ||
                 scene.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
-            
-            let matchesTags = selectedTags.isEmpty ? true : 
+
+            let matchesTags = selectedTags.isEmpty ? true :
                 scene.tags.contains { selectedTags.contains($0) }
-            
+
             return matchesSearch && matchesTags
         }
 
@@ -51,54 +51,52 @@ struct SceneListView: View {
     }
 
     var body: some View {
-        ListContainer(
-            module: .scene,
-            title: "场景",
-            searchText: $searchText,
-            onSearch: { _ in },
-            addAction: { showingSceneEditor = true },
-            trailingContent: {
-                Menu {
-                    ForEach(SortOrder.allCases) { order in
-                        Button(action: {
-                            withAnimation {
-                                sortOrder = order
-                            }
-                        }) {
-                            HStack {
-                                Text(order.rawValue)
-                                    .font(.system(.body))
-                                Spacer()
-                                if sortOrder == order {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
-                                }
-                            }
-                            .contentShape(Rectangle())
-                        }
-                    }
-                } label: {
-                    Image(systemName: "arrow.up.arrow.down")
-                        .font(.system(size: 16, weight: .semibold))
-                        .padding(8)
-                        .background(ThemeManager.shared.accentColor(for: .scene).opacity(0.1))
-                        .clipShape(Circle())
-                }
-            }
-        ) {
+        ListContainer(module: .scene,
+                      title: "场景",
+                      searchText: $searchText,
+                      onSearch: { _ in },
+                      addAction: { showingSceneEditor = true },
+                      trailingContent: {
+                          Menu {
+                              ForEach(SortOrder.allCases) { order in
+                                  Button(action: {
+                                      withAnimation {
+                                          sortOrder = order
+                                      }
+                                  }) {
+                                      HStack {
+                                          Text(order.rawValue)
+                                              .font(.system(.body))
+                                          Spacer()
+                                          if sortOrder == order {
+                                              Image(systemName: "checkmark")
+                                                  .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
+                                          }
+                                      }
+                                      .contentShape(Rectangle())
+                                  }
+                              }
+                          } label: {
+                              Image(systemName: "arrow.up.arrow.down")
+                                  .font(.system(size: 16, weight: .semibold))
+                                  .padding(8)
+                                  .background(ThemeManager.shared.accentColor(for: .scene).opacity(0.1))
+                                  .clipShape(Circle())
+                          }
+                      }) {
             if filteredAndSortedScenes.isEmpty {
                 VStack(spacing: 20) {
                     Spacer()
-                    
+
                     VStack(spacing: 16) {
                         Image(systemName: "photo.on.rectangle.angled")
                             .font(.system(size: 64))
                             .foregroundColor(ThemeManager.shared.accentColor(for: .scene).opacity(0.6))
-                        
+
                         Text(searchText.isEmpty ? "暂无场景" : "没有找到相关场景")
                             .font(.headline)
                             .foregroundColor(.secondary)
-                        
+
                         if searchText.isEmpty {
                             Button {
                                 showingSceneEditor = true
@@ -117,7 +115,7 @@ struct SceneListView: View {
                             .padding(.top, 8)
                         }
                     }
-                    
+
                     Spacer()
                 }
                 .frame(maxWidth: .infinity)
@@ -126,40 +124,37 @@ struct SceneListView: View {
                 VStack(spacing: 0) {
                     // 标签筛选视图
                     if !allTags.isEmpty {
-                        TagFilterView(
-                            allTags: allTags,
-                            selectedTags: $selectedTags,
-                            accentColor: ThemeManager.shared.accentColor(for: .scene)
-                        )
-                        .padding(.bottom, 8)
+                        TagFilterView(allTags: allTags,
+                                      selectedTags: $selectedTags,
+                                      accentColor: ThemeManager.shared.accentColor(for: .scene))
+                            .padding(.bottom, 8)
                     }
-                    
+
                     List {
-                    ForEach(filteredAndSortedScenes) { scene in
-                        Button {
-                            selectedScene = scene
-                        } label: {
-                            SceneRow(scene: scene,
-                                onDelete: {
-                                    withAnimation {
-                                        SceneViewModel.shared.deleteScene(scene)
-                                    }
-                                },
-                                onEdit: { editableScene in
-                                    sceneViewModel.updateScene(editableScene)
-                                }
-                            )
-                            .contentShape(Rectangle())
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                        ForEach(filteredAndSortedScenes) { scene in
+                            Button {
+                                selectedScene = scene
+                            } label: {
+                                SceneRow(scene: scene,
+                                         onDelete: {
+                                             withAnimation {
+                                                 SceneViewModel.shared.deleteScene(scene)
+                                             }
+                                         },
+                                         onEdit: { editableScene in
+                                             sceneViewModel.updateScene(editableScene)
+                                         })
+                                         .contentShape(Rectangle())
+                                         .listRowSeparator(.hidden)
+                                         .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
-                        .buttonStyle(PlainButtonStyle())
                     }
-                }
-                .listStyle(PlainListStyle())
-                .refreshable {
-                    refreshData()
-                }
+                    .listStyle(PlainListStyle())
+                    .refreshable {
+                        refreshData()
+                    }
                 }
             }
         }
@@ -167,15 +162,13 @@ struct SceneListView: View {
             SceneDetailView(sceneID: scene.id)
         }
         .sheet(isPresented: $showingSceneEditor) {
-            SceneEditorView(
-                onSave: { savedScene in
-                    sceneViewModel.addScene(savedScene)
-                    showingSceneEditor = false
-                },
-                onCancel: {
-                    showingSceneEditor = false
-                }
-            )
+            SceneEditorView(onSave: { savedScene in
+                                sceneViewModel.addScene(savedScene)
+                                showingSceneEditor = false
+                            },
+                            onCancel: {
+                                showingSceneEditor = false
+                            })
         }
     }
 

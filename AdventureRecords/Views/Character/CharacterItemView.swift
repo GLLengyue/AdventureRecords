@@ -4,7 +4,7 @@ import SwiftUI
 struct CharacterItemView: View {
     let character: Character
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             HStack(alignment: .center, spacing: 12) {
@@ -23,7 +23,7 @@ struct CharacterItemView: View {
                         .background(ThemeManager.shared.accentColor(for: .character).opacity(0.15))
                         .cornerRadius(8)
                 }
-                
+
                 // 文本内容
                 VStack(alignment: .leading, spacing: 4) {
                     Text(character.name)
@@ -31,7 +31,7 @@ struct CharacterItemView: View {
                         .fontWeight(.medium)
                         .foregroundColor(ThemeManager.shared.primaryTextColor)
                         .lineLimit(1)
-                    
+
                     if !character.description.isEmpty {
                         Text(character.description)
                             .font(.caption)
@@ -39,9 +39,9 @@ struct CharacterItemView: View {
                             .lineLimit(1)
                     }
                 }
-                
+
                 Spacer()
-                
+
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14))
                     .foregroundColor(.secondary)

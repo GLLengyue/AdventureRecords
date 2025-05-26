@@ -7,50 +7,51 @@ struct RecordingListItemView: View {
     let onPlayPause: () -> Void
     let onRename: () -> Void
     let onDelete: () -> Void
-    
+
     var body: some View {
         HStack(spacing: 0) {
             // 播放/暂停按钮
             Button(action: onPlayPause) {
                 ZStack {
                     Circle()
-                        .fill(isPlaying ? Color.red.opacity(0.15) : ThemeManager.shared.accentColor(for: .character).opacity(0.15))
+                        .fill(isPlaying ? Color.red.opacity(0.15) : ThemeManager.shared.accentColor(for: .character)
+                            .opacity(0.15))
                         .frame(width: 40, height: 40)
-                    
+
                     Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(isPlaying ? .red : ThemeManager.shared.accentColor(for: .character))
                 }
             }
             .buttonStyle(PlainButtonStyle())
-            
+
             // 录音信息
             VStack(alignment: .leading, spacing: 4) {
                 Text(recording.title)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.primary)
                     .lineLimit(1)
-                
+
                 HStack(spacing: 6) {
                     Image(systemName: "calendar")
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
-                    
+
                     Text(formattedDate(recording.date))
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
                 }
             }
             .padding(.leading, 12)
-            
+
             Spacer()
-            
+
             // 上下文菜单
             Menu {
                 Button(action: onRename) {
                     Label("重命名", systemImage: "pencil")
                 }
-                
+
                 Button(role: .destructive, action: onDelete) {
                     Label("删除", systemImage: "trash")
                 }
@@ -67,7 +68,7 @@ struct RecordingListItemView: View {
         .cornerRadius(12)
         .contentShape(Rectangle())
     }
-    
+
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm"

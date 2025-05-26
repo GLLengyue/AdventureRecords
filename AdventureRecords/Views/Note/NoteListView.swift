@@ -7,7 +7,7 @@ struct NoteListView: View {
     @State private var sortOrder: SortOrder = .titleAscending
     @State private var selectedNote: NoteBlock? = nil
     @State private var selectedTags: [String] = []
-    
+
     // 使用单例
     @StateObject private var noteViewModel = NoteViewModel.shared
 
@@ -29,17 +29,17 @@ struct NoteListView: View {
         }
         return Array(tags).sorted()
     }
-    
+
     var filteredAndSortedNotes: [NoteBlock] {
         let filtered = noteViewModel.notes.filter { note in
-            let matchesSearch = searchText.isEmpty ? true : 
-                note.title.localizedCaseInsensitiveContains(searchText) || 
+            let matchesSearch = searchText.isEmpty ? true :
+                note.title.localizedCaseInsensitiveContains(searchText) ||
                 note.content.localizedCaseInsensitiveContains(searchText) ||
                 note.tags.contains { $0.localizedCaseInsensitiveContains(searchText) }
-            
-            let matchesTags = selectedTags.isEmpty ? true : 
+
+            let matchesTags = selectedTags.isEmpty ? true :
                 note.tags.contains { selectedTags.contains($0) }
-            
+
             return matchesSearch && matchesTags
         }
 
@@ -56,54 +56,52 @@ struct NoteListView: View {
     }
 
     var body: some View {
-        ListContainer(
-            module: .note,
-            title: "笔记",
-            searchText: $searchText,
-            onSearch: { _ in },
-            addAction: { showingNoteEditor = true },
-            trailingContent: {
-                Menu {
-                    ForEach(SortOrder.allCases) { order in
-                        Button(action: {
-                            withAnimation {
-                                sortOrder = order
-                            }
-                        }) {
-                            HStack {
-                                Text(order.rawValue)
-                                    .font(.system(.body))
-                                Spacer()
-                                if sortOrder == order {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(ThemeManager.shared.accentColor(for: .note))
-                                }
-                            }
-                            .contentShape(Rectangle())
-                        }
-                    }
-                } label: {
-                    Image(systemName: "arrow.up.arrow.down")
-                        .font(.system(size: 16, weight: .semibold))
-                        .padding(8)
-                        .background(ThemeManager.shared.accentColor(for: .note).opacity(0.1))
-                        .clipShape(Circle())
-                }
-            }
-        ) {
+        ListContainer(module: .note,
+                      title: "笔记",
+                      searchText: $searchText,
+                      onSearch: { _ in },
+                      addAction: { showingNoteEditor = true },
+                      trailingContent: {
+                          Menu {
+                              ForEach(SortOrder.allCases) { order in
+                                  Button(action: {
+                                      withAnimation {
+                                          sortOrder = order
+                                      }
+                                  }) {
+                                      HStack {
+                                          Text(order.rawValue)
+                                              .font(.system(.body))
+                                          Spacer()
+                                          if sortOrder == order {
+                                              Image(systemName: "checkmark")
+                                                  .foregroundColor(ThemeManager.shared.accentColor(for: .note))
+                                          }
+                                      }
+                                      .contentShape(Rectangle())
+                                  }
+                              }
+                          } label: {
+                              Image(systemName: "arrow.up.arrow.down")
+                                  .font(.system(size: 16, weight: .semibold))
+                                  .padding(8)
+                                  .background(ThemeManager.shared.accentColor(for: .note).opacity(0.1))
+                                  .clipShape(Circle())
+                          }
+                      }) {
             if filteredAndSortedNotes.isEmpty {
                 VStack(spacing: 20) {
                     Spacer()
-                    
+
                     VStack(spacing: 16) {
                         Image(systemName: "note.text.badge.plus")
                             .font(.system(size: 64))
                             .foregroundColor(ThemeManager.shared.accentColor(for: .note).opacity(0.6))
-                        
+
                         Text(searchText.isEmpty ? "暂无笔记" : "没有找到相关笔记")
                             .font(.headline)
                             .foregroundColor(.secondary)
-                        
+
                         if searchText.isEmpty {
                             Button {
                                 showingNoteEditor = true
@@ -122,7 +120,7 @@ struct NoteListView: View {
                             .padding(.top, 8)
                         }
                     }
-                    
+
                     Spacer()
                 }
                 .frame(maxWidth: .infinity)
@@ -131,41 +129,37 @@ struct NoteListView: View {
                 VStack(spacing: 0) {
                     // 标签筛选视图
                     if !allTags.isEmpty {
-                        TagFilterView(
-                            allTags: allTags,
-                            selectedTags: $selectedTags,
-                            accentColor: ThemeManager.shared.accentColor(for: .note)
-                        )
-                        .padding(.bottom, 8)
+                        TagFilterView(allTags: allTags,
+                                      selectedTags: $selectedTags,
+                                      accentColor: ThemeManager.shared.accentColor(for: .note))
+                            .padding(.bottom, 8)
                     }
-                    
+
                     List {
-                    ForEach(filteredAndSortedNotes) { note in
-                        Button {
-                            selectedNote = note
-                        } label: {
-                            NoteBlockRow(
-                                note: note,
-                                onDelete: {
-                                    withAnimation {
-                                        NoteViewModel.shared.deleteNote(note)
-                                    }
-                                },
-                                onEdit: { editableNote in
-                                    noteViewModel.updateNote(editableNote)
-                                }
-                            )
-                            .contentShape(Rectangle())
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                        ForEach(filteredAndSortedNotes) { note in
+                            Button {
+                                selectedNote = note
+                            } label: {
+                                NoteBlockRow(note: note,
+                                             onDelete: {
+                                                 withAnimation {
+                                                     NoteViewModel.shared.deleteNote(note)
+                                                 }
+                                             },
+                                             onEdit: { editableNote in
+                                                 noteViewModel.updateNote(editableNote)
+                                             })
+                                             .contentShape(Rectangle())
+                                             .listRowSeparator(.hidden)
+                                             .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
-                        .buttonStyle(PlainButtonStyle())
                     }
-                }
-                .listStyle(PlainListStyle())
-                .refreshable {
-                    refreshData()
-                }
+                    .listStyle(PlainListStyle())
+                    .refreshable {
+                        refreshData()
+                    }
                 }
             }
         }
@@ -173,15 +167,13 @@ struct NoteListView: View {
             NoteBlockDetailView(noteID: note.id)
         }
         .sheet(isPresented: $showingNoteEditor) {
-            NoteEditorView(
-                onSave: { newNote in
-                    noteViewModel.addNote(newNote)
-                    showingNoteEditor = false
-                },
-                onCancel: {
-                    showingNoteEditor = false
-                }
-            )
+            NoteEditorView(onSave: { newNote in
+                               noteViewModel.addNote(newNote)
+                               showingNoteEditor = false
+                           },
+                           onCancel: {
+                               showingNoteEditor = false
+                           })
         }
     }
 

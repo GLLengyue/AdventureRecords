@@ -1,5 +1,5 @@
-import SwiftUI
 import PhotosUI
+import SwiftUI
 
 struct SceneEditorView: View {
     @Environment(\.dismiss) var dismiss
@@ -16,12 +16,12 @@ struct SceneEditorView: View {
     @State private var tagSuggestions: [String] = []
     @State private var showTagSuggestions: Bool = false
     @State private var newTag: String
-    
+
     private var onSave: (AdventureScene) -> Void
     private var onCancel: () -> Void
     private var isEditing: Bool
     private var existingScene: AdventureScene?
-    
+
     // 创建新场景
     init(onSave: @escaping (AdventureScene) -> Void, onCancel: @escaping () -> Void) {
         self._title = State(initialValue: "")
@@ -35,12 +35,12 @@ struct SceneEditorView: View {
         self._tagSuggestions = State(initialValue: SceneViewModel.shared.getAllTags())
         self._newTag = State(initialValue: "")
     }
-    
+
     // 编辑现有场景
     init(scene: AdventureScene? = nil, onSave: @escaping (AdventureScene) -> Void, onCancel: @escaping () -> Void) {
         self.onSave = onSave
         self.onCancel = onCancel
-        
+
         if let scene = scene {
             self._title = State(initialValue: scene.title)
             self._description = State(initialValue: scene.description)
@@ -58,11 +58,11 @@ struct SceneEditorView: View {
             self.isEditing = false
             self.existingScene = nil
         }
-        
+
         self._tagSuggestions = State(initialValue: SceneViewModel.shared.getAllTags())
         self._newTag = State(initialValue: "")
     }
-    
+
     // 标签建议相关方法
     var filteredTagSuggestions: [String] {
         if newTag.isEmpty {
@@ -70,46 +70,43 @@ struct SceneEditorView: View {
             return tagSuggestions.filter { !tags.contains($0) }
         } else {
             // 当有输入时，过滤出匹配的标签
-            return tagSuggestions.filter { 
+            return tagSuggestions.filter {
                 $0.localizedCaseInsensitiveContains(newTag) && !tags.contains($0)
             }
         }
     }
-    
+
     func updateTagSuggestions() {
         // 更新标签建议列表
         tagSuggestions = SceneViewModel.shared.getAllTags()
     }
-    
+
     var body: some View {
-        EditorContainer(
-            module: .scene,
-            title: isEditing ? "编辑场景" : "新建场景",
-            cancelAction: {
-                onCancel()
-            },
-            saveAction: {
-                if var sceneToUpdate = existingScene {
-                    sceneToUpdate.title = title
-                    sceneToUpdate.description = description
-                    sceneToUpdate.coverImage = coverImage
-                    sceneToUpdate.atmosphere = atmosphere
-                    sceneToUpdate.tags = tags
-                    onSave(sceneToUpdate)
-                } else {
-                    let newScene = AdventureScene(
-                        id: UUID(),
-                        title: title,
-                        description: description,
-                        coverImage: coverImage,
-                        atmosphere: atmosphere,
-                        tags: tags
-                    )
-                    onSave(newScene)
-                }
-            },
-            saveDisabled: title.isEmpty
-        ) {
+        EditorContainer(module: .scene,
+                        title: isEditing ? "编辑场景" : "新建场景",
+                        cancelAction: {
+                            onCancel()
+                        },
+                        saveAction: {
+                            if var sceneToUpdate = existingScene {
+                                sceneToUpdate.title = title
+                                sceneToUpdate.description = description
+                                sceneToUpdate.coverImage = coverImage
+                                sceneToUpdate.atmosphere = atmosphere
+                                sceneToUpdate.tags = tags
+                                onSave(sceneToUpdate)
+                            } else {
+                                let newScene = AdventureScene(id: UUID(),
+                                                              title: title,
+                                                              description: description,
+                                                              coverImage: coverImage,
+                                                              atmosphere: atmosphere,
+                                                              tags: tags)
+                                onSave(newScene)
+                            }
+                        },
+                        saveDisabled: title.isEmpty)
+        {
             Form {
                 // 基本信息区域
                 Section {
@@ -117,14 +114,14 @@ struct SceneEditorView: View {
                         // 场景名称
                         VStack(alignment: .leading, spacing: 8) {
                             Text("场景名称").font(.caption).foregroundColor(.secondary)
-                            
+
                             TextField("输入场景名称", text: $title)
                                 .font(.headline)
                                 .padding(12)
                                 .background(ThemeManager.shared.secondaryBackgroundColor)
                                 .cornerRadius(10)
                         }
-                        
+
                         // 场景描述
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
@@ -136,7 +133,7 @@ struct SceneEditorView: View {
                                         .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
                                 }
                             }
-                            
+
                             ZStack(alignment: .topLeading) {
                                 if description.isEmpty {
                                     Text("请输入场景的描述内容……")
@@ -154,17 +151,16 @@ struct SceneEditorView: View {
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                
+
                 // 场景图片区域
                 Section {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("场景封面").font(.caption).foregroundColor(.secondary)
-                        
-                        PhotosPicker(
-                            selection: $selectedItem,
-                            matching: .images,
-                            photoLibrary: .shared()
-                        ) {
+
+                        PhotosPicker(selection: $selectedItem,
+                                     matching: .images,
+                                     photoLibrary: .shared())
+                        {
                             if let image = coverImage {
                                 ZStack(alignment: .topTrailing) {
                                     Image(uiImage: image)
@@ -172,21 +168,18 @@ struct SceneEditorView: View {
                                         .aspectRatio(contentMode: .fill)
                                         .frame(height: 200)
                                         .clipShape(RoundedRectangle(cornerRadius: 15))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 15)
-                                                .stroke(ThemeManager.shared.accentColor(for: .scene).opacity(0.4), lineWidth: 1)
-                                        )
-                                    
+                                        .overlay(RoundedRectangle(cornerRadius: 15)
+                                            .stroke(ThemeManager.shared.accentColor(for: .scene).opacity(0.4),
+                                                    lineWidth: 1))
+
                                     // 更换图片图标
                                     Image(systemName: "photo.badge.plus.fill")
                                         .font(.title3)
                                         .foregroundColor(.white)
                                         .padding(8)
-                                        .background(
-                                            Circle()
-                                                .fill(ThemeManager.shared.accentColor(for: .scene).opacity(0.8))
-                                                .shadow(radius: 2)
-                                        )
+                                        .background(Circle()
+                                            .fill(ThemeManager.shared.accentColor(for: .scene).opacity(0.8))
+                                            .shadow(radius: 2))
                                         .offset(x: -10, y: 10)
                                 }
                             } else {
@@ -196,7 +189,7 @@ struct SceneEditorView: View {
                                         Image(systemName: "photo.on.rectangle.angled")
                                             .font(.system(size: 40))
                                             .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
-                                        
+
                                         Text("添加场景图片")
                                             .font(.subheadline)
                                             .fontWeight(.medium)
@@ -207,10 +200,9 @@ struct SceneEditorView: View {
                                 .frame(height: 180)
                                 .background(ThemeManager.shared.secondaryBackgroundColor)
                                 .cornerRadius(15)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .stroke(ThemeManager.shared.accentColor(for: .scene).opacity(0.2), lineWidth: 1.5)
-                                )
+                                .overlay(RoundedRectangle(cornerRadius: 15)
+                                    .stroke(ThemeManager.shared.accentColor(for: .scene).opacity(0.2),
+                                            lineWidth: 1.5))
                             }
                         }
                         .buttonStyle(ScaleButtonStyle())
@@ -218,7 +210,8 @@ struct SceneEditorView: View {
                     .onChange(of: selectedItem) {
                         Task {
                             if let data = try? await selectedItem?.loadTransferable(type: Data.self),
-                               let uiImage = UIImage(data: data) {
+                               let uiImage = UIImage(data: data)
+                            {
                                 coverImage = uiImage
                             }
                         }
@@ -226,7 +219,7 @@ struct SceneEditorView: View {
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                
+
                 // 场景标签区域
                 Section {
                     VStack(alignment: .leading, spacing: 12) {
@@ -234,9 +227,9 @@ struct SceneEditorView: View {
                             Label("场景标签", systemImage: "tag")
                                 .font(.headline)
                                 .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
-                            
+
                             Spacer()
-                            
+
                             if !tags.isEmpty {
                                 Text("\(tags.count)")
                                     .font(.caption)
@@ -247,7 +240,7 @@ struct SceneEditorView: View {
                                     .cornerRadius(10)
                             }
                         }
-                        
+
                         // 标签输入区
                         VStack(spacing: 8) {
                             HStack {
@@ -261,7 +254,7 @@ struct SceneEditorView: View {
                                 .padding(12)
                                 .background(ThemeManager.shared.secondaryBackgroundColor)
                                 .cornerRadius(10)
-                                
+
                                 Button(action: {
                                     let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
                                     if !trimmedTag.isEmpty && !tags.contains(trimmedTag) {
@@ -274,30 +267,29 @@ struct SceneEditorView: View {
                                 }) {
                                     Image(systemName: "plus.circle.fill")
                                         .font(.system(size: 24))
-                                        .foregroundColor(newTag.isEmpty ? .gray : ThemeManager.shared.accentColor(for: .scene))
+                                        .foregroundColor(newTag.isEmpty ? .gray : ThemeManager.shared
+                                            .accentColor(for: .scene))
                                 }
                                 .disabled(newTag.isEmpty)
                                 .padding(.leading, 8)
                             }
-                            
+
                             // 标签建议
                             if showTagSuggestions && !filteredTagSuggestions.isEmpty {
-                                TagSuggestionView(
-                                    suggestions: filteredTagSuggestions,
-                                    onSelectSuggestion: { suggestion in
-                                        if !tags.contains(suggestion) {
-                                            withAnimation {
-                                                tags.append(suggestion)
-                                                newTag = ""
-                                                updateTagSuggestions()
-                                            }
-                                        }
-                                    },
-                                    accentColor: ThemeManager.shared.accentColor(for: .scene)
-                                )
+                                TagSuggestionView(suggestions: filteredTagSuggestions,
+                                                  onSelectSuggestion: { suggestion in
+                                                      if !tags.contains(suggestion) {
+                                                          withAnimation {
+                                                              tags.append(suggestion)
+                                                              newTag = ""
+                                                              updateTagSuggestions()
+                                                          }
+                                                      }
+                                                  },
+                                                  accentColor: ThemeManager.shared.accentColor(for: .scene))
                             }
                         }
-                        
+
                         // 现有标签显示
                         if tags.isEmpty {
                             Text("没有添加标签")
@@ -312,7 +304,7 @@ struct SceneEditorView: View {
                                         HStack(spacing: 4) {
                                             Text(tag)
                                                 .font(.subheadline)
-                                            
+
                                             Button(action: {
                                                 withAnimation {
                                                     if let index = tags.firstIndex(of: tag) {
@@ -342,11 +334,9 @@ struct SceneEditorView: View {
                 .listRowSeparator(.hidden)
             }
             .fullScreenCover(isPresented: $showImmersiveMode) {
-                ImmersiveEditorView(
-                    isPresented: $showImmersiveMode,
-                    content: $description,
-                    title: title.isEmpty ? "场景编辑" : title
-                )
+                ImmersiveEditorView(isPresented: $showImmersiveMode,
+                                    content: $description,
+                                    title: title.isEmpty ? "场景编辑" : title)
             }
         }
     }

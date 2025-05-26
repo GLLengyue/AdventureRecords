@@ -4,7 +4,7 @@ struct TagSuggestionView: View {
     let suggestions: [String]
     let onSelectSuggestion: (String) -> Void
     let accentColor: Color
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if !suggestions.isEmpty {
@@ -12,7 +12,7 @@ struct TagSuggestionView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 8)
-                
+
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(suggestions, id: \.self) { suggestion in
@@ -31,10 +31,8 @@ struct TagSuggestionView: View {
                                 .background(accentColor.opacity(0.1))
                                 .foregroundColor(accentColor)
                                 .cornerRadius(16)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .stroke(accentColor.opacity(0.3), lineWidth: 1)
-                                )
+                                .overlay(RoundedRectangle(cornerRadius: 16)
+                                    .stroke(accentColor.opacity(0.3), lineWidth: 1))
                             }
                         }
                     }

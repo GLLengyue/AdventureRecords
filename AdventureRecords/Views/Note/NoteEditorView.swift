@@ -5,7 +5,7 @@ import SwiftUI
 
 struct NoteEditorView: View {
     @Environment(\.dismiss) var dismiss
-    
+
     // 使用单例
     @StateObject private var noteViewModel = NoteViewModel.shared
     @StateObject private var characterViewModel = CharacterViewModel.shared
@@ -19,35 +19,35 @@ struct NoteEditorView: View {
     @State private var tagSuggestions: [String] = []
     @State private var showTagSuggestions: Bool = false
     @State private var newTag: String
-    
+
     @State private var showCharacterPicker = false
     @State private var showScenePicker = false
     @State private var showingSceneEditor = false
     @State private var showingCharacterEditor = false
     @State private var showImmersiveMode = false // 控制沉浸模式显示
-    
+
     private var onSave: (NoteBlock) -> Void
     private var onCancel: () -> Void
     private var existingNote: NoteBlock?
     private var isEditing: Bool
-    
+
     var filteredTagSuggestions: [String] {
         if newTag.isEmpty {
             // 当输入为空时，显示所有尚未添加的标签
             return tagSuggestions.filter { !tags.contains($0) }
         } else {
             // 当有输入时，过滤出匹配的标签
-            return tagSuggestions.filter { 
+            return tagSuggestions.filter {
                 $0.localizedCaseInsensitiveContains(newTag) && !tags.contains($0)
             }
         }
     }
-    
+
     func updateTagSuggestions() {
         // 更新标签建议列表
         tagSuggestions = NoteViewModel.shared.getAllTags()
     }
-    
+
     init(onSave: @escaping (NoteBlock) -> Void, onCancel: @escaping () -> Void) {
         self._title = State(initialValue: "")
         self._content = State(initialValue: "")
@@ -61,7 +61,6 @@ struct NoteEditorView: View {
         self.existingNote = nil
         self.isEditing = false
     }
-    
 
     init(preselectedCharacterID: UUID? = nil, onSave: @escaping (NoteBlock) -> Void, onCancel: @escaping () -> Void) {
         self._title = State(initialValue: "")
@@ -89,9 +88,11 @@ struct NoteEditorView: View {
         self.existingNote = nil
         self.isEditing = false
     }
-    
+
     // Initializer for editing an existing note
-    init(note: NoteBlock, preselectedCharacterID: UUID? = nil, onSave: @escaping (NoteBlock) -> Void, onCancel: @escaping () -> Void) {
+    init(note: NoteBlock, preselectedCharacterID: UUID? = nil, onSave: @escaping (NoteBlock) -> Void,
+         onCancel: @escaping () -> Void)
+    {
         self._title = State(initialValue: note.title)
         self._content = State(initialValue: note.content)
         var initialCharIDs = note.relatedCharacterIDs
@@ -107,19 +108,18 @@ struct NoteEditorView: View {
         self.existingNote = note
         self.isEditing = true
     }
-    
+
     var body: some View {
-        EditorContainer(
-            module: .note,
-            title: isEditing ? "编辑笔记" : "新建笔记",
-            cancelAction: {
-                onCancel()
-            },
-            saveAction: {
-                saveNoteAction()
-            },
-            saveDisabled: title.isEmpty
-        ) {
+        EditorContainer(module: .note,
+                        title: isEditing ? "编辑笔记" : "新建笔记",
+                        cancelAction: {
+                            onCancel()
+                        },
+                        saveAction: {
+                            saveNoteAction()
+                        },
+                        saveDisabled: title.isEmpty)
+        {
             Form {
                 // 基本信息区域
                 Section {
@@ -127,14 +127,14 @@ struct NoteEditorView: View {
                         // 笔记标题
                         VStack(alignment: .leading, spacing: 8) {
                             Text("笔记标题").font(.caption).foregroundColor(.secondary)
-                            
+
                             TextField("输入笔记标题", text: $title)
                                 .font(.headline)
                                 .padding(12)
                                 .background(ThemeManager.shared.secondaryBackgroundColor)
                                 .cornerRadius(10)
                         }
-                        
+
                         // 笔记内容
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
@@ -146,7 +146,7 @@ struct NoteEditorView: View {
                                         .foregroundColor(ThemeManager.shared.accentColor(for: .note))
                                 }
                             }
-                            
+
                             ZStack(alignment: .topLeading) {
                                 if content.isEmpty {
                                     Text("在这里记录你的笔记内容……")
@@ -164,7 +164,7 @@ struct NoteEditorView: View {
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                
+
                 // 关联角色区域
                 Section {
                     VStack(alignment: .leading, spacing: 12) {
@@ -173,9 +173,9 @@ struct NoteEditorView: View {
                                 Label("关联角色", systemImage: "person.2")
                                     .font(.headline)
                                     .foregroundColor(ThemeManager.shared.accentColor(for: .character))
-                                
+
                                 Spacer()
-                                
+
                                 if !selectedCharacterIDs.isEmpty {
                                     Text("\(selectedCharacterIDs.count)")
                                         .font(.caption)
@@ -186,7 +186,7 @@ struct NoteEditorView: View {
                                         .cornerRadius(10)
                                 }
                             }
-                            
+
                             if selectedCharacterIDs.isEmpty {
                                 HStack {
                                     Text("尚未选择任何角色")
@@ -204,13 +204,13 @@ struct NoteEditorView: View {
                                         if let character = characterViewModel.getCharacter(id: charID) {
                                             HStack {
                                                 CharacterAvatarView(character: character, size: 36)
-                                                
+
                                                 Text(character.name)
                                                     .font(.subheadline)
                                                     .fontWeight(.medium)
-                                                
+
                                                 Spacer()
-                                                
+
                                                 Button(action: {
                                                     selectedCharacterIDs.removeAll { $0 == charID }
                                                 }) {
@@ -227,7 +227,7 @@ struct NoteEditorView: View {
                                 }
                             }
                         }
-                        
+
                         HStack {
                             Button(action: { showCharacterPicker = true }) {
                                 Label("选择角色", systemImage: "person.badge.plus")
@@ -238,7 +238,7 @@ struct NoteEditorView: View {
                                     .cornerRadius(8)
                             }
                             .buttonStyle(ScaleButtonStyle())
-                            
+
                             Button(action: { showingCharacterEditor = true }) {
                                 Label("创建新角色", systemImage: "plus.circle.fill")
                                     .padding(.vertical, 10)
@@ -253,7 +253,7 @@ struct NoteEditorView: View {
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                
+
                 // 关联场景区域
                 Section {
                     VStack(alignment: .leading, spacing: 12) {
@@ -262,9 +262,9 @@ struct NoteEditorView: View {
                                 Label("关联场景", systemImage: "film")
                                     .font(.headline)
                                     .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
-                                
+
                                 Spacer()
-                                
+
                                 if !selectedSceneIDs.isEmpty {
                                     Text("\(selectedSceneIDs.count)")
                                         .font(.caption)
@@ -275,7 +275,7 @@ struct NoteEditorView: View {
                                         .cornerRadius(10)
                                 }
                             }
-                            
+
                             if selectedSceneIDs.isEmpty {
                                 HStack {
                                     Text("尚未选择任何场景")
@@ -293,13 +293,13 @@ struct NoteEditorView: View {
                                         if let scene = sceneViewModel.scenes.first(where: { $0.id == sceneID }) {
                                             HStack {
                                                 SceneThumbView(scene: scene, size: 36)
-                                                
+
                                                 Text(scene.title)
                                                     .font(.subheadline)
                                                     .fontWeight(.medium)
-                                                
+
                                                 Spacer()
-                                                
+
                                                 Button(action: {
                                                     selectedSceneIDs.removeAll { $0 == sceneID }
                                                 }) {
@@ -316,7 +316,7 @@ struct NoteEditorView: View {
                                 }
                             }
                         }
-                        
+
                         HStack {
                             Button(action: { showScenePicker = true }) {
                                 Label("选择场景", systemImage: "rectangle.stack.badge.plus")
@@ -327,7 +327,7 @@ struct NoteEditorView: View {
                                     .cornerRadius(8)
                             }
                             .buttonStyle(ScaleButtonStyle())
-                            
+
                             Button(action: { showingSceneEditor = true }) {
                                 Label("创建新场景", systemImage: "plus.circle.fill")
                                     .padding(.vertical, 10)
@@ -342,7 +342,7 @@ struct NoteEditorView: View {
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                
+
                 // 笔记标签区域
                 Section {
                     VStack(alignment: .leading, spacing: 12) {
@@ -350,9 +350,9 @@ struct NoteEditorView: View {
                             Label("笔记标签", systemImage: "tag")
                                 .font(.headline)
                                 .foregroundColor(ThemeManager.shared.accentColor(for: .note))
-                            
+
                             Spacer()
-                            
+
                             if !tags.isEmpty {
                                 Text("\(tags.count)")
                                     .font(.caption)
@@ -363,7 +363,7 @@ struct NoteEditorView: View {
                                     .cornerRadius(10)
                             }
                         }
-                        
+
                         // 标签输入区
                         VStack(spacing: 8) {
                             HStack {
@@ -377,7 +377,7 @@ struct NoteEditorView: View {
                                 .padding(12)
                                 .background(ThemeManager.shared.secondaryBackgroundColor)
                                 .cornerRadius(10)
-                                
+
                                 Button(action: {
                                     let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
                                     if !trimmedTag.isEmpty && !tags.contains(trimmedTag) {
@@ -390,30 +390,29 @@ struct NoteEditorView: View {
                                 }) {
                                     Image(systemName: "plus.circle.fill")
                                         .font(.system(size: 24))
-                                        .foregroundColor(newTag.isEmpty ? .gray : ThemeManager.shared.accentColor(for: .note))
+                                        .foregroundColor(newTag.isEmpty ? .gray : ThemeManager.shared
+                                            .accentColor(for: .note))
                                 }
                                 .disabled(newTag.isEmpty)
                                 .padding(.leading, 8)
                             }
-                            
+
                             // 标签建议
                             if showTagSuggestions && !filteredTagSuggestions.isEmpty {
-                                TagSuggestionView(
-                                    suggestions: filteredTagSuggestions,
-                                    onSelectSuggestion: { suggestion in
-                                        if !tags.contains(suggestion) {
-                                            withAnimation {
-                                                tags.append(suggestion)
-                                                newTag = ""
-                                                updateTagSuggestions()
-                                            }
-                                        }
-                                    },
-                                    accentColor: ThemeManager.shared.accentColor(for: .note)
-                                )
+                                TagSuggestionView(suggestions: filteredTagSuggestions,
+                                                  onSelectSuggestion: { suggestion in
+                                                      if !tags.contains(suggestion) {
+                                                          withAnimation {
+                                                              tags.append(suggestion)
+                                                              newTag = ""
+                                                              updateTagSuggestions()
+                                                          }
+                                                      }
+                                                  },
+                                                  accentColor: ThemeManager.shared.accentColor(for: .note))
                             }
                         }
-                        
+
                         // 现有标签显示
                         if tags.isEmpty {
                             Text("没有添加标签")
@@ -428,7 +427,7 @@ struct NoteEditorView: View {
                                         HStack(spacing: 4) {
                                             Text(tag)
                                                 .font(.subheadline)
-                                            
+
                                             Button(action: {
                                                 withAnimation {
                                                     if let index = tags.firstIndex(of: tag) {
@@ -464,38 +463,31 @@ struct NoteEditorView: View {
                 ScenePickerView(selectedSceneIDs: $selectedSceneIDs)
             }
             .sheet(isPresented: $showingSceneEditor) {
-                SceneEditorView(
-                    onSave: { savedScene in
-                        sceneViewModel.addScene(savedScene)
-                        showingSceneEditor = false
-                    },
-                    onCancel: {
-                        showingSceneEditor = false
-                    }
-                )
+                SceneEditorView(onSave: { savedScene in
+                                    sceneViewModel.addScene(savedScene)
+                                    showingSceneEditor = false
+                                },
+                                onCancel: {
+                                    showingSceneEditor = false
+                                })
             }
             .sheet(isPresented: $showingCharacterEditor) {
-                CharacterEditorView(
-                    onSave: { savedCard in
-                        characterViewModel.addCharacter(savedCard)
-                        showingCharacterEditor = false
-                    },
-                    onCancel: {
-                        showingCharacterEditor = false
-                    }
-                )
+                CharacterEditorView(onSave: { savedCard in
+                                        characterViewModel.addCharacter(savedCard)
+                                        showingCharacterEditor = false
+                                    },
+                                    onCancel: {
+                                        showingCharacterEditor = false
+                                    })
             }
             .fullScreenCover(isPresented: $showImmersiveMode) {
-                ImmersiveEditorView(
-                    isPresented: $showImmersiveMode,
-                    content: $content,
-                    title: title.isEmpty ? "笔记编辑" : title
-                )
+                ImmersiveEditorView(isPresented: $showImmersiveMode,
+                                    content: $content,
+                                    title: title.isEmpty ? "笔记编辑" : title)
             }
-            
         }
     }
-    
+
     private func saveNoteAction() {
         if var noteToUpdate = existingNote {
             noteToUpdate.title = title
@@ -506,15 +498,13 @@ struct NoteEditorView: View {
             noteToUpdate.date = Date() // Update timestamp
             onSave(noteToUpdate)
         } else {
-            let newNote = NoteBlock(
-                id: UUID(),
-                title: title,
-                content: content,
-                relatedCharacterIDs: selectedCharacterIDs,
-                relatedSceneIDs: selectedSceneIDs,
-                date: Date(),
-                tags: tags
-            )
+            let newNote = NoteBlock(id: UUID(),
+                                    title: title,
+                                    content: content,
+                                    relatedCharacterIDs: selectedCharacterIDs,
+                                    relatedSceneIDs: selectedSceneIDs,
+                                    date: Date(),
+                                    tags: tags)
             onSave(newNote)
         }
     }
@@ -535,7 +525,7 @@ struct NoteEditorView: View {
 struct CharacterAvatarView: View {
     let character: Character
     let size: CGFloat
-    
+
     var body: some View {
         if let avatar = character.avatar {
             Image(uiImage: avatar)
@@ -549,11 +539,11 @@ struct CharacterAvatarView: View {
                 Circle()
                     .fill(ThemeManager.shared.accentColor(for: .character).opacity(0.1))
                     .frame(width: size, height: size)
-                
+
                 Image(systemName: "person.fill")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: size/2, height: size/2)
+                    .frame(width: size / 2, height: size / 2)
                     .foregroundColor(ThemeManager.shared.accentColor(for: .character))
             }
         }
@@ -564,25 +554,27 @@ struct CharacterAvatarView: View {
 struct SceneThumbView: View {
     let scene: AdventureScene
     let size: CGFloat
-    
+
     var body: some View {
         if let coverImage = scene.coverImage {
             Image(uiImage: coverImage)
                 .resizable()
                 .scaledToFill()
                 .frame(width: size, height: size)
-                .clipShape(RoundedRectangle(cornerRadius: size/5))
-                .overlay(RoundedRectangle(cornerRadius: size/5).stroke(ThemeManager.shared.accentColor(for: .scene).opacity(0.3), lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: size / 5))
+                .overlay(RoundedRectangle(cornerRadius: size / 5)
+                    .stroke(ThemeManager.shared.accentColor(for: .scene).opacity(0.3),
+                            lineWidth: 1))
         } else {
             ZStack {
-                RoundedRectangle(cornerRadius: size/5)
+                RoundedRectangle(cornerRadius: size / 5)
                     .fill(ThemeManager.shared.accentColor(for: .scene).opacity(0.1))
                     .frame(width: size, height: size)
-                
+
                 Image(systemName: "film")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: size/2, height: size/2)
+                    .frame(width: size / 2, height: size / 2)
                     .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
             }
         }

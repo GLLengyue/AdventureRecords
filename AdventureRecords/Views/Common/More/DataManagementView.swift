@@ -1,20 +1,18 @@
 import SwiftUI
-import UniformTypeIdentifiers
 import UIKit
+import UniformTypeIdentifiers
 
 // 分享Sheet视图
 struct ShareSheet: UIViewControllerRepresentable {
     var activityItems: [Any]
     var applicationActivities: [UIActivity]? = nil
-    
+
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        let controller = UIActivityViewController(
-            activityItems: activityItems,
-            applicationActivities: applicationActivities
-        )
+        let controller = UIActivityViewController(activityItems: activityItems,
+                                                  applicationActivities: applicationActivities)
         return controller
     }
-    
+
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
@@ -38,114 +36,96 @@ struct DataManagementView: View {
     @State private var showRestoreError = false
     @State private var showShareSheet = false
     @State private var backups: [BackupFile] = []
-    
+
     let themeManager = ThemeManager.shared
     let coreDataManager = CoreDataManager.shared
-    
+
     var body: some View {
         NavigationView {
             List {
                 // 备份与恢复部分
                 Section(header: Text("备份与恢复")) {
                     Button(action: { showBackupSheet = true }) {
-                        DataManagementRow(
-                            icon: "arrow.down.doc",
-                            iconColor: themeManager.accentColor(for: .character),
-                            title: "创建备份",
-                            subtitle: "将所有数据备份到本地文件"
-                        )
+                        DataManagementRow(icon: "arrow.down.doc",
+                                          iconColor: themeManager.accentColor(for: .character),
+                                          title: "创建备份",
+                                          subtitle: "将所有数据备份到本地文件")
                     }
-                    
+
                     Button(action: { showRestoreSheet = true }) {
-                        DataManagementRow(
-                            icon: "arrow.up.doc",
-                            iconColor: themeManager.accentColor(for: .scene),
-                            title: "从备份恢复",
-                            subtitle: "从备份文件恢复所有数据"
-                        )
+                        DataManagementRow(icon: "arrow.up.doc",
+                                          iconColor: themeManager.accentColor(for: .scene),
+                                          title: "从备份恢复",
+                                          subtitle: "从备份文件恢复所有数据")
                     }
                 }
-                
+
                 // 数据导出部分
                 Section(header: Text("数据导出")) {
                     Button(action: {
                         exportType = .pdf
                     }) {
-                        DataManagementRow(
-                            icon: "doc.richtext",
-                            iconColor: .red,
-                            title: "导出为PDF",
-                            subtitle: "包含角色、场景和笔记信息"
-                        )
+                        DataManagementRow(icon: "doc.richtext",
+                                          iconColor: .red,
+                                          title: "导出为PDF",
+                                          subtitle: "包含角色、场景和笔记信息")
                     }
-                    
+
                     Button(action: {
                         exportType = .text
                     }) {
-                        DataManagementRow(
-                            icon: "doc.text",
-                            iconColor: .gray,
-                            title: "导出为纯文本",
-                            subtitle: "适合分享给其他人"
-                        )
+                        DataManagementRow(icon: "doc.text",
+                                          iconColor: .gray,
+                                          title: "导出为纯文本",
+                                          subtitle: "适合分享给其他人")
                     }
-                    
+
                     Button(action: {
                         exportType = .json
                     }) {
-                        DataManagementRow(
-                            icon: "curlybraces",
-                            iconColor: .blue,
-                            title: "导出为JSON",
-                            subtitle: "便于与其他应用交互"
-                        )
+                        DataManagementRow(icon: "curlybraces",
+                                          iconColor: .blue,
+                                          title: "导出为JSON",
+                                          subtitle: "便于与其他应用交互")
                     }
                 }
-                
+
                 // 数据清理部分
                 Section(header: Text("数据清理")) {
                     Button(action: {
                         cleanupType = .all
                     }) {
-                        DataManagementRow(
-                            icon: "trash",
-                            iconColor: .red,
-                            title: "清理所有数据",
-                            subtitle: "删除所有角色、场景和笔记数据"
-                        )
+                        DataManagementRow(icon: "trash",
+                                          iconColor: .red,
+                                          title: "清理所有数据",
+                                          subtitle: "删除所有角色、场景和笔记数据")
                     }
-                    
+
                     Button(action: {
                         cleanupType = .character
                     }) {
-                        DataManagementRow(
-                            icon: "person.crop.circle.fill",
-                            iconColor: themeManager.accentColor(for: .character),
-                            title: "清理角色数据",
-                            subtitle: "仅删除角色相关数据"
-                        )
+                        DataManagementRow(icon: "person.crop.circle.fill",
+                                          iconColor: themeManager.accentColor(for: .character),
+                                          title: "清理角色数据",
+                                          subtitle: "仅删除角色相关数据")
                     }
-                    
+
                     Button(action: {
                         cleanupType = .scene
                     }) {
-                        DataManagementRow(
-                            icon: "theatermasks.circle.fill",
-                            iconColor: themeManager.accentColor(for: .scene),
-                            title: "清理场景数据",
-                            subtitle: "仅删除场景相关数据"
-                        )
+                        DataManagementRow(icon: "theatermasks.circle.fill",
+                                          iconColor: themeManager.accentColor(for: .scene),
+                                          title: "清理场景数据",
+                                          subtitle: "仅删除场景相关数据")
                     }
-                    
+
                     Button(action: {
                         cleanupType = .note
                     }) {
-                        DataManagementRow(
-                            icon: "note.text",
-                            iconColor: themeManager.accentColor(for: .note),
-                            title: "清理笔记数据",
-                            subtitle: "仅删除笔记相关数据"
-                        )
+                        DataManagementRow(icon: "note.text",
+                                          iconColor: themeManager.accentColor(for: .note),
+                                          title: "清理笔记数据",
+                                          subtitle: "仅删除笔记相关数据")
                     }
                 }
             }
@@ -173,27 +153,22 @@ struct DataManagementView: View {
                 }
             }
             .sheet(isPresented: $showBackupSheet) {
-                BackupView(
-                    isBackingUp: $isBackingUp,
-                    backupDate: $backupDate,
-                    showSuccess: $showBackupSuccess,
-                    showError: $showBackupError
-                )
+                BackupView(isBackingUp: $isBackingUp,
+                           backupDate: $backupDate,
+                           showSuccess: $showBackupSuccess,
+                           showError: $showBackupError)
             }
             .sheet(isPresented: $showRestoreSheet) {
-                RestoreView(
-                    isRestoring: $isRestoring,
-                    showSuccess: $showRestoreSuccess,
-                    showError: $showRestoreError
-                )
+                RestoreView(isRestoring: $isRestoring,
+                            showSuccess: $showRestoreSuccess,
+                            showError: $showRestoreError)
             }
             .sheet(isPresented: $showExportSheet) {
                 ExportView(exportType: exportType)
             }
-            .alert(
-                "确认数据清理",
-                isPresented: $showCleanupConfirmation
-            ) {
+            .alert("确认数据清理",
+                   isPresented: $showCleanupConfirmation)
+            {
                 Button("清理", role: .destructive) {
                     performCleanup(type: cleanupType)
                     cleanupType = .none
@@ -228,7 +203,7 @@ struct DataManagementView: View {
             }
         }
     }
-    
+
     var cleanupTypeText: String {
         switch cleanupType {
         case .all:
@@ -243,14 +218,14 @@ struct DataManagementView: View {
             return ""
         }
     }
-    
+
     func performCleanup(type: CleanupType) {
         // 实现数据清理逻辑
         print("清理\(cleanupTypeText)")
-        
+
         // 调用DataManager进行数据清理
         let success = coreDataManager.cleanupData(type: type)
-        
+
         if success {
             print("\(cleanupTypeText)清理成功")
         } else {
@@ -265,7 +240,7 @@ struct DataManagementRow: View {
     let iconColor: Color
     let title: String
     let subtitle: String
-    
+
     var body: some View {
         HStack {
             Image(systemName: icon)
@@ -273,7 +248,7 @@ struct DataManagementRow: View {
                 .foregroundColor(iconColor)
                 .frame(width: 32, height: 32)
                 .padding(.trailing, 10)
-            
+
             VStack(alignment: .leading) {
                 Text(title)
                     .font(.headline)
@@ -281,9 +256,9 @@ struct DataManagementRow: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
-            
+
             Spacer()
-            
+
             Image(systemName: "chevron.right")
                 .foregroundColor(.secondary)
         }
@@ -301,34 +276,34 @@ struct BackupView: View {
     @State private var backupName = ""
     @State private var showShareSheet = false
     @State private var backupData: Data?
-    
+
     let coreDataManager = CoreDataManager.shared
-    
+
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("备份信息")) {
                     TextField("备份名称", text: $backupName)
                         .autocapitalization(.none)
-                    
+
                     DatePicker("备份日期", selection: $backupDate, displayedComponents: .date)
                 }
-                
+
                 Section(footer: Text("备份将保存所有角色、场景和笔记数据。")) {
                     Button(action: {
                         createBackup()
                     }) {
                         HStack {
                             Spacer()
-                            
+
                             if isBackingUp {
                                 ProgressView()
                                     .padding(.trailing, 10)
                             }
-                            
+
                             Text("创建备份")
                                 .fontWeight(.semibold)
-                            
+
                             Spacer()
                         }
                     }
@@ -346,12 +321,12 @@ struct BackupView: View {
             })
         }
     }
-    
+
     // State variables are already declared at the top of the view
-    
+
     func createBackup() {
         isBackingUp = true
-        
+
         // 调用DataManager创建备份
         DispatchQueue.global(qos: .userInitiated).async {
             if let backupData = coreDataManager.createBackup(name: backupName, date: backupDate) {
@@ -383,9 +358,9 @@ struct RestoreView: View {
     @State private var selectedBackup: BackupFile?
     @State private var backups: [BackupFile] = []
     @State private var showDocumentPicker = false
-    
+
     let coreDataManager = CoreDataManager.shared
-    
+
     var body: some View {
         NavigationView {
             Form {
@@ -400,7 +375,7 @@ struct RestoreView: View {
                         }
                     }
                 }
-                
+
                 Section(header: Text("最近备份")) {
                     if backups.isEmpty {
                         Text("没有找到备份文件")
@@ -418,9 +393,9 @@ struct RestoreView: View {
                                             .font(.caption)
                                             .foregroundColor(.secondary)
                                     }
-                                    
+
                                     Spacer()
-                                    
+
                                     if selectedBackup?.id == backup.id {
                                         Image(systemName: "checkmark")
                                             .foregroundColor(.blue)
@@ -430,22 +405,22 @@ struct RestoreView: View {
                         }
                     }
                 }
-                
+
                 Section(footer: Text("恢复将覆盖当前所有数据，请确保您已备份重要信息。")) {
                     Button(action: {
                         restoreFromBackup()
                     }) {
                         HStack {
                             Spacer()
-                            
+
                             if isRestoring {
                                 ProgressView()
                                     .padding(.trailing, 10)
                             }
-                            
+
                             Text("恢复数据")
                                 .fontWeight(.semibold)
-                            
+
                             Spacer()
                         }
                     }
@@ -468,40 +443,38 @@ struct RestoreView: View {
             }
         }
     }
-    
+
     func restoreFromBackup() {
         guard let backup = selectedBackup else { return }
-        
+
         isRestoring = true
-        
+
         // 调用DataManager恢复备份
         DispatchQueue.global(qos: .userInitiated).async {
             let success = coreDataManager.restoreFromBackup(backup)
-            
+
             DispatchQueue.main.async {
                 isRestoring = false
-                
+
                 if success {
                     showSuccess = true
                 } else {
                     showError = true
                 }
-                
+
                 presentationMode.wrappedValue.dismiss()
             }
         }
     }
-    
+
     func handleSelectedFile(url: URL) {
         // 检查文件是否是有效的备份文件
         if url.pathExtension == "adrbackup" {
             // 创建临时备份文件对象
-            let tempBackup = BackupFile(
-                url: url,
-                name: url.deletingPathExtension().lastPathComponent,
-                creationDate: Date()
-            )
-            
+            let tempBackup = BackupFile(url: url,
+                                        name: url.deletingPathExtension().lastPathComponent,
+                                        creationDate: Date())
+
             // 设置为选中的备份
             selectedBackup = tempBackup
         }
@@ -511,28 +484,27 @@ struct RestoreView: View {
 // 文档选择器
 struct DocumentPicker: UIViewControllerRepresentable {
     var completion: (URL) -> Void
-    
+
     func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
         let picker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.data], asCopy: true)
         picker.allowsMultipleSelection = false
         picker.delegate = context.coordinator
         return picker
     }
-    
-    func updateUIViewController(_ uiViewController: UIDocumentPickerViewController, context: Context) {
-    }
-    
+
+    func updateUIViewController(_ uiViewController: UIDocumentPickerViewController, context: Context) {}
+
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
-    
+
     class Coordinator: NSObject, UIDocumentPickerDelegate {
         let parent: DocumentPicker
-        
+
         init(_ parent: DocumentPicker) {
             self.parent = parent
         }
-        
+
         func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
             guard let url = urls.first else { return }
             parent.completion(url)
@@ -550,9 +522,9 @@ struct ExportView: View {
     @State private var includeNotes = true
     @State private var exportDocument: ExportDocument?
     @State private var showShareSheet = false
-    
+
     let coreDataManager = CoreDataManager.shared
-    
+
     var body: some View {
         NavigationView {
             Form {
@@ -561,7 +533,7 @@ struct ExportView: View {
                     Toggle("包含场景", isOn: $includeScenes)
                     Toggle("包含笔记", isOn: $includeNotes)
                 }
-                
+
                 Section(header: Text("导出格式")) {
                     HStack {
                         Image(systemName: exportType.iconName)
@@ -569,22 +541,22 @@ struct ExportView: View {
                         Text(exportType.description)
                     }
                 }
-                
+
                 Section(footer: Text("导出可能需要一些时间，具体取决于数据量。")) {
                     Button(action: {
                         exportData()
                     }) {
                         HStack {
                             Spacer()
-                            
+
                             if isExporting {
                                 ProgressView()
                                     .padding(.trailing, 10)
                             }
-                            
+
                             Text("导出数据")
                                 .fontWeight(.semibold)
-                            
+
                             Spacer()
                         }
                     }
@@ -602,22 +574,20 @@ struct ExportView: View {
             }
         }
     }
-    
+
     func exportData() {
         isExporting = true
-        
+
         // 调用DataManager导出数据
         DispatchQueue.global(qos: .userInitiated).async {
-            let document = coreDataManager.exportData(
-                type: exportType,
-                includeCharacters: includeCharacters,
-                includeScenes: includeScenes,
-                includeNotes: includeNotes
-            )
-            
+            let document = coreDataManager.exportData(type: exportType,
+                                                      includeCharacters: includeCharacters,
+                                                      includeScenes: includeScenes,
+                                                      includeNotes: includeNotes)
+
             DispatchQueue.main.async {
                 isExporting = false
-                
+
                 if let doc = document {
                     exportDocument = doc
                     showShareSheet = true
@@ -633,12 +603,12 @@ struct ExportView: View {
 // 分享表单
 // struct ShareSheet: UIViewControllerRepresentable {
 //     var items: [Any]
-    
+
 //     func makeUIViewController(context: Context) -> UIActivityViewController {
 //         let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
 //         return controller
 //     }
-    
+
 //     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {
 //     }
 // }

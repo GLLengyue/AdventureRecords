@@ -1,16 +1,16 @@
 //  CharacterEditorView.swift
 //  AdventureRecords
 //  角色编辑视图
-import SwiftUI
 import PhotosUI
+import SwiftUI
 
 struct CharacterEditorView: View {
     @Environment(\.dismiss) var dismiss
-    
+
     // 使用单例
     @StateObject private var audioViewModel = AudioViewModel.shared
     @StateObject private var audioPlayerManager = AudioPlayerManager()
-    
+
     // 状态变量
     @State private var name: String
     @State private var description: String
@@ -30,15 +30,16 @@ struct CharacterEditorView: View {
 
     // Original Character card, if editing
     private var existingCharacter: Character?
-    
+
     private var relatedRecordings: [AudioRecording] {
         guard let ids = existingCharacter?.audioRecordings?.map({ $0.id }) else { return [] }
         return audioViewModel.recordings.filter { ids.contains($0.id) }
     }
+
     // 回调闭包
     var onSave: (Character) -> Void
     var onCancel: () -> Void
-    
+
     // 创建新角色卡
     init(onSave: @escaping (Character) -> Void, onCancel: @escaping () -> Void) {
         self.onSave = onSave
@@ -55,12 +56,12 @@ struct CharacterEditorView: View {
         self._newTag = State(initialValue: "")
         self.existingCharacter = nil
     }
-    
+
     // 编辑现有角色卡
     init(card: Character? = nil, onSave: @escaping (Character) -> Void, onCancel: @escaping () -> Void) {
         self.onSave = onSave
         self.onCancel = onCancel
-        
+
         if let card = card {
             self._name = State(initialValue: card.name)
             self._description = State(initialValue: card.description)
@@ -74,30 +75,30 @@ struct CharacterEditorView: View {
             self._avatar = State(initialValue: nil)
             self.existingCharacter = nil
         }
-        
+
         self._tagSuggestions = State(initialValue: CharacterViewModel.shared.getAllTags())
         self._showRecordingSheet = State(initialValue: false)
         self._showImportAudioSheet = State(initialValue: false) // 初始化音频导入状态
         self._newTag = State(initialValue: "")
     }
-    
+
     var filteredTagSuggestions: [String] {
         if newTag.isEmpty {
             // 当输入为空时，显示所有尚未添加的标签
             return tagSuggestions.filter { !tags.contains($0) }
         } else {
             // 当有输入时，过滤出匹配的标签
-            return tagSuggestions.filter { 
+            return tagSuggestions.filter {
                 $0.localizedCaseInsensitiveContains(newTag) && !tags.contains($0)
             }
         }
     }
-    
+
     func updateTagSuggestions() {
         // 更新标签建议列表
         tagSuggestions = CharacterViewModel.shared.getAllTags()
     }
-    
+
     func actionOnSave() {
         if var editedCharacter = existingCharacter {
             editedCharacter.name = name
@@ -106,28 +107,25 @@ struct CharacterEditorView: View {
             editedCharacter.tags = tags
             onSave(editedCharacter)
         } else {
-            let cardToSave = Character(
-                name: name,
-                description: description,
-                avatar: avatar,
-                tags: tags
-            )
+            let cardToSave = Character(name: name,
+                                       description: description,
+                                       avatar: avatar,
+                                       tags: tags)
             onSave(cardToSave)
         }
     }
 
     var body: some View {
-        EditorContainer(
-            module: .character,
-            title: existingCharacter == nil ? "新建角色" : "编辑角色",
-            cancelAction: {
-                onCancel()
-            },
-            saveAction: {
-                actionOnSave()
-            },
-            saveDisabled: name.isEmpty
-        ) {
+        EditorContainer(module: .character,
+                        title: existingCharacter == nil ? "新建角色" : "编辑角色",
+                        cancelAction: {
+                            onCancel()
+                        },
+                        saveAction: {
+                            actionOnSave()
+                        },
+                        saveDisabled: name.isEmpty)
+        {
             Form {
                 // 基本信息区域
                 Section {
@@ -135,14 +133,14 @@ struct CharacterEditorView: View {
                         // 角色名称
                         VStack(alignment: .leading, spacing: 8) {
                             Text("角色名称").font(.caption).foregroundColor(.secondary)
-                            
+
                             TextField("输入角色名称", text: $name)
                                 .font(.headline)
                                 .padding(12)
                                 .background(ThemeManager.shared.secondaryBackgroundColor)
                                 .cornerRadius(10)
                         }
-                        
+
                         // 角色描述
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
@@ -154,7 +152,7 @@ struct CharacterEditorView: View {
                                         .foregroundColor(ThemeManager.shared.accentColor(for: .character))
                                 }
                             }
-                            
+
                             ZStack(alignment: .topLeading) {
                                 if description.isEmpty {
                                     Text("请输入角色的描述内容……")
@@ -172,17 +170,16 @@ struct CharacterEditorView: View {
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                
+
                 // 头像区域
                 Section {
                     VStack(alignment: .center, spacing: 12) {
                         Text("角色头像").font(.caption).foregroundColor(.secondary)
-                        
-                        PhotosPicker(
-                            selection: $selectedItem,
-                            matching: .images,
-                            photoLibrary: .shared()
-                        ) {
+
+                        PhotosPicker(selection: $selectedItem,
+                                     matching: .images,
+                                     photoLibrary: .shared())
+                        {
                             VStack(spacing: 16) {
                                 ZStack {
                                     if let image = avatar {
@@ -191,40 +188,39 @@ struct CharacterEditorView: View {
                                             .scaledToFill()
                                             .frame(width: 160, height: 160)
                                             .clipShape(Circle())
-                                            .overlay(
-                                                Circle()
-                                                    .stroke(ThemeManager.shared.accentColor(for: .character), lineWidth: 2)
-                                            )
+                                            .overlay(Circle()
+                                                .stroke(ThemeManager.shared.accentColor(for: .character),
+                                                        lineWidth: 2))
                                             .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                                     } else {
                                         Circle()
                                             .fill(ThemeManager.shared.accentColor(for: .character).opacity(0.1))
                                             .frame(width: 160, height: 160)
-                                            .overlay(
-                                                Circle()
-                                                    .stroke(ThemeManager.shared.accentColor(for: .character).opacity(0.3), lineWidth: 1.5)
-                                            )
-                                        
+                                            .overlay(Circle()
+                                                .stroke(ThemeManager.shared.accentColor(for: .character)
+                                                    .opacity(0.3),
+                                                    lineWidth: 1.5))
+
                                         Image(systemName: "person.fill")
                                             .resizable()
                                             .scaledToFit()
                                             .frame(width: 80, height: 80)
-                                            .foregroundColor(ThemeManager.shared.accentColor(for: .character).opacity(0.8))
+                                            .foregroundColor(ThemeManager.shared.accentColor(for: .character)
+                                                .opacity(0.8))
                                     }
-                                    
+
                                     // 更换图片图标
                                     Circle()
                                         .fill(ThemeManager.shared.accentColor(for: .character).opacity(0.8))
                                         .frame(width: 44, height: 44)
-                                        .overlay(
-                                            Image(systemName: avatar == nil ? "plus" : "arrow.triangle.2.circlepath")
-                                                .font(.system(size: 18, weight: .bold))
-                                                .foregroundColor(.white)
-                                        )
+                                        .overlay(Image(systemName: avatar == nil ? "plus" :
+                                                "arrow.triangle.2.circlepath")
+                                            .font(.system(size: 18, weight: .bold))
+                                            .foregroundColor(.white))
                                         .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
                                         .offset(x: 50, y: 50)
                                 }
-                                
+
                                 Text(avatar == nil ? "添加头像" : "更换头像")
                                     .font(.subheadline)
                                     .foregroundColor(ThemeManager.shared.accentColor(for: .character))
@@ -236,7 +232,8 @@ struct CharacterEditorView: View {
                         .onChange(of: selectedItem) {
                             Task {
                                 if let data = try? await selectedItem?.loadTransferable(type: Data.self),
-                                   let uiImage = UIImage(data: data) {
+                                   let uiImage = UIImage(data: data)
+                                {
                                     avatar = uiImage
                                 }
                             }
@@ -246,7 +243,7 @@ struct CharacterEditorView: View {
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                
+
                 // 标签区域
                 Section {
                     VStack(alignment: .leading, spacing: 12) {
@@ -254,9 +251,9 @@ struct CharacterEditorView: View {
                             Label("角色标签", systemImage: "tag")
                                 .font(.headline)
                                 .foregroundColor(ThemeManager.shared.accentColor(for: .character))
-                            
+
                             Spacer()
-                            
+
                             if !tags.isEmpty {
                                 Text("\(tags.count)")
                                     .font(.caption)
@@ -267,7 +264,7 @@ struct CharacterEditorView: View {
                                     .cornerRadius(10)
                             }
                         }
-                        
+
                         // 标签输入区
                         VStack(spacing: 8) {
                             HStack {
@@ -281,7 +278,7 @@ struct CharacterEditorView: View {
                                 .padding(12)
                                 .background(ThemeManager.shared.secondaryBackgroundColor)
                                 .cornerRadius(10)
-                                
+
                                 Button(action: {
                                     let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
                                     if !trimmedTag.isEmpty && !tags.contains(trimmedTag) {
@@ -294,27 +291,26 @@ struct CharacterEditorView: View {
                                 }) {
                                     Image(systemName: "plus.circle.fill")
                                         .font(.system(size: 24))
-                                        .foregroundColor(newTag.isEmpty ? .gray : ThemeManager.shared.accentColor(for: .character))
+                                        .foregroundColor(newTag.isEmpty ? .gray : ThemeManager.shared
+                                            .accentColor(for: .character))
                                 }
                                 .disabled(newTag.isEmpty)
                                 .padding(.leading, 8)
                             }
-                            
+
                             // 标签建议
                             if showTagSuggestions && !filteredTagSuggestions.isEmpty {
-                                TagSuggestionView(
-                                    suggestions: filteredTagSuggestions,
-                                    onSelectSuggestion: { suggestion in
-                                        if !tags.contains(suggestion) {
-                                            withAnimation {
-                                                tags.append(suggestion)
-                                                newTag = ""
-                                                updateTagSuggestions()
-                                            }
-                                        }
-                                    },
-                                    accentColor: ThemeManager.shared.accentColor(for: .character)
-                                )
+                                TagSuggestionView(suggestions: filteredTagSuggestions,
+                                                  onSelectSuggestion: { suggestion in
+                                                      if !tags.contains(suggestion) {
+                                                          withAnimation {
+                                                              tags.append(suggestion)
+                                                              newTag = ""
+                                                              updateTagSuggestions()
+                                                          }
+                                                      }
+                                                  },
+                                                  accentColor: ThemeManager.shared.accentColor(for: .character))
                             }
                         }
 
@@ -332,7 +328,7 @@ struct CharacterEditorView: View {
                                         HStack(spacing: 4) {
                                             Text(tag)
                                                 .font(.subheadline)
-                                            
+
                                             Button(action: {
                                                 withAnimation {
                                                     if let index = tags.firstIndex(of: tag) {
@@ -350,10 +346,9 @@ struct CharacterEditorView: View {
                                         .background(ThemeManager.shared.accentColor(for: .character).opacity(0.15))
                                         .foregroundColor(ThemeManager.shared.accentColor(for: .character))
                                         .clipShape(Capsule())
-                                        .overlay(
-                                            Capsule()
-                                                .stroke(ThemeManager.shared.accentColor(for: .character).opacity(0.3), lineWidth: 1)
-                                        )
+                                        .overlay(Capsule()
+                                            .stroke(ThemeManager.shared.accentColor(for: .character).opacity(0.3),
+                                                    lineWidth: 1))
                                     }
                                 }
                                 .padding(.top, 8)
@@ -372,7 +367,7 @@ struct CharacterEditorView: View {
                                 Label("录音", systemImage: "waveform")
                                     .font(.headline)
                                     .foregroundColor(ThemeManager.shared.accentColor(for: .character))
-                                
+
                                 Spacer()
 
                                 Menu {
@@ -381,7 +376,7 @@ struct CharacterEditorView: View {
                                     }) {
                                         Label("录制新音频", systemImage: "mic")
                                     }
-                                    
+
                                     Button(action: {
                                         showImportAudioSheet = true
                                     }) {
@@ -393,7 +388,7 @@ struct CharacterEditorView: View {
                                         .foregroundColor(ThemeManager.shared.accentColor(for: .character))
                                 }
                             }
-                            
+
                             // 空状态显示
                             if relatedRecordings.isEmpty {
                                 VStack(spacing: 16) {
@@ -401,17 +396,17 @@ struct CharacterEditorView: View {
                                         .font(.system(size: 40))
                                         .foregroundColor(ThemeManager.shared.accentColor(for: .character).opacity(0.6))
                                         .padding(.bottom, 6)
-                                    
+
                                     Text("暂无录音")
                                         .font(.headline)
                                         .foregroundColor(.secondary)
-                                    
+
                                     Text("为角色添加录音可以更好地展示角色的声音特点")
                                         .font(.subheadline)
                                         .foregroundColor(.secondary.opacity(0.8))
                                         .multilineTextAlignment(.center)
                                         .padding(.horizontal)
-                                    
+
                                     Button(action: {
                                         showRecordingSheet = true
                                     }) {
@@ -431,33 +426,37 @@ struct CharacterEditorView: View {
                                 .background(ThemeManager.shared.secondaryBackgroundColor.opacity(0.5))
                                 .cornerRadius(16)
                             }
-                            
+
                             // 录音列表
                             LazyVStack(spacing: 12) {
                                 ForEach(relatedRecordings) { recording in
-                                    RecordingListItemView(
-                                        recording: recording,
-                                        isPlaying: audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == recording.recordingURL,
-                                        onPlayPause: {
-                                            let audioURL = recording.recordingURL
-                                            if audioPlayerManager.isPlaying && audioPlayerManager.currentlyPlayingURL == audioURL {
-                                                audioPlayerManager.pause()
-                                            } else {
-                                                guard audioURL.isFileURL, FileManager.default.fileExists(atPath: audioURL.path) else {
-                                                    print("Audio file not found at \(audioURL.path)")
-                                                    return
-                                                }
-                                                audioPlayerManager.play(url: audioURL)
-                                            }
-                                        },
-                                        onRename: {
-                                            newRecordingName = recording.title
-                                            recordingForRenameSheet = recording
-                                        },
-                                        onDelete: {
-                                            recordingForDeleteSheet = recording
-                                        }
-                                    )
+                                    RecordingListItemView(recording: recording,
+                                                          isPlaying: audioPlayerManager.isPlaying && audioPlayerManager
+                                                              .currentlyPlayingURL == recording.recordingURL,
+                                                          onPlayPause: {
+                                                              let audioURL = recording.recordingURL
+                                                              if audioPlayerManager.isPlaying && audioPlayerManager
+                                                                  .currentlyPlayingURL == audioURL
+                                                              {
+                                                                  audioPlayerManager.pause()
+                                                              } else {
+                                                                  guard audioURL.isFileURL,
+                                                                        FileManager.default
+                                                                        .fileExists(atPath: audioURL.path)
+                                                                  else {
+                                                                      print("Audio file not found at \(audioURL.path)")
+                                                                      return
+                                                                  }
+                                                                  audioPlayerManager.play(url: audioURL)
+                                                              }
+                                                          },
+                                                          onRename: {
+                                                              newRecordingName = recording.title
+                                                              recordingForRenameSheet = recording
+                                                          },
+                                                          onDelete: {
+                                                              recordingForDeleteSheet = recording
+                                                          })
                                 }
                             }
                         }
@@ -497,7 +496,7 @@ struct CharacterEditorView: View {
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.primary)
                     .cornerRadius(10)
-                    
+
                     Button("保存") {
                         var recordingToUpdate = recordingToRename
                         recordingToUpdate.title = newRecordingName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -509,7 +508,8 @@ struct CharacterEditorView: View {
                     .padding()
                     .contentShape(Rectangle())
                     .frame(maxWidth: .infinity)
-                    .background(newRecordingName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.gray.opacity(0.5) : Color.accentColor)
+                    .background(newRecordingName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.gray
+                        .opacity(0.5) : Color.accentColor)
                     .foregroundColor(.white)
                     .cornerRadius(10)
                     .disabled(newRecordingName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -535,7 +535,7 @@ struct CharacterEditorView: View {
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.primary)
                     .cornerRadius(10)
-                    
+
                     Button("删除") {
                         audioViewModel.deleteRecording(recordingToDelete)
                         // if let charId = existingCharacter?.id {

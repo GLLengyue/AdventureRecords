@@ -1,10 +1,10 @@
-import Foundation
 import AVFoundation
 import Combine
+import Foundation
 
 class AudioPlayerManager: ObservableObject {
     private var audioPlayer: AVAudioPlayer?
-    private var audioSession: AVAudioSession = AVAudioSession.sharedInstance()
+    private var audioSession: AVAudioSession = .sharedInstance()
 
     @Published var isPlaying: Bool = false
     @Published var currentlyPlayingURL: URL? = nil
@@ -38,7 +38,7 @@ class AudioPlayerManager: ObservableObject {
             audioPlayer?.delegate = DelegateWrapper(manager: self) // Using a wrapper for delegate
             audioPlayer?.prepareToPlay()
             audioPlayer?.play()
-            
+
             currentlyPlayingURL = url
             isPlaying = true
             playbackDuration = audioPlayer?.duration ?? 0.0
@@ -113,7 +113,7 @@ class AudioPlayerManager: ObservableObject {
         progressTimer?.invalidate()
         progressTimer = nil
     }
-    
+
     // Called by the delegate wrapper when playback finishes
     fileprivate func audioDidFinishPlaying() {
         isPlaying = false
@@ -125,7 +125,7 @@ class AudioPlayerManager: ObservableObject {
         // Optional: Deactivate session after playback finishes
         // deactivateAudioSession()
     }
-    
+
     deinit {
         stopProgressTimer()
         audioPlayer?.delegate = nil // Clean up delegate

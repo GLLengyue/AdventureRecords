@@ -3,17 +3,18 @@ import SwiftUI
 struct CharacterRow: View {
     let character: Character
     @State private var showEditor = false
-    
+
     // 使用单例
     @StateObject private var noteViewModel = NoteViewModel.shared
     @StateObject private var sceneViewModel = SceneViewModel.shared
-    
+
     var onDelete: () -> Void
     var onEdit: (Character) -> Void
     // 通过全局ViewModel和ID动态查找
     var relatedNotes: [NoteBlock] {
         character.relatedNotes(in: noteViewModel.notes)
     }
+
     var relatedScenes: [AdventureScene] {
         character.relatedScenes(in: noteViewModel.notes, sceneProvider: { note in
             note.relatedScenes(in: sceneViewModel.scenes)
@@ -27,17 +28,15 @@ struct CharacterRow: View {
                 Circle()
                     .fill(ThemeManager.shared.accentColor(for: .character).opacity(0.1))
                     .frame(width: 56, height: 56)
-                
+
                 if let avatar = character.avatar {
                     Image(uiImage: avatar)
                         .resizable()
                         .scaledToFill()
                         .frame(width: 50, height: 50)
                         .clipShape(Circle())
-                        .overlay(
-                            Circle()
-                                .stroke(ThemeManager.shared.accentColor(for: .character).opacity(0.3), lineWidth: 2)
-                        )
+                        .overlay(Circle()
+                            .stroke(ThemeManager.shared.accentColor(for: .character).opacity(0.3), lineWidth: 2))
                 } else {
                     Image(systemName: "person.circle.fill")
                         .resizable()
@@ -46,21 +45,21 @@ struct CharacterRow: View {
                         .foregroundColor(ThemeManager.shared.accentColor(for: .character))
                 }
             }
-            
+
             // 角色信息部分
             VStack(alignment: .leading, spacing: 4) {
                 Text(character.name)
                     .font(.headline)
                     .fontWeight(.semibold)
                     .foregroundColor(ThemeManager.shared.primaryTextColor)
-                
+
                 if !character.description.isEmpty {
                     Text(character.description)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .lineLimit(2)
                 }
-                
+
                 // 标签预览
                 if !character.tags.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -78,12 +77,11 @@ struct CharacterRow: View {
                                 .background(ThemeManager.shared.accentColor(for: .character).opacity(0.1))
                                 .foregroundColor(ThemeManager.shared.accentColor(for: .character))
                                 .cornerRadius(6)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .stroke(ThemeManager.shared.accentColor(for: .character).opacity(0.3), lineWidth: 1)
-                                )
+                                .overlay(RoundedRectangle(cornerRadius: 6)
+                                    .stroke(ThemeManager.shared.accentColor(for: .character).opacity(0.3),
+                                            lineWidth: 1))
                             }
-                            
+
                             if character.tags.count > 3 {
                                 Text("+\(character.tags.count - 3)")
                                     .font(.caption2)
@@ -92,10 +90,9 @@ struct CharacterRow: View {
                                     .background(ThemeManager.shared.accentColor(for: .character).opacity(0.1))
                                     .foregroundColor(ThemeManager.shared.accentColor(for: .character))
                                     .cornerRadius(6)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 6)
-                                            .stroke(ThemeManager.shared.accentColor(for: .character).opacity(0.3), lineWidth: 1)
-                                    )
+                                    .overlay(RoundedRectangle(cornerRadius: 6)
+                                        .stroke(ThemeManager.shared.accentColor(for: .character).opacity(0.3),
+                                                lineWidth: 1))
                             }
                         }
                     }
@@ -122,10 +119,9 @@ struct CharacterRow: View {
                                     .background(ThemeManager.shared.accentColor(for: .note).opacity(0.1))
                                     .foregroundColor(ThemeManager.shared.accentColor(for: .note))
                                     .cornerRadius(8)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(ThemeManager.shared.accentColor(for: .note).opacity(0.3), lineWidth: 1)
-                                    )
+                                    .overlay(RoundedRectangle(cornerRadius: 8)
+                                        .stroke(ThemeManager.shared.accentColor(for: .note).opacity(0.3),
+                                                lineWidth: 1))
                                 }
                             }
                         }
@@ -149,10 +145,9 @@ struct CharacterRow: View {
                                     .background(ThemeManager.shared.accentColor(for: .scene).opacity(0.1))
                                     .foregroundColor(ThemeManager.shared.accentColor(for: .scene))
                                     .cornerRadius(8)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(ThemeManager.shared.accentColor(for: .scene).opacity(0.3), lineWidth: 1)
-                                    )
+                                    .overlay(RoundedRectangle(cornerRadius: 8)
+                                        .stroke(ThemeManager.shared.accentColor(for: .scene).opacity(0.3),
+                                                lineWidth: 1))
                                 }
                             }
                         }
@@ -171,7 +166,7 @@ struct CharacterRow: View {
             } label: {
                 Label("删除", systemImage: "trash")
             }
-            
+
             Button {
                 showEditor = true
             } label: {
@@ -186,9 +181,9 @@ struct CharacterRow: View {
                 Label("编辑", systemImage: "pencil")
                     .foregroundColor(ThemeManager.shared.accentColor(for: .character))
             }
-            
+
             Divider()
-            
+
             Button(role: .destructive) {
                 withAnimation {
                     onDelete()

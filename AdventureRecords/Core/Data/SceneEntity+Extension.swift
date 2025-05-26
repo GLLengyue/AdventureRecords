@@ -1,12 +1,13 @@
-import Foundation
 import CoreData
+import Foundation
 import SwiftUI
 
 extension SceneEntity {
     var atmosphere: SceneAtmosphere {
         get {
             guard let data = atmosphereData,
-                  let atmosphere = try? JSONDecoder().decode(SceneAtmosphere.self, from: data) else {
+                  let atmosphere = try? JSONDecoder().decode(SceneAtmosphere.self, from: data)
+            else {
                 return .default
             }
             return atmosphere
@@ -25,19 +26,21 @@ extension SceneAtmosphere: Codable {
         case lightingEffect
         case particleEffect
     }
-    
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let colorData = try container.decode(Data.self, forKey: .backgroundColor)
-        backgroundColor = Color ((try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: colorData)) ?? .black)
+        backgroundColor =
+            Color((try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: colorData)) ?? .black)
         ambientSound = try container.decodeIfPresent(URL.self, forKey: .ambientSound)
         lightingEffect = try container.decode(LightingEffect.self, forKey: .lightingEffect)
         particleEffect = try container.decodeIfPresent(ParticleEffect.self, forKey: .particleEffect)
     }
-    
+
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        let colorData = try NSKeyedArchiver.archivedData(withRootObject: UIColor(backgroundColor), requiringSecureCoding: true)
+        let colorData = try NSKeyedArchiver.archivedData(withRootObject: UIColor(backgroundColor),
+                                                         requiringSecureCoding: true)
         try container.encode(colorData, forKey: .backgroundColor)
         try container.encodeIfPresent(ambientSound, forKey: .ambientSound)
         try container.encode(lightingEffect, forKey: .lightingEffect)
@@ -47,4 +50,4 @@ extension SceneAtmosphere: Codable {
 
 // 为 LightingEffect 和 ParticleEffect 添加 Codable 支持
 extension LightingEffect: Codable {}
-extension ParticleEffect: Codable {} 
+extension ParticleEffect: Codable {}

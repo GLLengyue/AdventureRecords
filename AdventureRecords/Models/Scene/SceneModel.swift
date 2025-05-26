@@ -1,6 +1,6 @@
 import Foundation
-import UIKit
 import SwiftUI
+import UIKit
 
 struct AdventureScene: Identifiable, Hashable {
     let id: UUID
@@ -10,11 +10,13 @@ struct AdventureScene: Identifiable, Hashable {
     var coverImage: UIImage?
     var audioURL: URL?
     var tags: [String]
-    
+
     // 场景氛围设置
     var atmosphere: SceneAtmosphere
-    
-    init(id: UUID = UUID(), title: String, description: String, relatedNoteIDs: [UUID] = [], coverImage: UIImage? = nil, audioURL: URL? = nil, atmosphere: SceneAtmosphere = .default, tags: [String] = []) {
+
+    init(id: UUID = UUID(), title: String, description: String, relatedNoteIDs: [UUID] = [], coverImage: UIImage? = nil,
+         audioURL: URL? = nil, atmosphere: SceneAtmosphere = .default, tags: [String] = [])
+    {
         self.id = id
         self.title = title
         self.description = description
@@ -24,11 +26,11 @@ struct AdventureScene: Identifiable, Hashable {
         self.atmosphere = atmosphere
         self.tags = tags
     }
-    
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
-    
+
     static func == (lhs: AdventureScene, rhs: AdventureScene) -> Bool {
         lhs.id == rhs.id
     }
@@ -63,14 +65,12 @@ struct SceneAtmosphere: Hashable {
     var ambientSound: URL?
     var lightingEffect: LightingEffect
     var particleEffect: ParticleEffect?
-    
-    static let `default` = SceneAtmosphere(
-        backgroundColor: .black,
-        ambientSound: nil,
-        lightingEffect: .none,
-        particleEffect: nil
-    )
-    
+
+    static let `default` = SceneAtmosphere(backgroundColor: .black,
+                                           ambientSound: nil,
+                                           lightingEffect: .none,
+                                           particleEffect: nil)
+
     func hash(into hasher: inout Hasher) {
         // 使用 Color 的 RGB 值来计算哈希值
         if let components = UIColor(backgroundColor).cgColor.components {
@@ -80,7 +80,7 @@ struct SceneAtmosphere: Hashable {
         hasher.combine(lightingEffect)
         hasher.combine(particleEffect)
     }
-    
+
     static func == (lhs: SceneAtmosphere, rhs: SceneAtmosphere) -> Bool {
         // 比较 Color 的 RGB 值
         let lhsComponents = UIColor(lhs.backgroundColor).cgColor.components

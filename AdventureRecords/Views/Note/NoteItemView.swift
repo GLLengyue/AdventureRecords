@@ -4,7 +4,7 @@ import SwiftUI
 struct NoteItemView: View {
     let note: NoteBlock
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             HStack(alignment: .center, spacing: 12) {
@@ -15,7 +15,7 @@ struct NoteItemView: View {
                     .frame(width: 36, height: 36)
                     .background(ThemeManager.shared.accentColor(for: .note).opacity(0.15))
                     .cornerRadius(8)
-                
+
                 // 文本内容
                 VStack(alignment: .leading, spacing: 4) {
                     Text(note.title)
@@ -23,7 +23,7 @@ struct NoteItemView: View {
                         .fontWeight(.medium)
                         .foregroundColor(ThemeManager.shared.primaryTextColor)
                         .lineLimit(1)
-                    
+
                     if !note.content.isEmpty {
                         Text(note.content)
                             .font(.caption)
@@ -31,9 +31,9 @@ struct NoteItemView: View {
                             .lineLimit(1)
                     }
                 }
-                
+
                 Spacer()
-                
+
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14))
                     .foregroundColor(.secondary)

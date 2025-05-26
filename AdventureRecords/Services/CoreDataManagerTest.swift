@@ -1,5 +1,5 @@
-import Foundation
 import CoreData
+import Foundation
 import SwiftUI
 
 // 这是一个测试文件，用于验证CoreDataManager的导入和使用

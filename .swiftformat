@@ -1,0 +1,26 @@
+# 缩进
+--indent 4
+--tabwidth 4
+--maxwidth 120
+
+# 空格
+--commas always
+--semicolons never
+--operatorfunc spaced
+--trimwhitespace always
+--wraparguments after-first
+--wrapelements before-first
+--wrapcollections before-first
+--closingparen same-line
+--trailingclosures
+
+# 导入
+--importgrouping testable-bottom
+
+# 其他
+--disable redundantSelf
+--disable unusedArguments
+--disable andOperator
+--disable isEmpty
+--disable redundantReturn
+--disable sortedImports

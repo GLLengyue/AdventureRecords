@@ -8,11 +8,11 @@ struct NoteBlock: Identifiable, Hashable {
     var relatedSceneIDs: [UUID]
     var date: Date
     var tags: [String]
-    
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
-    
+
     static func == (lhs: NoteBlock, rhs: NoteBlock) -> Bool {
         lhs.id == rhs.id
     }

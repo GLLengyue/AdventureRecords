@@ -13,28 +13,28 @@ struct ImmersiveModeView: View {
     @Environment(\.dismiss) var dismiss
     let content: ImmersiveContent
     @State private var showControls = true
-    
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
                 // 背景
                 Color.black.ignoresSafeArea()
-                
+
                 // 内容区域
                 ScrollView {
                     VStack(spacing: 20) {
                         switch content {
-                        case .character(let card):
+                        case let .character(card):
                             characterContent(card)
-                        case .note(let note):
+                        case let .note(note):
                             noteContent(note)
-                        case .scene(let scene):
+                        case let .scene(scene):
                             sceneContent(scene)
                         }
                     }
                     .padding()
                 }
-                
+
                 // 控制栏
                 if showControls {
                     VStack {
@@ -61,7 +61,7 @@ struct ImmersiveModeView: View {
         }
         .preferredColorScheme(.dark)
     }
-    
+
     private func characterContent(_ card: Character) -> some View {
         VStack(spacing: 20) {
             if let avatar = card.avatar {
@@ -80,7 +80,7 @@ struct ImmersiveModeView: View {
                 .foregroundColor(.white)
         }
     }
-    
+
     private func noteContent(_ note: NoteBlock) -> some View {
         VStack(spacing: 20) {
             Text(note.title)
@@ -92,7 +92,7 @@ struct ImmersiveModeView: View {
                 .foregroundColor(.white)
         }
     }
-    
+
     private func sceneContent(_ scene: AdventureScene) -> some View {
         VStack(spacing: 20) {
             if let coverImage = scene.coverImage {

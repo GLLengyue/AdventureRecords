@@ -9,16 +9,18 @@ struct Character: Identifiable, Hashable {
     var audioRecordings: [AudioRecording]?
     var tags: [String]
     var relatedNoteIDs: [UUID]
-    
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
-    
+
     static func == (lhs: Character, rhs: Character) -> Bool {
         lhs.id == rhs.id
     }
 
-    init(id: UUID = UUID(), name: String, description: String, avatar: UIImage? = nil, audioRecordings: [AudioRecording]? = nil, tags: [String] = [], relatedNoteIDs: [UUID] = []) {
+    init(id: UUID = UUID(), name: String, description: String, avatar: UIImage? = nil,
+         audioRecordings: [AudioRecording]? = nil, tags: [String] = [], relatedNoteIDs: [UUID] = [])
+    {
         self.id = id
         self.name = name
         self.description = description
@@ -27,7 +29,6 @@ struct Character: Identifiable, Hashable {
         self.tags = tags
         self.relatedNoteIDs = relatedNoteIDs
     }
-    
 }
 
 extension Character {
@@ -51,5 +52,4 @@ extension Character {
         let scenes = relatedNotes(in: notes).flatMap(sceneProvider)
         return Array(Set(scenes)).sorted { $0.id.uuidString < $1.id.uuidString }
     }
-
 }

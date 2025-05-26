@@ -3,10 +3,10 @@ import SwiftUI
 struct CharacterPickerView: View {
     @Binding var selectedCharacterIDs: [UUID]
     @Environment(\.dismiss) var dismiss
-    
+
     // 使用单例
     @StateObject private var viewModel = CharacterViewModel.shared
-    
+
     var body: some View {
         NavigationStack {
             List(viewModel.characters) { character in

@@ -43,7 +43,7 @@ struct ImmersiveEditorView: View {
                     .padding(.trailing, 20)
                     .transition(.opacity.combined(with: .scale))
                 }
-                
+
                 if let displayTitle = title, showingControls {
                     Text(displayTitle)
                         .font(.caption)

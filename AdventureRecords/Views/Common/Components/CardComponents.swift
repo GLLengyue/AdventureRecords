@@ -13,25 +13,21 @@ public struct ModuleCardView<Content: View>: View {
     let content: Content
     var hasShadow: Bool = true
     var cornerRadius: CGFloat = 12
-    
+
     init(module: ModuleType, hasShadow: Bool = true, cornerRadius: CGFloat = 12, @ViewBuilder content: () -> Content) {
         self.module = module
         self.hasShadow = hasShadow
         self.cornerRadius = cornerRadius
         self.content = content()
     }
-    
+
     public var body: some View {
         content
             .padding()
-            .background(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(ThemeManager.shared.secondaryBackgroundColor)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(ThemeManager.shared.accentColor(for: module), lineWidth: 1.5)
-            )
+            .background(RoundedRectangle(cornerRadius: cornerRadius)
+                .fill(ThemeManager.shared.secondaryBackgroundColor))
+            .overlay(RoundedRectangle(cornerRadius: cornerRadius)
+                .stroke(ThemeManager.shared.accentColor(for: module), lineWidth: 1.5))
             .shadow(color: hasShadow ? Color.black.opacity(0.1) : Color.clear, radius: 5, x: 0, y: 2)
     }
 }
@@ -42,7 +38,7 @@ public struct CharacterView: View {
     let description: String
     var avatar: UIImage? = nil
     var onTap: () -> Void = {}
-    
+
     public var body: some View {
         ModuleCardView(module: .character) {
             Button(action: onTap) {
@@ -61,12 +57,12 @@ public struct CharacterView: View {
                                 .frame(width: 50, height: 50)
                                 .foregroundColor(ThemeManager.shared.characterAccentColor)
                         }
-                        
+
                         VStack(alignment: .leading) {
                             Text(name)
                                 .font(.headline)
                                 .foregroundColor(ThemeManager.shared.primaryTextColor)
-                            
+
                             Text(description)
                                 .font(.subheadline)
                                 .foregroundColor(ThemeManager.shared.secondaryTextColor)
@@ -86,7 +82,7 @@ public struct NoteCardView: View {
     let content: String
     let date: Date
     var onTap: () -> Void = {}
-    
+
     public var body: some View {
         ModuleCardView(module: .note) {
             Button(action: onTap) {
@@ -94,12 +90,12 @@ public struct NoteCardView: View {
                     Text(title)
                         .font(.headline)
                         .foregroundColor(ThemeManager.shared.primaryTextColor)
-                    
+
                     Text(content)
                         .font(.body)
                         .foregroundColor(ThemeManager.shared.secondaryTextColor)
                         .lineLimit(3)
-                    
+
                     HStack {
                         Image(systemName: "calendar")
                             .foregroundColor(ThemeManager.shared.noteAccentColor)
@@ -120,7 +116,7 @@ public struct SceneCardView: View {
     let description: String
     var image: UIImage? = nil
     var onTap: () -> Void = {}
-    
+
     public var body: some View {
         ModuleCardView(module: .scene) {
             Button(action: onTap) {
@@ -139,17 +135,15 @@ public struct SceneCardView: View {
                             .frame(height: 80)
                             .frame(maxWidth: .infinity)
                             .cornerRadius(8)
-                            .overlay(
-                                Image(systemName: "map")
-                                    .font(.largeTitle)
-                                    .foregroundColor(ThemeManager.shared.sceneAccentColor)
-                            )
+                            .overlay(Image(systemName: "map")
+                                .font(.largeTitle)
+                                .foregroundColor(ThemeManager.shared.sceneAccentColor))
                     }
-                    
+
                     Text(title)
                         .font(.headline)
                         .foregroundColor(ThemeManager.shared.primaryTextColor)
-                    
+
                     Text(description)
                         .font(.subheadline)
                         .foregroundColor(ThemeManager.shared.secondaryTextColor)

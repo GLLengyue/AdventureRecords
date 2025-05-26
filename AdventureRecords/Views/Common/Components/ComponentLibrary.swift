@@ -13,10 +13,10 @@ import SwiftUI
 // 重新导出所有组件，使其可以通过单一导入使用
 
 /// 组件库版本信息
-struct ComponentLibrary {
+enum ComponentLibrary {
     static let version = "1.0.0"
     static let description = "AdventureRecords 基础组件库"
-    
+
     /// 打印组件库信息
     static func printInfo() {
         print("\(description) v\(version)")

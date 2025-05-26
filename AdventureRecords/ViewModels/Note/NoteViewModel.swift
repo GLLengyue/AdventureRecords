@@ -1,46 +1,46 @@
+import Combine
 import Foundation
 import SwiftUI
-import Combine
 
 class NoteViewModel: ObservableObject {
     static let shared = NoteViewModel()
-    
+
     @Published var notes: [NoteBlock] = []
-    
+
     private var cancellables = Set<AnyCancellable>()
     private let coreDataManager = CoreDataManager.shared
-    
+
     private init() {
         loadNotes()
     }
 
     func getNote(id: UUID) -> NoteBlock? {
-        return notes.first(where: {$0.id == id})
+        return notes.first(where: { $0.id == id })
     }
 
     func loadNotes() {
         notes = coreDataManager.fetchNotes()
         self.objectWillChange.send()
     }
-    
+
     func addNote(_ note: NoteBlock) {
         coreDataManager.saveNote(note)
         addRelationships(for: note)
         loadNotes()
     }
-    
+
     func updateNote(_ note: NoteBlock) {
         coreDataManager.updateNote(note)
         addRelationships(for: note)
         loadNotes()
     }
-    
+
     func deleteNote(_ note: NoteBlock) {
         coreDataManager.deleteNote(note.id)
         removeRelationship(for: note)
         loadNotes()
     }
-    
+
     /// 获取所有笔记中使用的标签
     func getAllTags() -> [String] {
         var allTags = Set<String>()
@@ -60,7 +60,7 @@ class NoteViewModel: ObservableObject {
             character.removeNoteID(note.id)
             coreDataManager.updateCharacter(character)
         }
-        for var scene : AdventureScene in scenes {
+        for var scene: AdventureScene in scenes {
             scene.removeRelatedNoteID(note.id)
             coreDataManager.updateScene(scene)
         }
@@ -74,7 +74,7 @@ class NoteViewModel: ObservableObject {
             character.addNoteID(note.id)
             coreDataManager.updateCharacter(character)
         }
-        for var scene : AdventureScene in scenes {
+        for var scene: AdventureScene in scenes {
             scene.addRelatedNoteID(note.id)
             coreDataManager.updateScene(scene)
         }

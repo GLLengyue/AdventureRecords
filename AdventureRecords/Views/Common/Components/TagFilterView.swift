@@ -4,14 +4,14 @@ struct TagFilterView: View {
     let allTags: [String]
     @Binding var selectedTags: [String]
     let accentColor: Color
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("按标签筛选")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .padding(.horizontal, 16)
-            
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(allTags, id: \.self) { tag in
@@ -23,36 +23,28 @@ struct TagFilterView: View {
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 10))
                                 }
-                                
+
                                 Text(tag)
                                     .lineLimit(1)
                             }
                             .font(.caption)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(
-                                selectedTags.contains(tag) ?
+                            .background(selectedTags.contains(tag) ?
                                 accentColor.opacity(0.2) :
-                                ThemeManager.shared.secondaryBackgroundColor
-                            )
-                            .foregroundColor(
-                                selectedTags.contains(tag) ?
+                                ThemeManager.shared.secondaryBackgroundColor)
+                            .foregroundColor(selectedTags.contains(tag) ?
                                 accentColor :
-                                ThemeManager.shared.primaryTextColor
-                            )
+                                ThemeManager.shared.primaryTextColor)
                             .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(
-                                        selectedTags.contains(tag) ?
-                                        accentColor :
-                                        Color.gray.opacity(0.3),
-                                        lineWidth: 1
-                                    )
-                            )
+                            .overlay(RoundedRectangle(cornerRadius: 16)
+                                .stroke(selectedTags.contains(tag) ?
+                                    accentColor :
+                                    Color.gray.opacity(0.3),
+                                    lineWidth: 1))
                         }
                     }
-                    
+
                     if !selectedTags.isEmpty {
                         Button(action: {
                             selectedTags = []
@@ -68,10 +60,8 @@ struct TagFilterView: View {
                             .background(ThemeManager.shared.secondaryBackgroundColor)
                             .foregroundColor(.secondary)
                             .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                            )
+                            .overlay(RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1))
                         }
                     }
                 }
@@ -81,7 +71,7 @@ struct TagFilterView: View {
         .padding(.vertical, 8)
         .background(ThemeManager.shared.backgroundColor)
     }
-    
+
     private func toggleTag(_ tag: String) {
         if selectedTags.contains(tag) {
             selectedTags.removeAll { $0 == tag }

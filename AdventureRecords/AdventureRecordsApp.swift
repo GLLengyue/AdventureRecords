@@ -14,18 +14,18 @@ struct AdventureRecordsApp: App {
     @StateObject private var sceneViewModel = SceneViewModel.shared
     @StateObject private var noteViewModel = NoteViewModel.shared
     @StateObject private var audioViewModel = AudioViewModel.shared
-    
+
     // 主题管理器
     @State private var themeManager = ThemeManager.shared
-    
+
     init() {
         // 检查并初始化示例数据
         SampleDataGenerator.checkAndInitializeIfNeeded()
-        
+
         // 打印组件库信息
         ComponentLibrary.printInfo()
     }
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()

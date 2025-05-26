@@ -8,7 +8,7 @@ struct DataManagerTestView: View {
     @State private var isRunningTests = false
     @State private var showTestDetails = false
     @State private var selectedTest: TestResult?
-    
+
     var body: some View {
         NavigationView {
             VStack {
@@ -17,7 +17,7 @@ struct DataManagerTestView: View {
                     TestSummaryView(results: testResults)
                         .padding()
                 }
-                
+
                 // 测试结果列表
                 List {
                     if testResults.isEmpty {
@@ -36,22 +36,22 @@ struct DataManagerTestView: View {
                     }
                 }
                 .listStyle(InsetGroupedListStyle())
-                
+
                 // 运行测试按钮
                 Button(action: {
                     runTests()
                 }) {
                     HStack {
                         Spacer()
-                        
+
                         if isRunningTests {
                             ProgressView()
                                 .padding(.trailing, 10)
                         }
-                        
+
                         Text(isRunningTests ? "测试运行中..." : "运行测试")
                             .fontWeight(.semibold)
-                        
+
                         Spacer()
                     }
                     .padding()
@@ -74,15 +74,15 @@ struct DataManagerTestView: View {
             }
         }
     }
-    
+
     /// 运行测试
     private func runTests() {
         isRunningTests = true
-        
+
         // 在后台线程运行测试
         DispatchQueue.global(qos: .userInitiated).async {
             let results = DataManagerTestRunner.runTests()
-            
+
             // 在主线程更新UI
             DispatchQueue.main.async {
                 testResults = results
@@ -95,25 +95,25 @@ struct DataManagerTestView: View {
 /// 测试摘要视图
 struct TestSummaryView: View {
     let results: [TestResult]
-    
+
     private var passedTests: Int {
         results.filter { $0.passed }.count
     }
-    
+
     private var failedTests: Int {
         results.count - passedTests
     }
-    
+
     private var passRate: Double {
         Double(passedTests) / Double(results.count) * 100
     }
-    
+
     var body: some View {
         VStack(spacing: 10) {
             Text("测试摘要")
                 .font(.headline)
                 .padding(.bottom, 5)
-            
+
             HStack(spacing: 20) {
                 VStack {
                     Text("\(results.count)")
@@ -123,7 +123,7 @@ struct TestSummaryView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                
+
                 VStack {
                     Text("\(passedTests)")
                         .font(.title)
@@ -133,7 +133,7 @@ struct TestSummaryView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                
+
                 VStack {
                     Text("\(failedTests)")
                         .font(.title)
@@ -143,7 +143,7 @@ struct TestSummaryView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                
+
                 VStack {
                     Text(String(format: "%.1f%%", passRate))
                         .font(.title)
@@ -165,26 +165,26 @@ struct TestSummaryView: View {
 struct TestResultRow: View {
     let result: TestResult
     let index: Int
-    
+
     var body: some View {
         HStack {
             Text("\(index + 1).")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .frame(width: 30, alignment: .leading)
-            
+
             VStack(alignment: .leading, spacing: 5) {
                 Text(result.name)
                     .font(.headline)
-                
+
                 Text(result.message)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
             }
-            
+
             Spacer()
-            
+
             Image(systemName: result.passed ? "checkmark.circle.fill" : "xmark.circle.fill")
                 .foregroundColor(result.passed ? .green : .red)
                 .font(.title3)
@@ -197,7 +197,7 @@ struct TestResultRow: View {
 struct TestDetailView: View {
     @Environment(\.presentationMode) var presentationMode
     let result: TestResult
-    
+
     var body: some View {
         NavigationView {
             VStack(alignment: .leading, spacing: 20) {
@@ -206,11 +206,11 @@ struct TestDetailView: View {
                     Image(systemName: result.passed ? "checkmark.circle.fill" : "xmark.circle.fill")
                         .foregroundColor(result.passed ? .green : .red)
                         .font(.largeTitle)
-                    
+
                     VStack(alignment: .leading) {
                         Text(result.passed ? "测试通过" : "测试失败")
                             .font(.headline)
-                        
+
                         Text(result.name)
                             .font(.title2)
                             .fontWeight(.bold)
@@ -220,31 +220,31 @@ struct TestDetailView: View {
                 .padding()
                 .background(Color(.systemGray6))
                 .cornerRadius(10)
-                
+
                 // 测试详情
                 VStack(alignment: .leading, spacing: 10) {
                     Text("测试详情")
                         .font(.headline)
-                    
+
                     Text(result.message)
                         .font(.body)
                         .padding()
                         .background(Color(.systemGray6))
                         .cornerRadius(10)
                 }
-                
+
                 // 测试时间
                 VStack(alignment: .leading, spacing: 10) {
                     Text("测试时间")
                         .font(.headline)
-                    
+
                     Text(formatDate(result.timestamp))
                         .font(.body)
                         .padding()
                         .background(Color(.systemGray6))
                         .cornerRadius(10)
                 }
-                
+
                 Spacer()
             }
             .padding()
@@ -254,7 +254,7 @@ struct TestDetailView: View {
             })
         }
     }
-    
+
     /// 格式化日期
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()

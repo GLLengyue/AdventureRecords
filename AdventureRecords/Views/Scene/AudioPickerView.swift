@@ -1,5 +1,5 @@
-import SwiftUI
 import AVFoundation
+import SwiftUI
 
 struct AudioPickerView: View {
     @Environment(\.dismiss) var dismiss
@@ -8,9 +8,9 @@ struct AudioPickerView: View {
     @State private var isRecording = false
     @State private var audioRecorder: AVAudioRecorder?
     @State private var audioPlayer: AVAudioPlayer?
-    
+
     var onSelect: (URL?) -> Void
-    
+
     var body: some View {
         NavigationStack {
             List {
@@ -23,18 +23,18 @@ struct AudioPickerView: View {
                                 startRecording()
                             }
                         }) {
-                            Label(isRecording ? "停止录制" : "开始录制", 
+                            Label(isRecording ? "停止录制" : "开始录制",
                                   systemImage: isRecording ? "stop.circle.fill" : "mic.circle.fill")
                                 .foregroundColor(isRecording ? .red : .blue)
                         }
-                        
+
                         if isRecording {
                             Text("正在录制...")
                                 .foregroundColor(.red)
                         }
                     }
                 }
-                
+
                 Section(header: Text("已有音效")) {
                     if audioFiles.isEmpty {
                         Text("暂无音效文件")
@@ -47,11 +47,11 @@ struct AudioPickerView: View {
                                 }) {
                                     Label("播放", systemImage: "play.circle.fill")
                                 }
-                                
+
                                 Text(audioURL.lastPathComponent)
-                                
+
                                 Spacer()
-                                
+
                                 if selectedAudio == audioURL {
                                     Image(systemName: "checkmark")
                                         .foregroundColor(.blue)
@@ -85,33 +85,33 @@ struct AudioPickerView: View {
             }
         }
     }
-    
+
     private func loadAudioFiles() {
         // 从文档目录加载音频文件
         let fileManager = FileManager.default
         guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
             return
         }
-        
+
         do {
             let fileURLs = try fileManager.contentsOfDirectory(at: documentsDirectory,
-                                                             includingPropertiesForKeys: nil)
+                                                               includingPropertiesForKeys: nil)
             audioFiles = fileURLs.filter { $0.pathExtension == "m4a" }
         } catch {
             print("Error loading audio files: \(error)")
         }
     }
-    
+
     private func startRecording() {
         let audioFilename = getDocumentsDirectory().appendingPathComponent("\(Date().timeIntervalSince1970).m4a")
-        
+
         let settings = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
             AVSampleRateKey: 44100,
             AVNumberOfChannelsKey: 2,
-            AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
+            AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue,
         ]
-        
+
         do {
             audioRecorder = try AVAudioRecorder(url: audioFilename, settings: settings)
             audioRecorder?.record()
@@ -120,13 +120,13 @@ struct AudioPickerView: View {
             print("Could not start recording: \(error)")
         }
     }
-    
+
     private func stopRecording() {
         audioRecorder?.stop()
         isRecording = false
         loadAudioFiles()
     }
-    
+
     private func playAudio(_ url: URL) {
         do {
             audioPlayer = try AVAudioPlayer(contentsOf: url)
@@ -135,8 +135,8 @@ struct AudioPickerView: View {
             print("Could not play audio: \(error)")
         }
     }
-    
+
     private func getDocumentsDirectory() -> URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
-} 
+}

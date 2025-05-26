@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AudioRecordingCreationView: View {
     @Environment(\.dismiss) var dismiss
-    
+
     // 使用单例
     @StateObject private var viewModel = AudioViewModel.shared
     @State private var title: String = ""
@@ -14,7 +14,7 @@ struct AudioRecordingCreationView: View {
 
     var body: some View {
         NavigationStack {
-    //         Form {
+            //         Form {
             Form {
                 Section(header: Text("录音信息")) {
                     TextField("标题", text: $title)
@@ -37,11 +37,9 @@ struct AudioRecordingCreationView: View {
                     Button(action: {
                         toggleRecording()
                     }) {
-                        Label(
-                            viewModel.isRecording ? "停止录音" : "开始录音",
-                            systemImage: viewModel.isRecording ? "stop.circle.fill" : "mic.circle.fill"
-                        )
-                        .foregroundColor(viewModel.isRecording ? .red : .blue)
+                        Label(viewModel.isRecording ? "停止录音" : "开始录音",
+                              systemImage: viewModel.isRecording ? "stop.circle.fill" : "mic.circle.fill")
+                            .foregroundColor(viewModel.isRecording ? .red : .blue)
                     }
                 }
             }
@@ -68,9 +66,9 @@ struct AudioRecordingCreationView: View {
             .onAppear {
                 // Reset state when view appears, in case it's reused
                 if !viewModel.isRecording {
-                   viewModel.currentRecording = nil // Clear any previous recording state
-                   title = ""
-                   recordingDuration = 0
+                    viewModel.currentRecording = nil // Clear any previous recording state
+                    title = ""
+                    recordingDuration = 0
                 }
             }
         }
@@ -81,8 +79,8 @@ struct AudioRecordingCreationView: View {
             viewModel.stopRecording(save: true)
             stopTimer()
             if let currentRec = viewModel.currentRecording {
-                 // Use a default title if the user hasn't entered one yet, 
-                 // or update the existing currentRecording's title
+                // Use a default title if the user hasn't entered one yet,
+                // or update the existing currentRecording's title
                 self.title = title.isEmpty ? currentRec.title : title
             }
         } else {
