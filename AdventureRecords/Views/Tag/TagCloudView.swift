@@ -179,155 +179,149 @@ struct TagCloudView: View {
                 // 标签云
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        // 标签云标题
-                        HStack {
-                            // Label("标签云", systemImage: "tag.fill")
-                            //     .font(.title2.bold())
-                            //     .foregroundColor(ThemeManager.shared.accentColor(for: .note))
-                            
-                            // Spacer()
-                            
-                            if !filteredTags.isEmpty {
-                                Text(searchText.isEmpty ? "共 \(allTags.count) 个标签" : "找到 \(filteredTags.count) 个标签")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.gray.opacity(0.1))
-                                    .cornerRadius(10)
-                            }
-                        }
-                        .padding(.horizontal)
-                        
-                        if searchText.isEmpty && allTags.isEmpty {
-                            // 无标签时的提示
-                            VStack(spacing: 20) {
-                                Spacer()
-                                
-                                ZStack {
-                                    Circle()
-                                        .fill(Color.gray.opacity(0.1))
-                                        .frame(width: 120, height: 120)
-                                    
-                                    Image(systemName: "tag.slash")
-                                        .font(.system(size: 50))
-                                        .foregroundColor(.gray.opacity(0.6))
+                            // 标签云标题
+                            HStack {
+                                if !filteredTags.isEmpty {
+                                    Text(searchText.isEmpty ? "共 \(allTags.count) 个标签" : "找到 \(filteredTags.count) 个标签")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(Color.gray.opacity(0.1))
+                                        .cornerRadius(10)
                                 }
-                                
-                                Text("暂无标签")
-                                    .font(.headline)
-                                    .foregroundColor(.secondary)
-                                
-                                Text("在编辑角色、场景或笔记时添加标签")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary.opacity(0.8))
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal)
-                                
-                                Spacer()
                             }
-                            .frame(maxWidth: .infinity, minHeight: 300)
-                        } else if !searchText.isEmpty && filteredTags.isEmpty {
-                            // 搜索无结果时的提示
-                            VStack(spacing: 20) {
-                                Spacer()
-                                
-                                ZStack {
-                                    Circle()
-                                        .fill(Color.gray.opacity(0.1))
-                                        .frame(width: 120, height: 120)
+                            .padding(.horizontal)
+                            
+                            if searchText.isEmpty && allTags.isEmpty {
+                                // 无标签时的提示
+                                VStack(spacing: 20) {
+                                    Spacer()
                                     
-                                    Image(systemName: "magnifyingglass")
-                                        .font(.system(size: 50))
-                                        .foregroundColor(.gray.opacity(0.6))
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.gray.opacity(0.1))
+                                            .frame(width: 120, height: 120)
+                                        
+                                        Image(systemName: "tag.slash")
+                                            .font(.system(size: 50))
+                                            .foregroundColor(.gray.opacity(0.6))
+                                    }
+                                    
+                                    Text("暂无标签")
+                                        .font(.headline)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Text("在编辑角色、场景或笔记时添加标签")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary.opacity(0.8))
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal)
+                                    
+                                    Spacer()
                                 }
-                                
-                                Text("没有找到相关标签")
-                                    .font(.headline)
-                                    .foregroundColor(.secondary)
-                                
-                                Text("尝试使用其他关键词搜索")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary.opacity(0.8))
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal)
-                                
-                                Spacer()
-                            }
-                            .frame(maxWidth: .infinity, minHeight: 300)
-                        } else {
-                            // 标签组
-                            VStack(alignment: .leading, spacing: 16) {
-                                // 热门标签区域
-                                if !filteredPopularTags.isEmpty {
+                                .frame(maxWidth: .infinity, minHeight: 300)
+                            } else if !searchText.isEmpty && filteredTags.isEmpty {
+                                // 搜索无结果时的提示
+                                VStack(spacing: 20) {
+                                    Spacer()
+                                    
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.gray.opacity(0.1))
+                                            .frame(width: 120, height: 120)
+                                        
+                                        Image(systemName: "magnifyingglass")
+                                            .font(.system(size: 50))
+                                            .foregroundColor(.gray.opacity(0.6))
+                                    }
+                                    
+                                    Text("没有找到相关标签")
+                                        .font(.headline)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Text("尝试使用其他关键词搜索")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary.opacity(0.8))
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal)
+                                    
+                                    Spacer()
+                                }
+                                .frame(maxWidth: .infinity, minHeight: 300)
+                            } else {
+                                // 标签组
+                                VStack(alignment: .leading, spacing: 16) {
+                                    // 热门标签区域
+                                    if !filteredPopularTags.isEmpty {
+                                        VStack(alignment: .leading, spacing: 12) {
+                                            Text("热门标签")
+                                                .font(.headline)
+                                                .foregroundColor(ThemeManager.shared.primaryTextColor)
+                                                .padding(.horizontal)
+                                            
+                                            ScrollView(.horizontal, showsIndicators: false) {
+                                                HStack(spacing: 10) {
+                                                    ForEach(filteredPopularTags, id: \.self) { tag in
+                                                        TagButton(
+                                                            tag: tag,
+                                                            isSelected: selectedTag == tag,
+                                                            onTap: {
+                                                                if selectedTag == tag {
+                                                                    selectedTag = nil
+                                                                } else {
+                                                                    selectedTag = tag
+                                                                }
+                                                            }
+                                                        )
+                                                    }
+                                                }
+                                                .padding(.horizontal)
+                                            }
+                                        }
+                                        .padding(.bottom, 8)
+                                        
+                                        Divider()
+                                            .padding(.horizontal)
+                                    }
+                                    
+                                    // 所有标签区域
                                     VStack(alignment: .leading, spacing: 12) {
-                                        Text("热门标签")
+                                        Text("所有标签")
                                             .font(.headline)
                                             .foregroundColor(ThemeManager.shared.primaryTextColor)
                                             .padding(.horizontal)
                                         
-                                        ScrollView(.horizontal, showsIndicators: false) {
-                                            HStack(spacing: 10) {
-                                                ForEach(filteredPopularTags, id: \.self) { tag in
-                                                    TagButton(
-                                                        tag: tag,
-                                                        isSelected: selectedTag == tag,
-                                                        onTap: {
-                                                            if selectedTag == tag {
-                                                                selectedTag = nil
-                                                            } else {
-                                                                selectedTag = tag
-                                                            }
+                                        FlowLayout(spacing: 10) {
+                                            ForEach(filteredTags, id: \.self) { tag in
+                                                TagButton(
+                                                    tag: tag,
+                                                    isSelected: selectedTag == tag,
+                                                    onTap: {
+                                                        if selectedTag == tag {
+                                                            selectedTag = nil
+                                                        } else {
+                                                            selectedTag = tag
                                                         }
-                                                    )
-                                                }
-                                            }
-                                            .padding(.horizontal)
-                                        }
-                                    }
-                                    .padding(.bottom, 8)
-                                    
-                                    Divider()
-                                        .padding(.horizontal)
-                                }
-                                
-                                // 所有标签区域
-                                VStack(alignment: .leading, spacing: 12) {
-                                    Text("所有标签")
-                                        .font(.headline)
-                                        .foregroundColor(ThemeManager.shared.primaryTextColor)
-                                        .padding(.horizontal)
-                                    
-                                    FlowLayout(spacing: 10) {
-                                        ForEach(filteredTags, id: \.self) { tag in
-                                            TagButton(
-                                                tag: tag,
-                                                isSelected: selectedTag == tag,
-                                                onTap: {
-                                                    if selectedTag == tag {
-                                                        selectedTag = nil
-                                                    } else {
-                                                        selectedTag = tag
                                                     }
-                                                }
-                                            )
+                                                )
+                                            }
                                         }
+                                        .padding(.horizontal)
                                     }
-                                    .padding(.horizontal)
                                 }
                             }
                         }
-                    }
-                    .padding(.vertical)
-                }
-                
-                // 分隔线
-                Divider()
-                    .padding(.horizontal)
-                
-                // 内容区域
-                if let selectedTag = selectedTag {
-                    ScrollView {
+                        .padding(.vertical)
+                    // }
+                    
+                    // 分隔线
+                    // Divider()
+                    //     .padding(.horizontal)
+                    
+                    // 内容区域
+                    if let selectedTag = selectedTag {
+                        // ScrollView {
                         VStack(alignment: .leading, spacing: 20) {
                             // 标签标题
                             HStack {
@@ -508,34 +502,35 @@ struct TagCloudView: View {
                         }
                         .padding(.vertical)
                     }
-                } else {
-                    VStack(spacing: 20) {
-                        Spacer()
-                        
-                        ZStack {
-                            Circle()
-                                .fill(Color.gray.opacity(0.1))
-                                .frame(width: 120, height: 120)
+                    else {
+                        VStack(spacing: 20) {
+                            Spacer()
                             
-                            Image(systemName: "hand.tap")
-                                .font(.system(size: 50))
-                                .foregroundColor(.gray.opacity(0.6))
+                            ZStack {
+                                Circle()
+                                    .fill(Color.gray.opacity(0.1))
+                                    .frame(width: 120, height: 120)
+                                
+                                Image(systemName: "hand.tap")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.gray.opacity(0.6))
+                            }
+                            
+                            Text("请选择一个标签查看相关内容")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                            
+                            Text("点击上方的标签以查看相关的角色、场景和笔记")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary.opacity(0.8))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                            
+                            Spacer()
                         }
-                        
-                        Text("请选择一个标签查看相关内容")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                        
-                        Text("点击上方的标签以查看相关的角色、场景和笔记")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary.opacity(0.8))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                        
-                        Spacer()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .padding(.top, 20)
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(.top, 20)
                 }
             }
         )
