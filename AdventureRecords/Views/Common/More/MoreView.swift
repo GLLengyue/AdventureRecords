@@ -17,7 +17,7 @@ struct MoreView: View {
 
     // 应用设置
     @AppStorage("isDarkMode") private var isDarkMode = false
-    @AppStorage("debugMode") private var debugMode = false
+    // @AppStorage("debugMode") private var debugMode = false
 
     // 订阅管理器
     @StateObject private var subscriptionManager = SubscriptionManager()
@@ -135,7 +135,7 @@ struct MoreView: View {
                             .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
                         {
                             Task {
-                                await AppStore.requestReview(in: scene)
+                                AppStore.requestReview(in: scene)
                             }
                         }
                     }) {
@@ -148,26 +148,26 @@ struct MoreView: View {
 
                 // 高级设置部分
                 Section(header: Text("高级设置")) {
-                    Toggle("调试模式", isOn: $debugMode)
-                        .toggleStyle(SwitchToggleStyle(tint: themeManager.accentColor(for: .character)))
+                    // Toggle("调试模式", isOn: $debugMode)
+                    //     .toggleStyle(SwitchToggleStyle(tint: themeManager.accentColor(for: .character)))
 
-                    if debugMode {
-                        Button(action: {
-                            // 查看日志实现
-                        }) {
-                            MoreMenuRow(icon: "doc.text",
-                                        iconColor: themeManager.accentColor(for: .note),
-                                        title: "查看日志",
-                                        subtitle: "查看应用运行日志")
-                        }
+                    // if debugMode {
+                    //     Button(action: {
+                    //         // 查看日志实现
+                    //     }) {
+                    //         MoreMenuRow(icon: "doc.text",
+                    //                     iconColor: themeManager.accentColor(for: .note),
+                    //                     title: "查看日志",
+                    //                     subtitle: "查看应用运行日志")
+                    //     }
 
-                        Button(action: { showDataManagerTest = true }) {
-                            MoreMenuRow(icon: "hammer",
-                                        iconColor: themeManager.accentColor(for: .scene),
-                                        title: "数据管理测试",
-                                        subtitle: "测试备份、恢复和清理功能")
-                        }
-                    }
+                    //     Button(action: { showDataManagerTest = true }) {
+                    //         MoreMenuRow(icon: "hammer",
+                    //                     iconColor: themeManager.accentColor(for: .scene),
+                    //                     title: "数据管理测试",
+                    //                     subtitle: "测试备份、恢复和清理功能")
+                    //     }
+                    // }
 
                     Button(action: { showResetConfirmation = true }) {
                         MoreMenuRow(icon: "arrow.counterclockwise",
@@ -215,7 +215,7 @@ struct MoreView: View {
                   primaryButton: .destructive(Text("重置")) {
                       // 重置设置实现
                       isDarkMode = false
-                      debugMode = false
+                      // debugMode = false
                   },
                   secondaryButton: .cancel(Text("取消")))
         }

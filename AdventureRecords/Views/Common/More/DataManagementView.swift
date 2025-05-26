@@ -25,6 +25,7 @@ struct DataManagementView: View {
     @State private var showCleanupConfirmation = false
     @State private var cleanupType: CleanupType = .none
     @State private var exportType: ExportType = .none
+    @State private var pendingExportType: ExportType?  // 用于跟踪待处理的导出类型
     @State private var isExporting = false
     @State private var exportDocument: ExportDocument?
     @State private var isBackingUp = false
@@ -55,21 +56,21 @@ struct DataManagementView: View {
                     Button(action: { showRestoreSheet = true }) {
                         DataManagementRow(icon: "arrow.up.doc",
                                           iconColor: themeManager.accentColor(for: .scene),
-                                          title: "从备份恢复",
-                                          subtitle: "从备份文件恢复所有数据")
+                                          title: "备份管理",
+                                          subtitle: "从备份文件恢复所有数据，导出备份文件或者删除备份文件")
                     }
                 }
 
                 // 数据导出部分
                 Section(header: Text("数据导出")) {
-                    Button(action: {
-                        exportType = .pdf
-                    }) {
-                        DataManagementRow(icon: "doc.richtext",
-                                          iconColor: .red,
-                                          title: "导出为PDF",
-                                          subtitle: "包含角色、场景和笔记信息")
-                    }
+                    // Button(action: {
+                    //     exportType = .pdf
+                    // }) {
+                    //     DataManagementRow(icon: "doc.richtext",
+                    //                       iconColor: .red,
+                    //                       title: "导出为PDF",
+                    //                       subtitle: "包含角色、场景和笔记信息")
+                    // }
 
                     Button(action: {
                         exportType = .text
@@ -139,17 +140,19 @@ struct DataManagementView: View {
                 backups = coreDataManager.getAllBackups()
             }
             .onChange(of: exportType) {
-                // 当导出类型改变时，延迟一点显示导出表单，确保视图已更新
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.016) {
-                    showExportSheet = true
+                // 当导出类型改变时，更新待处理的导出类型并显示表单
+                if exportType != .none {
+                    pendingExportType = exportType
+                    exportType = .none
                 }
+            }
+            .onChange(of: pendingExportType) {
+                showExportSheet = true
             }
             .onChange(of: cleanupType) {
                 if cleanupType != .none {
                     // 当清理类型改变时，延迟一点显示确认对话框，确保视图已更新
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.016) {
-                        showCleanupConfirmation = true
-                    }
+                    showCleanupConfirmation = true
                 }
             }
             .sheet(isPresented: $showBackupSheet) {
@@ -164,7 +167,9 @@ struct DataManagementView: View {
                             showError: $showRestoreError)
             }
             .sheet(isPresented: $showExportSheet) {
-                ExportView(exportType: exportType)
+                if let type = pendingExportType {
+                    ExportView(exportType: type)
+                }
             }
             .alert("确认数据清理",
                    isPresented: $showCleanupConfirmation)
@@ -313,12 +318,12 @@ struct BackupView: View {
             .navigationTitle("创建备份")
             .navigationBarItems(trailing: Button("取消") {
                 presentationMode.wrappedValue.dismiss()
-            }
-            .sheet(isPresented: $showShareSheet) {
-                if let backupData = backupData {
-                    ShareSheet(activityItems: [backupData])
-                }
             })
+            // .sheet(isPresented: $showShareSheet) {
+            //     if let backupData = backupData {
+            //         ShareSheet(activityItems: [backupData])
+            //     }
+            // }
         }
     }
 
@@ -335,7 +340,7 @@ struct BackupView: View {
                     self.backupData = backupData
                     isBackingUp = false
                     showSuccess = true
-                    showShareSheet = true
+                    // showShareSheet = true
                 }
             } else {
                 // 备份失败
@@ -358,6 +363,10 @@ struct RestoreView: View {
     @State private var selectedBackup: BackupFile?
     @State private var backups: [BackupFile] = []
     @State private var showDocumentPicker = false
+    @State private var backupToDelete: BackupFile?
+    @State private var showDeleteConfirmation = false
+    @State private var showShareSheet = false
+    @State private var backupToShare: BackupFile?
 
     let coreDataManager = CoreDataManager.shared
 
@@ -401,6 +410,23 @@ struct RestoreView: View {
                                             .foregroundColor(.blue)
                                     }
                                 }
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .contextMenu {
+                                Button(action: {
+                                    backupToShare = backup
+                                    // showShareSheet = true
+                                }) {
+                                    Label("分享备份", systemImage: "square.and.arrow.up")
+                                }
+                                
+                                Button(role: .destructive, action: {
+                                    backupToDelete = backup
+                                    showDeleteConfirmation = true
+                                }) {
+                                    Label("删除备份", systemImage: "trash")
+                                }
                             }
                         }
                     }
@@ -433,7 +459,28 @@ struct RestoreView: View {
             })
             .onAppear {
                 // 加载备份文件列表
-                backups = coreDataManager.getAllBackups()
+                loadBackups()
+            }
+            .alert("确认删除", isPresented: $showDeleteConfirmation, presenting: backupToDelete) { backup in
+                Button("删除", role: .destructive) {
+                    deleteBackup(backup)
+                }
+                Button("取消", role: .cancel) {
+                    backupToDelete = nil
+                }
+            } message: { backup in
+                Text("确定要删除备份 \\(backup.name) 吗？此操作无法撤销。")
+            }
+            .onChange(of: backupToShare) {
+                guard let _ = backupToShare else { return }
+                showShareSheet = true
+            }
+            .sheet(isPresented: $showShareSheet, onDismiss: {
+                backupToShare = nil
+            }) {
+                if let _ = backupToShare, let _ = try? Data(contentsOf: backupToShare!.url) {
+                    ShareSheet(activityItems: [backupToShare!.url])
+                }
             }
             .sheet(isPresented: $showDocumentPicker) {
                 DocumentPicker(completion: { url in
@@ -477,6 +524,26 @@ struct RestoreView: View {
 
             // 设置为选中的备份
             selectedBackup = tempBackup
+        }
+    }
+    
+    private func loadBackups() {
+        backups = coreDataManager.getAllBackups()
+    }
+    
+    private func deleteBackup(_ backup: BackupFile) {
+        do {
+            try FileManager.default.removeItem(at: backup.url)
+            // 从备份列表中移除
+            if let index = backups.firstIndex(where: { $0.id == backup.id }) {
+                backups.remove(at: index)
+            }
+            // 如果删除的是当前选中的备份，清空选中状态
+            if selectedBackup?.id == backup.id {
+                selectedBackup = nil
+            }
+        } catch {
+            print("删除备份文件失败: \(error.localizedDescription)")
         }
     }
 }

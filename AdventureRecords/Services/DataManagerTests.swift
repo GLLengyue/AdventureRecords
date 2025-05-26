@@ -31,7 +31,7 @@ class DataManagerTests {
         testCharacterData = CharacterData(id: "test-character-id", name: "测试角色", description: "这是一个用于测试的角色",
                                           avatar: nil, tags: [], relatedNoteIDs: [])
         testSceneData = SceneData(id: "test-scene-id", name: "测试场景", description: "这是一个用于测试的场景", tags: [],
-                                  relatedNoteIDs: [])
+                                  relatedNoteIDs: [], coverImage: nil)
         testNoteData = NoteData(id: "test-note-id", title: "测试笔记", content: "这是一个用于测试的笔记内容", tags: [],
                                 relatedCharacterIDs: [], relatedSceneIDs: [])
     }

@@ -83,7 +83,7 @@ struct ExportDocument {
 }
 
 /// 备份文件
-struct BackupFile: Identifiable {
+struct BackupFile: Identifiable, Equatable {
     let id = UUID()
     let url: URL
     let name: String
@@ -124,6 +124,7 @@ struct SceneData: Codable {
     let description: String
     let tags: [String]
     let relatedNoteIDs: [String]
+    let coverImage: Data?
 }
 
 /// 笔记数据
@@ -464,7 +465,8 @@ class CoreDataManager {
                                                      name: scene.title,
                                                      description: scene.description,
                                                      tags: scene.tags,
-                                                     relatedNoteIDs: noteIDs)
+                                                     relatedNoteIDs: noteIDs,
+                                                     coverImage: scene.coverImage?.jpegData(compressionQuality: 0.8))
                                 },
                                 notes: notes.map { note in
                                     // 获取笔记关联的场景ID
@@ -691,7 +693,7 @@ class CoreDataManager {
             entity.relatedNoteIDs = characterData.relatedNoteIDs.compactMap { UUID(uuidString: $0) }
         }
     }
-
+    
     /// 恢复场景数据
     private func restoreScenes(_ scenes: [SceneData], context: NSManagedObjectContext) throws {
         for sceneData in scenes {
@@ -701,9 +703,10 @@ class CoreDataManager {
             entity.sceneDescription = sceneData.description
             entity.tags = sceneData.tags
             entity.relatedNoteIDs = sceneData.relatedNoteIDs.compactMap { UUID(uuidString: $0) }
+            entity.coverImage = sceneData.coverImage
         }
     }
-
+    
     /// 恢复笔记数据
     private func restoreNotes(_ notes: [NoteData], context: NSManagedObjectContext) throws {
         for noteData in notes {
