@@ -142,53 +142,61 @@ public struct ListContainer<Content: View, TrailingContent: View>: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            ModuleNavigationBar(title: title, module: module) {
-                HStack(spacing: 8) {
-                    trailingContent                    
-                    if showSearchField {
-                        TextField("请输入关键词", text: $searchText, onCommit: {dismissSearch()})
-                            .padding(10)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .focused($isSearchFieldFocused)
-                            .transition(.move(edge: .top).combined(with: .opacity)) // 动画效果
-                    }
+            ModuleNavigationBar(
+                title: title,
+                module: module,
+                trailingContent: {
+                    HStack(spacing: 8) {
+                        trailingContent                    
+                        if showSearchField {
+                            TextField("请输入关键词", text: $searchText, onCommit: {dismissSearch()})
+                                .padding(10)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .focused($isSearchFieldFocused)
+                                .transition(.move(edge: .top).combined(with: .opacity)) // 动画效果
+                        }
 
-                    Button(action: {
-                        withAnimation {
-                            showSearchField = true
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                            withAnimation {
-                                isSearchFieldFocused = true
-                            }
-                        }
-                    }) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(ThemeManager.shared.accentColor(for: module))
-                    }
-                    .onChange(of: isSearchFieldFocused) {
-                        if isSearchFieldFocused {
+                        Button(action: {
                             withAnimation {
                                 showSearchField = true
                             }
-                        } else {
-                            withAnimation {
-                                showSearchField = false
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                withAnimation {
+                                    isSearchFieldFocused = true
+                                }
                             }
-                        }
-                    }
-                    if let addAction = addAction {
-                        Button(action: addAction) {
-                            Image(systemName: "plus")
+                        }) {
+                            Image(systemName: "magnifyingglass")
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundColor(ThemeManager.shared.accentColor(for: module))
                         }
+                        .onChange(of: isSearchFieldFocused) {
+                            if isSearchFieldFocused {
+                                withAnimation {
+                                    showSearchField = true
+                                }
+                            } else {
+                                withAnimation {
+                                    showSearchField = false
+                                }
+                            }
+                        }
+                        if let addAction = addAction {
+                            Button(action: addAction) {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(ThemeManager.shared.accentColor(for: module))
+                            }
+                        }
                     }
                 }
-            }
+            )
             .padding(.horizontal)
             .padding(.top, 8)
+            
+            Spacer()
+                .frame(height: 8)
+            
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.horizontal)
@@ -224,15 +232,19 @@ public struct DetailContainer<Content: View>: View {
     
     public var body: some View {
         VStack(spacing: 0) {
-            ModuleNavigationBar(title: title, module: module) {
-                if let editAction = editAction {
-                    Button(action: editAction) {
-                        Image(systemName: "pencil")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(ThemeManager.shared.accentColor(for: module))
+            ModuleNavigationBar(
+                title: title,
+                module: module,
+                trailingContent: {
+                    if let editAction = editAction {
+                        Button(action: editAction) {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(ThemeManager.shared.accentColor(for: module))
+                        }
                     }
                 }
-            }
+            )
             
             ScrollView {
                 content
@@ -262,14 +274,17 @@ public struct EditorContainer<Content: View>: View {
     
     public var body: some View {
         VStack(spacing: 0) {
-            ModuleNavigationBar(title: title, module: module, backAction: cancelAction) {
+            ModuleNavigationBar(
+                title: title,
+                module: module,
+                backAction: cancelAction
+            ) {
                 Button(action: saveAction) {
                     Text("保存")
                         .font(.headline)
                         .foregroundColor(ThemeManager.shared.accentColor(for: module))
                 }
                 .disabled(saveDisabled)
-
             }
             
             content
