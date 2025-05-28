@@ -104,6 +104,7 @@ struct BackupData: Codable {
     let characters: [CharacterData]
     let scenes: [SceneData]
     let notes: [NoteData]
+    let audioRecordings: [AudioRecordingData]
     let settings: [String: String]
 }
 
@@ -115,6 +116,7 @@ struct CharacterData: Codable {
     let avatar: Data?
     let tags: [String]
     let relatedNoteIDs: [String]
+    let relatedAudioRecordingIDs: [String]
 }
 
 /// 场景数据
@@ -135,6 +137,15 @@ struct NoteData: Codable {
     let tags: [String]
     let relatedCharacterIDs: [String]
     let relatedSceneIDs: [String]
+}
+
+/// 音频录音数据
+struct AudioRecordingData: Codable {
+    let id: String
+    let title: String
+    let fileName: String
+    let date: Date
+    let audioData: Data
 }
 
 // MARK: - 数据管理器
@@ -444,19 +455,41 @@ class CoreDataManager {
         let characters = fetchCharacters()
         let scenes = fetchScenes()
         let notes = fetchNotes()
+        let audioRecordings = fetchAudioRecordings()
+        
+        // 准备音频录音数据
+        var audioRecordingData: [AudioRecordingData] = []
+        for recording in audioRecordings {
+            do {
+                let audioData = try Data(contentsOf: recording.recordingURL)
+                let audioRecording = AudioRecordingData(
+                    id: recording.id.uuidString,
+                    title: recording.title,
+                    fileName: recording.fileName,
+                    date: recording.date,
+                    audioData: audioData
+                )
+                audioRecordingData.append(audioRecording)
+            } catch {
+                print("读取音频文件失败: \(error.localizedDescription)")
+                continue
+            }
+        }
 
         // 创建备份数据结构
-        let backup = BackupData(version: "1.0.0",
+        let backup = BackupData(version: "1.1.0",  // 更新版本号以反映数据格式变化
                                 timestamp: Date(),
                                 characters: characters.map { character in
-                                    // 获取角色关联的笔记ID
+                                    // 获取角色关联的笔记ID和音频录音ID
                                     let noteIDs = character.relatedNoteIDs.map { $0.uuidString }
+                                    let audioRecordingIDs = character.audioRecordings?.map { $0.id.uuidString } ?? []
                                     return CharacterData(id: character.id.uuidString,
                                                          name: character.name,
                                                          description: character.description,
                                                          avatar: character.avatar?.jpegData(compressionQuality: 0.8),
                                                          tags: character.tags,
-                                                         relatedNoteIDs: noteIDs)
+                                                         relatedNoteIDs: noteIDs,
+                                                         relatedAudioRecordingIDs: audioRecordingIDs)
                                 },
                                 scenes: scenes.map { scene in
                                     // 获取场景关联的笔记ID
@@ -479,6 +512,7 @@ class CoreDataManager {
                                                     relatedCharacterIDs: characterIDs,
                                                     relatedSceneIDs: sceneIDs)
                                 },
+                                audioRecordings: audioRecordingData,
                                 settings: fetchSettings())
 
         // 编码为JSON数据
@@ -499,6 +533,13 @@ class CoreDataManager {
             if !isBackupVersionCompatible(backup.version) {
                 throw NSError(domain: "CoreDataManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "备份版本不兼容"])
             }
+            
+            // 确保音频目录存在
+            let audioDirectory = getAudioDirectory()
+            print("音频目录: \(audioDirectory.path)")
+            if !FileManager.default.fileExists(atPath: audioDirectory.path) {
+                try FileManager.default.createDirectory(at: audioDirectory, withIntermediateDirectories: true)
+            }
 
             // 创建临时上下文进行恢复操作
             let tempContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
@@ -509,16 +550,36 @@ class CoreDataManager {
                 // 清理现有数据
                 try cleanupAllData(context: tempContext)
 
+                // 恢复设置
+                for (key, value) in backup.settings {
+                    UserDefaults.standard.set(value, forKey: key)
+                }
+                
+                // 恢复音频录音数据
+                for audioData in backup.audioRecordings {
+                    let audioURL = audioDirectory.appendingPathComponent(audioData.fileName)
+                    
+                    // 保存音频文件
+                    try audioData.audioData.write(to: audioURL)
+                    
+                    // 创建录音记录
+                    let entity = AudioRecordingEntity(context: tempContext)
+                    entity.id = UUID(uuidString: audioData.id) ?? UUID()
+                    entity.title = audioData.title
+                    entity.recordingURL = audioURL
+                    entity.date = audioData.date
+                }
+
                 // 恢复数据
                 try restoreCharacters(backup.characters, context: tempContext)
                 try restoreScenes(backup.scenes, context: tempContext)
                 try restoreNotes(backup.notes, context: tempContext)
 
-                // 验证并保存更改
                 if tempContext.hasChanges {
                     try tempContext.save()
                 }
             }
+
 
             // 在主上下文上保存最终更改
             viewContext.performAndWait {
@@ -534,9 +595,9 @@ class CoreDataManager {
 
     /// 检查备份版本兼容性
     private func isBackupVersionCompatible(_ version: String) -> Bool {
-        // 实现版本兼容性检查逻辑
-        // 简单示例：只接受1.x版本的备份
-        return version.starts(with: "1.")
+        // 支持 1.0.0 和 1.1.0 版本的备份
+        let compatibleVersions = ["1.0.0", "1.1.0"]
+        return compatibleVersions.contains(version)
     }
 
     /// 生成PDF数据
@@ -691,6 +752,7 @@ class CoreDataManager {
             entity.avatar = characterData.avatar
             entity.tags = characterData.tags
             entity.relatedNoteIDs = characterData.relatedNoteIDs.compactMap { UUID(uuidString: $0) }
+            entity.audioIDs = characterData.relatedAudioRecordingIDs.compactMap { UUID(uuidString: $0) }
         }
     }
     
@@ -720,6 +782,20 @@ class CoreDataManager {
             // 设置必填的 date 字段，使用当前时间
             entity.date = Date()
         }
+    }
+
+    // MARK: - 音频文件管理
+    
+    /// 获取音频文件存储目录
+    private func getAudioDirectory() -> URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let documentsDirectory = paths[0]
+        let audioDirectory = documentsDirectory.appendingPathComponent("Recordings")
+        return audioDirectory
+    }
+    
+    func getAudioURL(for fileName: String) -> URL {
+        return getAudioDirectory().appendingPathComponent(fileName)
     }
 
     // 以下是原有的CoreDataManager方法，已移至上面的类定义中
@@ -978,6 +1054,7 @@ class CoreDataManager {
                 characterEntity.audioIDs = ids
             }
         }
+
         saveContext()
     }
 

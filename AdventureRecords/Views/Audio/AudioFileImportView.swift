@@ -199,13 +199,15 @@ struct AudioFileImportView: View {
     private func saveImportedAudio() {
         guard let sourceURL = importedAudioURL, !title.isEmpty else { return }
 
-        if let newRecording = viewModel.importAudioFile(from: sourceURL, withTitle: title) {
-            viewModel.saveRecording(recordingToSave: newRecording, forCharacterID: characterID)
-            onSave?()
-            audioController.stop()
-            dismiss()
-        } else {
-            errorMessage = "导入音频文件失败"
+        Task {
+            if let newRecording = try? await viewModel.importAudioFile(from: sourceURL, withTitle: title) {
+                viewModel.saveRecording(recordingToSave: newRecording, forCharacterID: characterID)
+                onSave?()
+                audioController.stop()
+                dismiss()
+            } else {
+                errorMessage = "导入音频文件失败"
+            }
         }
     }
 

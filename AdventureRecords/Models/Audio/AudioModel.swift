@@ -1,13 +1,18 @@
 import Foundation
 
-struct AudioRecording: Identifiable, Hashable {
+/// 录音模型
+struct AudioRecording: Identifiable, Hashable, Codable {
+    /// 获取音频文件名称
+    var fileName: String {
+        return "\(id.uuidString).m4a"
+    }
     let id: UUID
     var title: String
     var recordingURL: URL
     var date: Date
 
-    // 文件名，用于相对路径存储
-    var fileName: String {
+    // 获取录音文件的相对路径
+    var fileNameForPath: String {
         return recordingURL.lastPathComponent
     }
 

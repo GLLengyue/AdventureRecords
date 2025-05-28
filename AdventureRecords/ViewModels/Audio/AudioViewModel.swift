@@ -196,8 +196,8 @@ class AudioViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     }
 
     // 导入外部音频文件
-    func importAudioFile(from sourceURL: URL, withTitle title: String) -> AudioRecording? {
-        let fileManager = FileManager.default
+    func importAudioFile(from sourceURL: URL, withTitle title: String) async throws -> AudioRecording? {
+        // let fileManager = FileManager.default
         let audioDirectory = getAudioDirectory()
         let fileName = "\(UUID().uuidString).\(sourceURL.pathExtension)"
         let destinationURL = audioDirectory.appendingPathComponent(fileName)
@@ -235,37 +235,41 @@ class AudioViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
                     print("读取或写入音频数据失败: \(dataError)")
 
                     // 尝试使用AVAsset复制音频数据
-                    if let audioAsset = try? AVURLAsset(url: sourceURL) {
-                        print("尝试使用AVAsset读取音频")
+                    let audioAsset = AVURLAsset(url: sourceURL)
+                    print("尝试使用AVAsset读取音频")
 
-                        // 使用AVAssetExportSession导出音频
-                        if let exportSession = AVAssetExportSession(asset: audioAsset,
-                                                                    presetName: AVAssetExportPresetAppleM4A)
-                        {
-                            exportSession.outputURL = destinationURL
-                            exportSession.outputFileType = .m4a
+                    // 使用AVAssetExportSession导出音频
+                    if let exportSession = AVAssetExportSession(asset: audioAsset,
+                                                                presetName: AVAssetExportPresetAppleM4A)
+                    {
+                        // 同步等待导出完成
+                        try await exportSession.export(to: destinationURL, as: .m4a)
 
-                            // 同步等待导出完成
-                            let semaphore = DispatchSemaphore(value: 0)
-                            exportSession.exportAsynchronously {
-                                semaphore.signal()
-                            }
-                            _ = semaphore.wait(timeout: .now() + 30.0)
-
-                            if exportSession.status == .completed {
-                                print("成功使用AVAsset导出音频到: \(destinationURL.path)")
-
-                                // 创建新的录音记录
-                                let newRecording = AudioRecording(id: UUID(),
-                                                                  title: title,
-                                                                  recordingURL: destinationURL,
-                                                                  date: Date())
-
-                                return newRecording
-                            } else {
-                                print("AVAsset导出失败: \(exportSession.error?.localizedDescription ?? "未知错误")")
+                        for await state in exportSession.states(updateInterval: 0.1) {
+                            switch state {
+                            case .pending:
+                                break
+                            case .exporting:
+                                print("\(state)")
+                                break
+                            case .waiting:
+                                print("\(state)")
+                                break
+                            default:
+                                print("\(state)")
+                                break
                             }
                         }
+
+                        // 创建新的录音记录
+                        let newRecording = AudioRecording(id: UUID(),
+                                                                title: title,
+                                                                recordingURL: destinationURL,
+                                                                date: Date())
+
+                        return newRecording
+                    } else {
+                        print("AVAsset导出失败")
                     }
                 }
             } else {
