@@ -1,7 +1,9 @@
 import StoreKit
 import SwiftUI
+import CoreData
 
 struct MoreView: View {
+    @Environment(\.managedObjectContext) private var viewContext
     // 状态变量
     @State private var showSettings = false
     @State private var showUserProfile = false
@@ -14,6 +16,9 @@ struct MoreView: View {
     @State private var showResetConfirmation = false
     @State private var showDataManagement = false
     @State private var showDataManagerTest = false
+    @State private var showAudioManagement = false
+    @State private var showClearAudioConfirmation = false
+    @State private var showClearAllDataConfirmation = false
 
     // 应用设置
     @AppStorage("isDarkMode") private var isDarkMode = false
@@ -72,6 +77,21 @@ struct MoreView: View {
                                     title: "数据管理",
                                     subtitle: "备份、恢复和导出数据")
                     }
+                    
+                    // 音频管理
+                    Button(action: { showAudioManagement = true }) {
+                        MoreMenuRow(icon: "waveform",
+                                    iconColor: .purple,
+                                    title: "音频管理",
+                                    subtitle: "管理所有录音文件")
+                    }
+                    Button(role: .destructive, action: { showClearAudioConfirmation = true }) {
+                        MoreMenuRow(icon: "trash",
+                                    iconColor: .red,
+                                    title: "清除所有音频数据",
+                                    subtitle: "删除所有录音文件")
+                    }
+
 
                     // 设置
                     Button(action: { showSettings = true }) {
@@ -169,6 +189,7 @@ struct MoreView: View {
                     //     }
                     // }
 
+
                     Button(action: { showResetConfirmation = true }) {
                         MoreMenuRow(icon: "arrow.counterclockwise",
                                     iconColor: .red,
@@ -200,6 +221,17 @@ struct MoreView: View {
         .sheet(isPresented: $showTermsOfService) {
             TermsOfServiceView()
         }
+        .sheet(isPresented: $showAudioManagement) {
+            AudioManagementView()
+        }
+        .alert("确认清除所有音频数据", isPresented: $showClearAudioConfirmation) {
+            Button("清除", role: .destructive) {
+                clearAllAudioRecordings()
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("此操作将删除所有录音文件，且无法撤销。确定要继续吗？")
+        }
         .sheet(isPresented: $showSubscriptionSheet) {
             SubscriptionView(subscriptionManager: subscriptionManager)
         }
@@ -218,6 +250,189 @@ struct MoreView: View {
                       // debugMode = false
                   },
                   secondaryButton: .cancel(Text("取消")))
+        }
+    }
+}
+
+// MARK: - 音频管理方法
+
+extension MoreView {
+    private func clearAllAudioRecordings() {
+        let context = CoreDataManager.shared.viewContext
+        
+        // 删除所有音频录音实体
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = AudioRecordingEntity.fetchRequest()
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        
+        do {
+            try context.execute(deleteRequest)
+            
+            // 删除音频文件
+            let audioDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("Recordings")
+            if FileManager.default.fileExists(atPath: audioDirectory.path) {
+                try? FileManager.default.removeItem(at: audioDirectory)
+            }
+            
+            // 重新创建空目录
+            try? FileManager.default.createDirectory(at: audioDirectory, withIntermediateDirectories: true)
+            
+            // 保存更改
+            try context.save()
+            
+            // 显示成功提示
+            let alert = UIAlertController(title: "成功", message: "已成功删除所有音频数据", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "确定", style: .default))
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let rootViewController = windowScene.windows.first?.rootViewController {
+                rootViewController.present(alert, animated: true)
+            }
+        } catch {
+            print("清除音频数据失败: \(error.localizedDescription)")
+            
+            // 显示错误提示
+            let alert = UIAlertController(title: "错误", message: "清除音频数据失败: \(error.localizedDescription)", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "确定", style: .default))
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let rootViewController = windowScene.windows.first?.rootViewController {
+                rootViewController.present(alert, animated: true)
+            }
+        }
+    }
+}
+
+// 音频管理视图
+struct AudioManagementView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.managedObjectContext) private var viewContext
+    
+    @State private var audioRecordings: [AudioRecording] = []
+    @State private var showDeleteConfirmation = false
+    @State private var recordingToDelete: AudioRecording?
+    
+    var body: some View {
+        NavigationView {
+            List {
+                if audioRecordings.isEmpty {
+                    Text("没有找到录音文件")
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .listRowBackground(Color.clear)
+                } else {
+                    ForEach(audioRecordings, id: \.id) { recording in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(recording.title)
+                                    .font(.headline)
+                                Text(recording.date.formatted(date: .abbreviated, time: .shortened))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                // 播放/停止音频
+                            }) {
+                                Image(systemName: "play.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                            }
+                            .buttonStyle(BorderlessButtonStyle())
+                            
+                            Button(role: .destructive) {
+                                recordingToDelete = recording
+                                showDeleteConfirmation = true
+                            } label: {
+                                Image(systemName: "trash")
+                                    .foregroundColor(.red)
+                            }
+                            .buttonStyle(BorderlessButtonStyle())
+                        }
+                    }
+                }
+            }
+            .navigationTitle("音频管理")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("完成") {
+                        dismiss()
+                    }
+                }
+            }
+            .confirmationDialog("删除录音", isPresented: $showDeleteConfirmation, presenting: recordingToDelete) { recording in
+                Button("删除", role: .destructive) {
+                    deleteRecording(recording)
+                }
+            } message: { recording in
+                Text("确定要删除录音 \"\(recording.title)\" 吗？此操作无法撤销。")
+            }
+            .onAppear {
+                fetchAudioRecordings()
+            }
+        }
+    }
+    
+    private func fetchAudioRecordings() {
+        let fetchRequest: NSFetchRequest<AudioRecordingEntity> = AudioRecordingEntity.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \AudioRecordingEntity.date, ascending: false)]
+        
+        do {
+            let entities = try viewContext.fetch(fetchRequest)
+            audioRecordings = entities.compactMap { entity in
+                guard let id = entity.id,
+                      let title = entity.title,
+                      let date = entity.date else {
+                    return nil
+                }
+                
+                let audioURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                    .appendingPathComponent("Recordings")
+                    .appendingPathComponent("\(id.uuidString).m4a")
+                
+                return AudioRecording(id: id, title: title, recordingURL: audioURL, date: date)
+            }
+        } catch {
+            print("获取录音数据失败: \(error.localizedDescription)")
+        }
+    }
+    
+    private func deleteRecording(_ recording: AudioRecording) {
+        let context = CoreDataManager.shared.viewContext
+        
+        // 删除实体
+        let fetchRequest: NSFetchRequest<AudioRecordingEntity> = AudioRecordingEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", recording.id as CVarArg)
+        
+        do {
+            if let entity = try context.fetch(fetchRequest).first {
+                // 删除文件
+                try? FileManager.default.removeItem(at: recording.recordingURL)
+                
+                // 删除实体
+                context.delete(entity)
+                
+                // 保存更改
+                try context.save()
+                
+                // 更新列表
+                if let index = audioRecordings.firstIndex(where: { $0.id == recording.id }) {
+                    audioRecordings.remove(at: index)
+                }
+            }
+        } catch {
+            print("删除录音失败: \(error.localizedDescription)")
+            
+            // 显示错误提示
+            let alert = UIAlertController(title: "错误", message: "删除录音失败: \(error.localizedDescription)", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "确定", style: .default))
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let rootViewController = windowScene.windows.first?.rootViewController {
+                rootViewController.present(alert, animated: true)
+            }
         }
     }
 }

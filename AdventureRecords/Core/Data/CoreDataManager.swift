@@ -701,6 +701,7 @@ class CoreDataManager {
         try cleanupCharacterData(context: context)
         try cleanupSceneData(context: context)
         try cleanupNoteData(context: context)
+        try cleanupAudioData(context: context)
     }
 
     /// 清理角色数据
@@ -720,6 +721,13 @@ class CoreDataManager {
     /// 清理笔记数据
     private func cleanupNoteData(context: NSManagedObjectContext) throws {
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "NoteEntity")
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        try context.execute(deleteRequest)
+    }
+
+    /// 清理音频数据
+    private func cleanupAudioData(context: NSManagedObjectContext) throws {
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "AudioRecordingEntity")
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         try context.execute(deleteRequest)
     }
