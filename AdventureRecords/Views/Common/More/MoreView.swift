@@ -12,7 +12,7 @@ struct MoreView: View {
     @State private var showFeedback = false
     @State private var showPrivacyPolicy = false
     @State private var showTermsOfService = false
-    @State private var showSubscriptionSheet = false
+    @State private var showDonationSheet = false
     @State private var showResetConfirmation = false
     @State private var showDataManagement = false
     @State private var showDataManagerTest = false
@@ -23,8 +23,6 @@ struct MoreView: View {
     @AppStorage("isDarkMode") private var isDarkMode = false
     // @AppStorage("debugMode") private var debugMode = false
 
-    // 订阅管理器
-    @StateObject private var subscriptionManager = SubscriptionManager()
 
     let themeManager: ThemeManager = .shared
 
@@ -93,12 +91,12 @@ struct MoreView: View {
                                     subtitle: "应用设置和偏好")
                     }
 
-                    // 订阅
-                    Button(action: { showSubscriptionSheet = true }) {
-                        MoreMenuRow(icon: "star.circle",
-                                    iconColor: .orange,
-                                    title: "高级会员",
-                                    subtitle: "解锁所有高级功能")
+                    // 捐赠
+                    Button(action: { showDonationSheet = true }) {
+                        MoreMenuRow(icon: "heart.circle",
+                                    iconColor: .pink,
+                                    title: "支持开发者",
+                                    subtitle: "感谢您的支持与鼓励")
                     }
 
                     // 帮助中心
@@ -216,8 +214,8 @@ struct MoreView: View {
         .sheet(isPresented: $showAudioManagement) {
             AudioManagementView()
         }
-        .sheet(isPresented: $showSubscriptionSheet) {
-            SubscriptionView(subscriptionManager: subscriptionManager)
+        .sheet(isPresented: $showDonationSheet) {
+            DonationView()
         }
         .sheet(isPresented: $showDataManagement) {
             DataManagementView()
@@ -1063,97 +1061,95 @@ struct TermsOfServiceView: View {
     }
 }
 
-// 订阅视图
-struct SubscriptionView: View {
-    @ObservedObject var subscriptionManager: SubscriptionManager
+// 捐赠视图
+struct DonationView: View {
     @Environment(\.presentationMode) var presentationMode
-
+    
+    // 捐赠选项
+    let donationOptions = [
+        (amount: 6, title: "请我喝杯咖啡", emoji: "☕️"),
+        (amount: 15, title: "请我吃顿午饭", emoji: "🍱"),
+        (amount: 30, title: "请我吃顿大餐", emoji: "🍽️"),
+        (amount: 66, title: "慷慨解囊", emoji: "🎁")
+    ]
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                Image(systemName: "star.circle.fill")
+                Image(systemName: "heart.circle.fill")
                     .resizable()
                     .frame(width: 100, height: 100)
-                    .foregroundColor(.orange)
+                    .foregroundColor(.pink)
                     .padding(.top, 30)
-
-                Text("高级会员")
+                
+                Text("支持开发者")
                     .font(.largeTitle)
                     .fontWeight(.bold)
-
-                Text("解锁所有高级功能，提升您的角色扮演游戏体验")
+                
+                Text("感谢您考虑支持我的工作！您的每一份支持都是我继续开发的动力。")
                     .font(.headline)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
-
-                VStack(alignment: .leading, spacing: 15) {
-                    SubscriptionFeatureRow(icon: "infinity", text: "无限角色和场景")
-                    SubscriptionFeatureRow(icon: "icloud.and.arrow.up", text: "自动云备份")
-                    SubscriptionFeatureRow(icon: "paintbrush", text: "高级主题和自定义选项")
-                    SubscriptionFeatureRow(icon: "square.and.arrow.up", text: "高级导出格式")
+                
+                // 捐赠选项
+                VStack(spacing: 15) {
+                    ForEach(donationOptions, id: \.amount) { option in
+                        Button(action: {
+                            // 处理捐赠
+                            handleDonation(amount: option.amount)
+                        }) {
+                            HStack {
+                                Text(option.emoji)
+                                    .font(.title2)
+                                
+                                VStack(alignment: .leading) {
+                                    Text(option.title)
+                                        .font(.headline)
+                                    Text("\(option.amount)元")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding()
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(10)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
                 }
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(10)
                 .padding(.horizontal)
-
-                Button(action: {
-                    // 订阅实现
-                }) {
-                    Text("立即订阅")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.orange)
-                        .cornerRadius(10)
-                }
-                .padding(.horizontal)
-
-                Button(action: {
-                    // 恢复购买实现
-                    subscriptionManager.restorePurchases()
-                }) {
-                    Text("恢复购买")
-                        .foregroundColor(.blue)
-                }
-
+                
+                Text("您的支持将帮助我持续改进应用，添加新功能。")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+                
                 Spacer()
             }
             .padding()
-            .navigationTitle("高级会员")
+            .navigationTitle("支持开发者")
             .navigationBarItems(trailing: Button("关闭") {
                 presentationMode.wrappedValue.dismiss()
             })
         }
     }
-}
-
-// 订阅功能行
-struct SubscriptionFeatureRow: View {
-    let icon: String
-    let text: String
-
-    var body: some View {
-        HStack(spacing: 15) {
-            Image(systemName: icon)
-                .foregroundColor(.orange)
-                .font(.system(size: 22))
-
-            Text(text)
-                .font(.body)
-
-            Spacer()
+    
+    private func handleDonation(amount: Int) {
+        // 这里可以实现捐赠逻辑，比如跳转到支付页面或调用支付SDK
+        print("感谢您的捐赠：\(amount)元")
+        // 可以在这里添加感谢提示
+        let alert = UIAlertController(title: "感谢支持！", message: "感谢您的慷慨捐赠！您的支持是我继续开发的动力。", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "好的", style: .default))
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootViewController = windowScene.windows.first?.rootViewController {
+            rootViewController.present(alert, animated: true)
         }
-    }
-}
-
-// 订阅管理器
-class SubscriptionManager: ObservableObject {
-    @Published var isSubscribed = false
-
-    func restorePurchases() {
-        // 实现恢复购买功能
-        print("恢复购买")
     }
 }
