@@ -483,14 +483,90 @@ struct UserProfileView: View {
 // 帮助中心视图
 struct HelpCenterView: View {
     @Environment(\.presentationMode) var presentationMode
-
+    
+    let faqs = [
+        (question: "如何创建新故事？", answer: "在笔记标签页点击右上角的'+'按钮，开始记录您的冒险故事。"),
+        (question: "如何关联角色和场景？", answer: "在笔记编辑页面，点击'关联'按钮，选择要关联的角色和场景。"),
+        (question: "如何查看故事中的角色和场景？", answer: "在笔记详情页，可以查看该故事涉及的所有角色和场景。"),
+        (question: "如何备份和分享数据？", answer: "在'更多'→'数据管理'中，可以备份数据。长按备份文件可以分享给其他用户。"),
+        (question: "如何启用iCloud同步？", answer: "在'更多'→'设置'中，开启'iCloud同步'选项。")
+    ]
+    
     var body: some View {
         NavigationView {
-            Text("帮助中心")
-                .navigationTitle("帮助中心")
-                .navigationBarItems(trailing: Button("完成") {
-                    presentationMode.wrappedValue.dismiss()
-                })
+            List {
+                Section(header: Text("快速入门")) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("欢迎使用冒险记录")
+                            .font(.headline)
+                        
+                        Text("建议的使用流程：首先创建角色和场景设定，然后在记录故事时建立它们之间的关联，以便更好地组织和管理您的冒险历程。")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .padding(.bottom, 4)
+                        
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label("1. 创建角色和场景", systemImage: "person.2")
+                                .font(.subheadline)
+                                .padding(.vertical, 2)
+                            Text("• 在角色和场景标签页中，点击右上角的'+'按钮分别创建新的角色和场景。")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.leading, 24)
+                            
+                            Label("2. 记录冒险故事", systemImage: "doc.text")
+                                .font(.subheadline)
+                                .padding(.vertical, 2)
+                            Text("• 在笔记标签页中，点击'+'按钮创建新笔记，并在编辑界面中关联相关的角色和场景。")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.leading, 24)
+                            
+                            Label("3. 管理内容标签", systemImage: "tag")
+                                .font(.subheadline)
+                                .padding(.vertical, 2)
+                            Text("• 为角色、场景和笔记添加标签，便于内容的分类和检索。")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.leading, 24)
+                            
+                            Label("4. 数据共享与备份", systemImage: "square.and.arrow.up")
+                                .font(.subheadline)
+                                .padding(.vertical, 2)
+                            Text("• 支持将笔记导出为纯文本格式分享，或通过备份功能导出完整数据，方便跨设备同步或与其他玩家共享。")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.leading, 24)
+                        }
+                    }
+                    .padding(.vertical, 12)
+                }
+                
+                Section(header: Text("常见问题")) {
+                    ForEach(faqs, id: \.question) { faq in
+                        DisclosureGroup(faq.question) {
+                            Text(faq.answer)
+                                .font(.body)
+                                .foregroundColor(.secondary)
+                                .padding(.vertical, 4)
+                        }
+                    }
+                }
+                
+                Section {
+                    Button(action: {
+                        if let url = URL(string: "mailto:support@adventurerecords.app") {
+                            UIApplication.shared.open(url)
+                        }
+                    }) {
+                        Text("联系支持团队")
+                    }
+                }
+            }
+            .navigationTitle("帮助中心")
+            .navigationBarItems(trailing: Button("完成") {
+                presentationMode.wrappedValue.dismiss()
+            })
         }
     }
 }
@@ -498,29 +574,201 @@ struct HelpCenterView: View {
 // 关于视图
 struct AboutView: View {
     @Environment(\.presentationMode) var presentationMode
-
+    
+    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    
     var body: some View {
         NavigationView {
-            Text("关于冒险记录")
-                .navigationTitle("关于")
-                .navigationBarItems(trailing: Button("完成") {
-                    presentationMode.wrappedValue.dismiss()
-                })
+            ScrollView {
+                VStack(spacing: 20) {
+                    // 应用图标和名称
+                    VStack(spacing: 16) {
+                        Image(systemName: "book.closed.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.blue)
+                            .padding()
+                            .background(Color.blue.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                        
+                        Text("冒险记录")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                        
+                        Text("版本 \(version) (Build \(build))")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 40)
+                    .padding(.bottom, 20)
+                    
+                    // 应用描述
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("关于")
+                            .font(.headline)
+                        
+                        Text("冒险记录是一款专为桌面角色扮演游戏(TRPG)玩家设计的应用，帮助您轻松记录和管理游戏中的角色、场景和事件。除此之外，您还可以使用本应用辅助您的剧本创作。如果您觉得日常生活也是一种冒险，用本应用记录也不失为一种乐趣。")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+                    
+                    // 开发者信息
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("开发者")
+                            .font(.headline)
+                        
+                        Text("冒险记录由热爱角色扮演游戏的独立开发者开发。致力于为用户提供最佳的角色扮演辅助工具。")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+                    
+                    // 版权信息
+                    Text("© 2025 冒险记录 版权所有")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.top, 10)
+                        .padding(.bottom, 30)
+                }
+            }
+            .navigationTitle("关于")
+            .navigationBarItems(trailing: Button("完成") {
+                presentationMode.wrappedValue.dismiss()
+            })
         }
     }
 }
 
-// 反馈视图
+// 反馈与建议视图
 struct FeedbackView: View {
     @Environment(\.presentationMode) var presentationMode
-
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    
+    private func openAppStoreReview() {
+        if let scene = UIApplication.shared.connectedScenes
+            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
+        {
+            Task {
+                AppStore.requestReview(in: scene)
+            }
+        }
+    }
+    
+    private func openEmailFeedback() {
+        let email = "lifei.zhong@icloud.com"
+        let subject = "冒险记录 反馈"
+        let body = "\n\n\n---\n设备: \(UIDevice.current.model)\n系统版本: \(UIDevice.current.systemVersion)\n应用版本: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")"
+        
+        guard let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let encodedBody = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let url = URL(string: "mailto:\(email)?subject=\(encodedSubject)&body=\(encodedBody)") else {
+            alertMessage = "无法创建邮件"
+            showAlert = true
+            return
+        }
+        
+        if UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url)
+        } else {
+            alertMessage = "未找到可用的邮件应用"
+            showAlert = true
+        }
+    }
+    
     var body: some View {
         NavigationView {
-            Text("反馈与建议")
-                .navigationTitle("反馈")
-                .navigationBarItems(trailing: Button("完成") {
-                    presentationMode.wrappedValue.dismiss()
-                })
+            VStack(spacing: 20) {
+                Spacer()
+                
+                VStack(spacing: 16) {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.yellow)
+                    
+                    Text("喜欢冒险记录吗？")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Text("您的支持对我们非常重要！请花一点时间在App Store上给我们评分。")
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 32)
+                }
+                .padding()
+                
+                VStack(spacing: 16) {
+                    VStack(spacing: 12) {
+                        Button(action: openAppStoreReview) {
+                            HStack {
+                                Image(systemName: "star.fill")
+                                Text("去App Store评分")
+                            }
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(12)
+                        }
+                        
+                        Button(action: openEmailFeedback) {
+                            HStack {
+                                Image(systemName: "envelope.fill")
+                                Text("通过邮件反馈")
+                            }
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.green)
+                            .cornerRadius(12)
+                        }
+                    }
+                    .padding(.horizontal, 32)
+                    
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Text("稍后再说")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.top, 20)
+                
+                Spacer()
+                
+                Text("当前版本: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.bottom, 20)
+            }
+            .navigationTitle("评价我们")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("完成") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+            }
+            .alert(isPresented: $showAlert) {
+                Alert(
+                    title: Text("提示"),
+                    message: Text(alertMessage),
+                    dismissButton: .default(Text("确定"))
+                )
+            }
         }
     }
 }
@@ -528,36 +776,142 @@ struct FeedbackView: View {
 // 隐私政策视图
 struct PrivacyPolicyView: View {
     @Environment(\.presentationMode) var presentationMode
-
+    
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("隐私政策")
-                        .font(.title)
-                        .fontWeight(.bold)
-
-                    Text("本隐私政策描述了我们如何收集、使用和分享您的信息。")
-                        .font(.body)
-
-                    Text("我们收集的信息")
-                        .font(.headline)
-
-                    Text("我们只收集您自愿提供的信息，如角色、笔记和场景等游戏数据。我们不会收集您的个人身份信息。")
-                        .font(.body)
-
-                    Text("数据存储")
-                        .font(.headline)
-
-                    Text("所有数据都存储在您的设备上，除非您启用了iCloud同步功能。")
-                        .font(.body)
+                VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("隐私政策")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .padding(.bottom, 8)
+                        
+                        Text("更新日期: 2025年5月31日")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("欢迎使用冒险记录应用。我们非常重视您的隐私。本隐私政策解释了我们会收集哪些信息、如何使用这些信息以及您的隐私权。")
+                            .font(.body)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.bottom, 8)
+                        
+                        // 数据收集
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("1. 我们收集的信息")
+                                .font(.headline)
+                            
+                            Text("我们不会收集您在使用应用时的任何信息，您的所有信息都保存在你的设备上，包括：")
+                                .font(.body)
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("• 角色信息：您创建的角色名称、属性、背景故事等")
+                                Text("• 游戏内容：场景描述、笔记、任务记录等")
+                                Text("• 应用设置：您的偏好设置和自定义选项")
+                            }
+                            .padding(.leading, 8)
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                            .padding(.bottom, 4)
+                            
+                            Text("我们不会收集您的个人身份信息，除非您自愿通过反馈功能提供。")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
+                        // 数据使用
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("2. 数据使用")
+                                .font(.headline)
+                            
+                            Text("我们使用您提供的的反馈来：")
+                                .font(.body)
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("• 提供、维护和改进我们的服务")
+                                Text("• 响应您的客户服务请求")
+                                Text("• 向您发送应用更新和支持信息")
+                            }
+                            .padding(.leading, 8)
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
+                        // 数据存储与安全
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("3. 数据存储与安全")
+                                .font(.headline)
+                            
+                            Text("• 本地存储：所有数据默认存储在您的设备上。")
+                            Text("• iCloud同步：如果启用iCloud同步，您的数据将存储在您的iCloud账户中。")
+                            
+                            Text("您可以在设备的设置中管理iCloud同步选项。")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                                                
+                        // 隐私政策变更
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("4. 隐私政策变更")
+                                .font(.headline)
+                            
+                            Text("我们可能会不定期更新隐私政策。任何变更都会在本页面发布，并更新顶部的'更新日期'。建议您定期查看本隐私政策以了解变更。")
+                                .font(.body)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
+                        // 联系我们
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("5. 联系我们")
+                                .font(.headline)
+                            
+                            Text("如果您对本隐私政策有任何疑问，请通过以下方式联系我们：")
+                                .font(.body)
+                            
+                            Button(action: {
+                                if let url = URL(string: "mailto:lifei.zhong@icloud.com") {
+                                    UIApplication.shared.open(url)
+                                }
+                            }) {
+                                HStack {
+                                    Image(systemName: "envelope")
+                                    Text("lifei.zhong@icloud.com")
+                                }
+                                .font(.body)
+                                .foregroundColor(.blue)
+                            }
+                            .padding(.top, 4)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                    }
+                    .padding(.top, 8)
                 }
                 .padding()
             }
             .navigationTitle("隐私政策")
-            .navigationBarItems(trailing: Button("完成") {
-                presentationMode.wrappedValue.dismiss()
-            })
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("完成") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+            }
         }
     }
 }
@@ -565,36 +919,146 @@ struct PrivacyPolicyView: View {
 // 用户协议视图
 struct TermsOfServiceView: View {
     @Environment(\.presentationMode) var presentationMode
-
+    
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("用户协议")
-                        .font(.title)
-                        .fontWeight(.bold)
-
-                    Text("欢迎使用冒险记录应用。通过使用我们的应用，您同意遵守以下条款。")
-                        .font(.body)
-
-                    Text("使用条款")
-                        .font(.headline)
-
-                    Text("您可以使用我们的应用记录和管理您的角色扮演游戏数据。您不得将应用用于任何非法目的。")
-                        .font(.body)
-
-                    Text("知识产权")
-                        .font(.headline)
-
-                    Text("本应用及其内容受知识产权法保护。您不得未经授权复制、修改或分发应用的任何部分。")
-                        .font(.body)
+                VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("用户协议")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .padding(.bottom, 4)
+                        
+                        Text("最后更新日期: 2025年5月31日")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("欢迎使用冒险记录应用。在开始使用我们的服务之前，请仔细阅读本用户协议。")
+                            .font(.body)
+                            .fixedSize(horizontal: false, vertical: true)
+                        
+                        // 1. 协议范围
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("1. 协议范围")
+                                .font(.headline)
+                            
+                            Text("本用户协议是您与冒险记录应用之间的法律协议，规定了您使用本应用的条件。通过下载、安装或使用本应用，即表示您同意受本协议的约束。")
+                                .font(.body)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
+                        // 2. 数据所有权
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("2. 数据所有权")
+                                .font(.headline)
+                            
+                            Text("2.1 您通过本应用创建的所有内容，包括但不限于角色数据、游戏记录和设置，完全归您所有。")
+                            
+                            Text("2.2 我们不会访问、收集或存储您在本应用中创建的任何内容。所有数据都仅存储在您的设备本地。")
+                                .padding(.top, 4)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
+                        // 3. 使用限制
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("3. 使用限制")
+                                .font(.headline)
+                            
+                            Text("3.1 您同意不会使用本应用进行任何非法活动或侵犯他人权利的行为。")
+                            
+                            Text("3.2 您不得对本应用进行反向工程、反编译或试图提取源代码。")
+                                .padding(.top, 4)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
+                        // 4. 免责声明
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("4. 免责声明")
+                                .font(.headline)
+                            
+                            Text("4.1 本应用按'原样'提供，不作任何明示或暗示的保证。我们不保证本应用不会中断或没有错误。")
+                            
+                            Text("4.2 对于因使用或无法使用本应用而导致的任何直接、间接、附带、特殊、后果性或惩罚性损害，我们概不负责。")
+                                .padding(.top, 4)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
+                        // 5. 协议修改
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("5. 协议修改")
+                                .font(.headline)
+                            
+                            Text("我们保留随时修改本协议的权利。任何更改将在发布更新后的协议后立即生效。您继续使用本应用即表示您接受这些更改。")
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
+                        // 6. 适用法律
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("6. 适用法律")
+                                .font(.headline)
+                            
+                            Text("本协议应受中华人民共和国法律管辖并按其解释，不考虑其法律冲突条款。")
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
+                        // 7. 联系我们
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("7. 联系我们")
+                                .font(.headline)
+                            
+                            Text("如果您对本用户协议有任何疑问，请通过以下方式联系我们：")
+                            
+                            Button(action: {
+                                if let url = URL(string: "mailto:lifei.zhong@icloud.com") {
+                                    UIApplication.shared.open(url)
+                                }
+                            }) {
+                                HStack {
+                                    Image(systemName: "envelope")
+                                    Text("lifei.zhong@icloud.com")
+                                }
+                                .font(.body)
+                                .foregroundColor(.blue)
+                            }
+                            .padding(.top, 4)
+                            
+                            Text("最后更新日期: 2025年5月31日")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                                .padding(.top, 8)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                    }
+                    .padding(.top, 8)
                 }
                 .padding()
             }
             .navigationTitle("用户协议")
-            .navigationBarItems(trailing: Button("完成") {
-                presentationMode.wrappedValue.dismiss()
-            })
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("完成") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+            }
         }
     }
 }
