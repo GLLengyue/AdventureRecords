@@ -7,15 +7,8 @@ struct SettingsView: View {
     @AppStorage("fontSize") private var fontSize: Double = 14
     @AppStorage("language") private var language = "简体中文"
     @AppStorage("recordingQuality") private var recordingQuality = "标准"
-    @AppStorage("defaultRecordingNameFormat") private var defaultRecordingNameFormat = "录音 %date%"
     @AppStorage("iCloudSync") private var iCloudSync = true
     @AppStorage("syncFrequency") private var syncFrequency = "自动"
-
-    // 数据管理相关
-    @State private var showBackupConfirmation = false
-    @State private var showRestoreConfirmation = false
-    @State private var showExportOptions = false
-    @State private var showClearDataConfirmation = false
 
     // 环境变量
     @Environment(\.presentationMode) var presentationMode
@@ -73,51 +66,7 @@ struct SettingsView: View {
                     }
                 }
 
-                // MARK: - 2. 数据管理
-
-                Section(header: Text("数据管理").foregroundColor(themeManager.secondaryTextColor)) {
-                    Button(action: { showBackupConfirmation = true }) {
-                        Label("备份数据", systemImage: "arrow.up.doc")
-                            .foregroundColor(themeManager.primaryTextColor)
-                    }
-
-                    Button(action: { showRestoreConfirmation = true }) {
-                        Label("恢复数据", systemImage: "arrow.down.doc")
-                            .foregroundColor(themeManager.primaryTextColor)
-                    }
-
-                    Button(action: { showExportOptions = true }) {
-                        Label("导出数据", systemImage: "square.and.arrow.up")
-                            .foregroundColor(themeManager.primaryTextColor)
-                    }
-
-                    Button(action: { showClearDataConfirmation = true }) {
-                        Label("清理数据", systemImage: "trash")
-                            .foregroundColor(.red)
-                    }
-                }
-
-                // MARK: - 3. 音频设置
-
-                Section(header: Text("音频设置").foregroundColor(themeManager.secondaryTextColor)) {
-                    Picker("录音质量", selection: $recordingQuality) {
-                        Text("低").tag("低")
-                        Text("标准").tag("标准")
-                        Text("高").tag("高")
-                    }
-
-                    TextField("默认录音命名格式", text: $defaultRecordingNameFormat)
-                        .font(.system(size: CGFloat(fontSize)))
-                        .padding(.vertical, 4)
-
-                    HStack {
-                        Text("音频播放速度")
-                        Spacer()
-                        Text("1.0x") // 这里可以根据实际需要调整
-                    }
-                }
-
-                // MARK: - 4. 云同步
+                // MARK: - 2. 云同步
 
                 Section(header: Text("云同步").foregroundColor(themeManager.secondaryTextColor)) {
                     Toggle("启用iCloud同步", isOn: $iCloudSync)
@@ -144,74 +93,5 @@ struct SettingsView: View {
         }
         .background(themeManager.backgroundColor.edgesIgnoringSafeArea(.all))
 
-        // MARK: - 确认对话框和表单
-
-        .alert(isPresented: $showBackupConfirmation) {
-            Alert(title: Text("备份数据"),
-                  message: Text("确定要备份所有数据吗？这将覆盖之前的备份。"),
-                  primaryButton: .default(Text("确定")) {
-                      // 备份数据实现
-                  },
-                  secondaryButton: .cancel(Text("取消")))
-        }
-        .alert(isPresented: $showRestoreConfirmation) {
-            Alert(title: Text("恢复数据"),
-                  message: Text("确定要从备份中恢复数据吗？这将覆盖当前的所有数据。"),
-                  primaryButton: .destructive(Text("确定")) {
-                      // 恢复数据实现
-                  },
-                  secondaryButton: .cancel(Text("取消")))
-        }
-        .alert(isPresented: $showClearDataConfirmation) {
-            Alert(title: Text("清理数据"),
-                  message: Text("确定要清理所有数据吗？此操作不可撤销。"),
-                  primaryButton: .destructive(Text("清理")) {
-                      // 清理数据实现
-                  },
-                  secondaryButton: .cancel(Text("取消")))
-        }
-        .sheet(isPresented: $showExportOptions) {
-            ExportOptionsView()
-        }
-    }
-}
-
-// MARK: - 辅助视图
-
-struct ExportOptionsView: View {
-    @Environment(\.presentationMode) var presentationMode
-    private let themeManager = ThemeManager.shared
-
-    var body: some View {
-        NavigationView {
-            List {
-                Button(action: {
-                    // 导出为PDF
-                }) {
-                    Label("导出为PDF", systemImage: "doc.richtext")
-                        .foregroundColor(themeManager.primaryTextColor)
-                }
-
-                Button(action: {
-                    // 导出为文本
-                }) {
-                    Label("导出为文本", systemImage: "doc.text")
-                        .foregroundColor(themeManager.primaryTextColor)
-                }
-
-                Button(action: {
-                    // 导出为JSON
-                }) {
-                    Label("导出为JSON", systemImage: "doc.badge.gearshape")
-                        .foregroundColor(themeManager.primaryTextColor)
-                }
-            }
-            .listStyle(InsetGroupedListStyle())
-            .navigationTitle("导出选项")
-            .navigationBarItems(trailing: Button("完成") {
-                presentationMode.wrappedValue.dismiss()
-            })
-            .background(themeManager.backgroundColor.edgesIgnoringSafeArea(.all))
-        }
     }
 }

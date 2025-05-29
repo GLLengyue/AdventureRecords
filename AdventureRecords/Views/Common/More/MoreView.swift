@@ -17,7 +17,6 @@ struct MoreView: View {
     @State private var showDataManagement = false
     @State private var showDataManagerTest = false
     @State private var showAudioManagement = false
-    @State private var showClearAudioConfirmation = false
     @State private var showClearAllDataConfirmation = false
 
     // 应用设置
@@ -85,13 +84,6 @@ struct MoreView: View {
                                     title: "音频管理",
                                     subtitle: "管理所有录音文件")
                     }
-                    Button(role: .destructive, action: { showClearAudioConfirmation = true }) {
-                        MoreMenuRow(icon: "trash",
-                                    iconColor: .red,
-                                    title: "清除所有音频数据",
-                                    subtitle: "删除所有录音文件")
-                    }
-
 
                     // 设置
                     Button(action: { showSettings = true }) {
@@ -224,14 +216,6 @@ struct MoreView: View {
         .sheet(isPresented: $showAudioManagement) {
             AudioManagementView()
         }
-        .alert("确认清除所有音频数据", isPresented: $showClearAudioConfirmation) {
-            Button("清除", role: .destructive) {
-                clearAllAudioRecordings()
-            }
-            Button("取消", role: .cancel) {}
-        } message: {
-            Text("此操作将删除所有录音文件，且无法撤销。确定要继续吗？")
-        }
         .sheet(isPresented: $showSubscriptionSheet) {
             SubscriptionView(subscriptionManager: subscriptionManager)
         }
@@ -256,7 +240,7 @@ struct MoreView: View {
 
 // MARK: - 音频管理方法
 
-extension MoreView {
+extension AudioManagementView {
     private func clearAllAudioRecordings() {
         let context = CoreDataManager.shared.viewContext
         
@@ -310,6 +294,7 @@ struct AudioManagementView: View {
     @State private var audioRecordings: [AudioRecording] = []
     @State private var showDeleteConfirmation = false
     @State private var recordingToDelete: AudioRecording?
+    @State private var showClearAudioConfirmation = false
     
     var body: some View {
         NavigationView {
@@ -351,6 +336,9 @@ struct AudioManagementView: View {
                             .buttonStyle(BorderlessButtonStyle())
                         }
                     }
+                    Button(role: .destructive, action: { showClearAudioConfirmation = true }) {
+                        Text("清除所有音频数据")
+                    }
                 }
             }
             .navigationTitle("音频管理")
@@ -371,6 +359,14 @@ struct AudioManagementView: View {
             }
             .onAppear {
                 fetchAudioRecordings()
+            }
+            .alert("确认清除所有音频数据", isPresented: $showClearAudioConfirmation) {
+                Button("清除", role: .destructive) {
+                    clearAllAudioRecordings()
+                }
+                Button("取消", role: .cancel) {}
+            } message: {
+                Text("此操作将删除所有录音文件，且无法撤销。确定要继续吗？")
             }
         }
     }
