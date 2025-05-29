@@ -2,8 +2,10 @@ import SwiftUI
 
 struct SettingsView: View {
     // MARK: - 状态变量
-
-    @AppStorage("isDarkMode") private var isDarkMode = false
+    
+    @Environment(\.colorScheme) private var systemColorScheme
+    @AppStorage("isDarkMode") private var isDarkMode = UITraitCollection.current.userInterfaceStyle == .dark
+    @State private var isFirstAppear = true
     @AppStorage("fontSize") private var fontSize: Double = 14
     @AppStorage("language") private var language = "简体中文"
     @AppStorage("recordingQuality") private var recordingQuality = "标准"
@@ -33,6 +35,17 @@ struct SettingsView: View {
                 .padding(.trailing)
             }
             .padding(.top)
+            .onAppear {
+                // 只在视图首次出现时同步一次系统主题
+                if isFirstAppear {
+                    isDarkMode = systemColorScheme == .dark
+                    isFirstAppear = false
+                }
+            }
+            .onChange(of: systemColorScheme) {
+                // 当系统主题变化时更新应用主题
+                isDarkMode = systemColorScheme == .dark
+            }
 
             List {
                 // MARK: - 1. 应用设置
@@ -47,23 +60,23 @@ struct SettingsView: View {
                     }
                     .pickerStyle(SegmentedPickerStyle())
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("字体大小: \(Int(fontSize))")
-                        Slider(value: $fontSize, in: 12 ... 24, step: 1) {
-                            Text("\(Int(fontSize))")
-                        } minimumValueLabel: {
-                            Text("12").font(.caption)
-                        } maximumValueLabel: {
-                            Text("24").font(.caption)
-                        }
-                        .accentColor(themeManager.accentColor(for: .character))
-                    }
-                    .padding(.vertical, 4)
+                    // VStack(alignment: .leading, spacing: 8) {
+                    //     Text("字体大小: \(Int(fontSize))")
+                    //     Slider(value: $fontSize, in: 12 ... 24, step: 1) {
+                    //         Text("\(Int(fontSize))")
+                    //     } minimumValueLabel: {
+                    //         Text("12").font(.caption)
+                    //     } maximumValueLabel: {
+                    //         Text("24").font(.caption)
+                    //     }
+                    //     .accentColor(themeManager.accentColor(for: .character))
+                    // }
+                    // .padding(.vertical, 4)
 
-                    Picker("语言", selection: $language) {
-                        Text("简体中文").tag("简体中文")
-                        Text("English").tag("English")
-                    }
+                    // Picker("语言", selection: $language) {
+                    //     Text("简体中文").tag("简体中文")
+                    //     Text("English").tag("English")
+                    // }
                 }
 
                 // MARK: - 2. 云同步
