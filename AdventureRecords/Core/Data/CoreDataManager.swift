@@ -70,7 +70,7 @@ enum ExportType {
         case .json:
             return .json
         case .none:
-            return .pdf
+            return .data
         }
     }
 }
