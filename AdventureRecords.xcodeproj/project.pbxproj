@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		144736C42DF23FF000F3E40F /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 144736C32DF23FF000F3E40F /* XCTest.framework */; platformFilter = ios; };
+		144736C52DF23FF000F3E40F /* XCTest.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 144736C32DF23FF000F3E40F /* XCTest.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		14E437F02DCE5EB2008DB7D5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -23,13 +28,33 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		144736C62DF23FF000F3E40F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				144736C52DF23FF000F3E40F /* XCTest.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		144736C32DF23FF000F3E40F /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		14E437E22DCE5EB1008DB7D5 /* AdventureRecords.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AdventureRecords.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		14E437EF2DCE5EB2008DB7D5 /* AdventureRecordsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AdventureRecordsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		14E437F92DCE5EB2008DB7D5 /* AdventureRecordsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AdventureRecordsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		144736CB2DF2406D00F3E40F /* AdventureRecordsTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AdventureRecordsTests;
+			sourceTree = "<group>";
+		};
 		14E437E42DCE5EB1008DB7D5 /* AdventureRecords */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AdventureRecords;
@@ -49,6 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				144736C42DF23FF000F3E40F /* XCTest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -62,10 +88,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		144736C22DF23FF000F3E40F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				144736C32DF23FF000F3E40F /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		14E437D92DCE5EB1008DB7D5 = {
 			isa = PBXGroup;
 			children = (
+				144736CB2DF2406D00F3E40F /* AdventureRecordsTests */,
 				14E437E42DCE5EB1008DB7D5 /* AdventureRecords */,
+				144736C22DF23FF000F3E40F /* Frameworks */,
 				14E437E32DCE5EB1008DB7D5 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -112,11 +148,15 @@
 				14E437EB2DCE5EB2008DB7D5 /* Sources */,
 				14E437EC2DCE5EB2008DB7D5 /* Frameworks */,
 				14E437ED2DCE5EB2008DB7D5 /* Resources */,
+				144736C62DF23FF000F3E40F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				14E437F12DCE5EB2008DB7D5 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				144736CB2DF2406D00F3E40F /* AdventureRecordsTests */,
 			);
 			name = AdventureRecordsTests;
 			packageProductDependencies = (
