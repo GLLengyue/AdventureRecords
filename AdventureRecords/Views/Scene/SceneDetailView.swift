@@ -20,23 +20,30 @@ struct SceneDetailView: View {
     @State private var selectedCharacterForDetail: Character? = nil
     @State private var isDescriptionExpanded: Bool = false
 
-    private var scene: AdventureScene {
-        sceneViewModel.getScene(id: sceneID)!
+    private var scene: AdventureScene? {
+        sceneViewModel.getScene(id: sceneID)
     }
 
-    var relatedNotes: [NoteBlock] { scene.relatedNotes(in: noteViewModel.notes) }
-    var relatedCharacters: [Character] {
-        scene.relatedCharacters(in: noteViewModel.notes, characterProvider: { note in
+    private var relatedNotes: [NoteBlock] {
+        guard let scene = scene else { return [] }
+        return scene.relatedNotes(in: noteViewModel.notes)
+    }
+
+    private var relatedCharacters: [Character] {
+        guard let scene = scene else { return [] }
+        return scene.relatedCharacters(in: noteViewModel.notes, characterProvider: { note in
             note.relatedCharacters(in: characterViewModel.characters)
         })
     }
 
     var body: some View {
-        DetailContainer(module: .scene, title: scene.title, backAction: { /* 由导航处理 */ },
-                        editAction: { showSceneEditor = true })
-        {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+        Group {
+            if let scene = scene {
+                DetailContainer(module: .scene, title: scene.title, backAction: { /* 由导航处理 */ },
+                                editAction: { showSceneEditor = true })
+                {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 24) {
                     // 场景图片区域
                     ZStack(alignment: .bottomLeading) {
                         if let coverImage = scene.coverImage {
@@ -313,6 +320,11 @@ struct SceneDetailView: View {
         .sheet(item: $selectedNoteForDetail) { noteItem in
             NavigationStack {
                 NoteBlockDetailView(noteID: noteItem.id)
+            }
+        }
+            } else {
+                Text("无法找到场景")
+                    .foregroundColor(.secondary)
             }
         }
     }
