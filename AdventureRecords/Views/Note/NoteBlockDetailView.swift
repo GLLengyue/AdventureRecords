@@ -12,20 +12,23 @@ struct NoteBlockDetailView: View {
     @State private var selectedCharacterForDetail: Character? = nil
     @State private var selectedSceneForDetail: AdventureScene? = nil
 
-    private var noteBlock: NoteBlock {
-        noteViewModel.getNote(id: noteID)!
+    private var noteBlock: NoteBlock? {
+        noteViewModel.getNote(id: noteID)
     }
 
     private var relatedCharacters: [Character] {
-        characterViewModel.characters.filter { noteBlock.relatedCharacterIDs.contains($0.id) }
+        guard let noteBlock = noteBlock else { return [] }
+        return characterViewModel.characters.filter { noteBlock.relatedCharacterIDs.contains($0.id) }
     }
 
     private var relatedScenes: [AdventureScene] {
-        sceneViewModel.scenes.filter { noteBlock.relatedSceneIDs.contains($0.id) }
+        guard let noteBlock = noteBlock else { return [] }
+        return sceneViewModel.scenes.filter { noteBlock.relatedSceneIDs.contains($0.id) }
     }
 
     // 格式化的创建日期
     private var formattedDate: String {
+        guard let noteBlock = noteBlock else { return "" }
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
@@ -34,14 +37,16 @@ struct NoteBlockDetailView: View {
     }
 
     var body: some View {
-        DetailContainer(module: .note, title: "笔记详情", backAction: { /* 通常由 NavigationView 处理 */ },
-                        editAction: { showEditor = true })
-        {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+        Group {
+            if let noteBlock = noteBlock {
+                DetailContainer(module: .note, title: "笔记详情", backAction: { /* 通常由 NavigationView 处理 */ },
+                                editAction: { showEditor = true })
+                {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 20) {
                     // 笔记标题和日期
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(noteBlock.title)
+                            Text(noteBlock.title)
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(ThemeManager.shared.primaryTextColor)
                             .padding(.bottom, 4)
@@ -128,27 +133,32 @@ struct NoteBlockDetailView: View {
                     Spacer(minLength: 40)
                 }
                 .padding(.horizontal)
-            }
-            .background(ThemeManager.shared.backgroundColor)
-        }
-        .sheet(isPresented: $showEditor) {
-            NoteEditorView(note: noteBlock,
-                           onSave: { updatedNote in
-                               noteViewModel.updateNote(updatedNote)
-                               showEditor = false
-                           },
-                           onCancel: {
-                               showEditor = false
-                           })
-        }
-        .sheet(item: $selectedCharacterForDetail) { character in
-            NavigationStack {
-                CharacterDetailView(CharacterID: character.id)
-            }
-        }
-        .sheet(item: $selectedSceneForDetail) { scene in
-            NavigationStack {
-                SceneDetailView(sceneID: scene.id)
+                    }
+                    .background(ThemeManager.shared.backgroundColor)
+                }
+                .sheet(isPresented: $showEditor) {
+                    NoteEditorView(note: noteBlock,
+                                   onSave: { updatedNote in
+                                       noteViewModel.updateNote(updatedNote)
+                                       showEditor = false
+                                   },
+                                   onCancel: {
+                                       showEditor = false
+                                   })
+                }
+                .sheet(item: $selectedCharacterForDetail) { character in
+                    NavigationStack {
+                        CharacterDetailView(CharacterID: character.id)
+                    }
+                }
+                .sheet(item: $selectedSceneForDetail) { scene in
+                    NavigationStack {
+                        SceneDetailView(sceneID: scene.id)
+                    }
+                }
+            } else {
+                Text("无法找到笔记")
+                    .foregroundColor(.secondary)
             }
         }
     }

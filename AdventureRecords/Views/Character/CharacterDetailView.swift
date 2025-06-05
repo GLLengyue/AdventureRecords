@@ -26,32 +26,37 @@ struct CharacterDetailView: View {
     @State private var isDescriptionExpanded: Bool = false
     @State private var selectedRecordingForPlayback: AudioRecording? = nil
 
-    var character: Character {
-        return characterViewModel.getCharacter(id: CharacterID)!
+    private var character: Character? {
+        characterViewModel.getCharacter(id: CharacterID)
     }
 
-    var relatedNotes: [NoteBlock] {
-        character.relatedNotes(in: noteViewModel.notes)
+    private var relatedNotes: [NoteBlock] {
+        guard let character = character else { return [] }
+        return character.relatedNotes(in: noteViewModel.notes)
     }
 
-    var relatedScenes: [AdventureScene] {
-        character.relatedScenes(in: noteViewModel.notes, sceneProvider: { note in
+    private var relatedScenes: [AdventureScene] {
+        guard let character = character else { return [] }
+        return character.relatedScenes(in: noteViewModel.notes, sceneProvider: { note in
             note.relatedScenes(in: sceneViewModel.scenes)
         })
     }
 
     // 获取与角色相关的录音
     private var relatedRecordings: [AudioRecording] {
-        guard let ids = character.audioRecordings?.map({ $0.id }) else { return [] }
+        guard let character = character,
+              let ids = character.audioRecordings?.map({ $0.id }) else { return [] }
         return audioViewModel.recordings.filter { ids.contains($0.id) }
     }
 
     var body: some View {
-        DetailContainer(module: .character, title: character.name, backAction: {},
-                        editAction: { showCharacterEditor = true })
-        {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+        Group {
+            if let character = character {
+                DetailContainer(module: .character, title: character.name, backAction: {},
+                                editAction: { showCharacterEditor = true })
+                {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 24) {
                     // 角色头像和基本信息
                     HStack(alignment: .center, spacing: 20) {
                         if let avatar = character.avatar {
@@ -273,6 +278,11 @@ struct CharacterDetailView: View {
         .sheet(item: $selectedSceneForDetail) { sceneItem in
             NavigationStack {
                 SceneDetailView(sceneID: sceneItem.id)
+            }
+        }
+            } else {
+                Text("无法找到角色")
+                    .foregroundColor(.secondary)
             }
         }
     }
