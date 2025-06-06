@@ -84,6 +84,9 @@ struct SettingsView: View {
                 Section(header: Text("云同步").foregroundColor(themeManager.secondaryTextColor)) {
                     Toggle("启用iCloud同步", isOn: $iCloudSync)
                         .toggleStyle(SwitchToggleStyle(tint: themeManager.accentColor(for: .character)))
+                        .onChange(of: iCloudSync) { newValue in
+                            CoreDataManager.shared.updateiCloudSync(newValue)
+                        }
 
                     if iCloudSync {
                         Picker("同步频率", selection: $syncFrequency) {
@@ -94,7 +97,7 @@ struct SettingsView: View {
                         }
 
                         Button(action: {
-                            // 手动同步实现
+                            CoreDataManager.shared.manualSync()
                         }) {
                             Label("立即同步", systemImage: "arrow.clockwise")
                                 .foregroundColor(themeManager.accentColor(for: .character))

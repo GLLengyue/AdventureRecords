@@ -3,6 +3,7 @@ import Foundation
 import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
+import CloudKit
 
 // MARK: - 数据模型
 
@@ -153,20 +154,46 @@ struct AudioRecordingData: Codable {
 class CoreDataManager {
     static let shared = CoreDataManager()
 
+    private var persistentContainer: NSPersistentContainer!
+    private var useCloudKit = UserDefaults.standard.bool(forKey: "iCloudSync")
+
     private init() {
-        // 确保备份目录存在
+        setupPersistentContainer()
         setupBackupDirectory()
     }
 
-    lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "AdventureRecords")
-        container.loadPersistentStores { description, error in
+    private func setupPersistentContainer() {
+        let container: NSPersistentContainer
+        if useCloudKit {
+            let cloudContainer = NSPersistentCloudKitContainer(name: "AdventureRecords")
+            if let description = cloudContainer.persistentStoreDescriptions.first {
+                description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+                description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+            }
+            container = cloudContainer
+        } else {
+            container = NSPersistentContainer(name: "AdventureRecords")
+        }
+
+        container.loadPersistentStores { _, error in
             if let error = error {
                 fatalError("无法加载 Core Data 存储: \(error)")
             }
         }
-        return container
-    }()
+        container.viewContext.automaticallyMergesChangesFromParent = true
+        persistentContainer = container
+    }
+
+    func updateiCloudSync(_ enabled: Bool) {
+        guard enabled != useCloudKit else { return }
+        useCloudKit = enabled
+        UserDefaults.standard.set(enabled, forKey: "iCloudSync")
+        setupPersistentContainer()
+    }
+
+    func manualSync() {
+        saveContext()
+    }
 
     var viewContext: NSManagedObjectContext {
         persistentContainer.viewContext
