@@ -6,7 +6,6 @@ struct MoreView: View {
     @Environment(\.managedObjectContext) private var viewContext
     // 状态变量
     @State private var showSettings = false
-    @State private var showUserProfile = false
     @State private var showHelpCenter = false
     @State private var showAbout = false
     @State private var showFeedback = false
@@ -38,32 +37,6 @@ struct MoreView: View {
             .padding(.top)
 
             List {
-                // 用户资料部分
-                Section {
-                    Button(action: { showUserProfile = true }) {
-                        HStack {
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .frame(width: 50, height: 50)
-                                .foregroundColor(themeManager.accentColor(for: .character))
-                                .padding(.trailing, 10)
-
-                            VStack(alignment: .leading) {
-                                Text("用户资料")
-                                    .font(.headline)
-                                Text("管理您的个人信息和偏好")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
-
-                            Spacer()
-
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.vertical, 8)
-                    }
-                }
 
                 // 功能部分
                 Section(header: Text("功能")) {
@@ -192,9 +165,6 @@ struct MoreView: View {
         }
         .sheet(isPresented: $showSettings) {
             SettingsView()
-        }
-        .sheet(isPresented: $showUserProfile) {
-            UserProfileView()
         }
         .sheet(isPresented: $showHelpCenter) {
             HelpCenterView()
@@ -460,21 +430,6 @@ struct MoreMenuRow: View {
                 .foregroundColor(.secondary)
         }
         .padding(.vertical, 8)
-    }
-}
-
-// 用户资料视图
-struct UserProfileView: View {
-    @Environment(\.presentationMode) var presentationMode
-
-    var body: some View {
-        NavigationView {
-            Text("用户资料")
-                .navigationTitle("用户资料")
-                .navigationBarItems(trailing: Button("完成") {
-                    presentationMode.wrappedValue.dismiss()
-                })
-        }
     }
 }
 
@@ -1064,6 +1019,7 @@ struct TermsOfServiceView: View {
 // 捐赠视图
 struct DonationView: View {
     @Environment(\.presentationMode) var presentationMode
+    @StateObject private var donationManager = DonationManager.shared
     
     // 捐赠选项
     let donationOptions = [
@@ -1141,12 +1097,13 @@ struct DonationView: View {
     }
     
     private func handleDonation(amount: Int) {
-        // 这里可以实现捐赠逻辑，比如跳转到支付页面或调用支付SDK
-        print("感谢您的捐赠：\(amount)元")
-        // 可以在这里添加感谢提示
+        // 调用捐赠管理器进行购买
+        donationManager.purchase(amount: amount)
+
+        // 显示感谢提示
         let alert = UIAlertController(title: "感谢支持！", message: "感谢您的慷慨捐赠！您的支持是我继续开发的动力。", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "好的", style: .default))
-        
+
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let rootViewController = windowScene.windows.first?.rootViewController {
             rootViewController.present(alert, animated: true)
