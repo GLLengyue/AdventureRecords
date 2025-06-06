@@ -58,7 +58,7 @@ final class BackupRestoreTests: XCTestCase {
 
         // Verify audio file restored
         let expectedURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Recordings")
+            .appendingPathComponent("AudioRecordings")
             .appendingPathComponent("\(recID.uuidString).m4a")
         XCTAssertTrue(FileManager.default.fileExists(atPath: expectedURL.path))
     }

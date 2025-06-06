@@ -78,21 +78,29 @@ enum SampleDataGenerator {
 
     /// 生产环境的引导数据
     private static func initializeProductionData() {
-        // 创建一个简单的示例，帮助用户理解应用
-        let guide = shared.createCharacter(name: "冒险指南",
-                                           description: "欢迎来到冒险笔记！这是一个帮助你记录和管理角色、场景和故事的工具。",
+        // 创建一个示例角色，引导用户了解应用功能
+        var guide = shared.createCharacter(name: "冒险指南",
+                                           description: "这是示例角色，帮助你快速了解 AdventureRecords 的使用方法。",
                                            avatar: nil)
-        shared.updateCharacter(guide)
 
-        let tutorial = shared.createScene(title: "开始你的冒险",
-                                          description: "这是你的第一个场景。你可以在这里记录故事发生的地点、时间和氛围。")
-        shared.updateScene(tutorial)
+        // 创建示例场景
+        var tutorial = shared.createScene(title: "开始你的冒险",
+                                          description: "在场景中记录地点、时间和氛围，并关联相关笔记。")
 
-        let welcome = shared.createNote(title: "使用指南",
-                                        content: "1. 创建角色：记录你故事中的人物特征和背景\n2. 设计场景：描述故事发生的环境和氛围\n3. 撰写笔记：记录发生的事件和情节\n4. 建立关联：将角色、场景和笔记关联起来，编织完整的故事")
-        shared.updateNote(welcome)
+        // 创建示例笔记，概述主要功能
+        var welcome = shared.createNote(title: "快速上手指南",
+                                        content: "欢迎使用 AdventureRecords！\n\n1. 角色卡：创建角色并管理头像、标签和语音。\n2. 场景：记录地点、氛围与背景音乐。\n3. 笔记块：撰写故事，关联角色与场景。\n4. 三向链接：在角色、场景和笔记之间跳转。\n5. 沉浸模式：全屏查看或编辑内容。\n6. 数据管理：备份、恢复、导出或清理数据。\n7. 音频记录：录制或导入音频并附加到记录。\n\n删除或编辑这些示例，开始你的冒险吧！")
 
         // 建立关联关系
+        welcome.addRelatedCharacterID(guide.id)
+        welcome.addRelatedSceneID(tutorial.id)
+        guide.addNoteID(welcome.id)
+        tutorial.addRelatedNoteID(welcome.id)
+
+        // 更新数据
+        shared.updateNote(welcome)
+        shared.updateCharacter(guide)
+        shared.updateScene(tutorial)
     }
 
     /// 清除所有数据（用于测试）
