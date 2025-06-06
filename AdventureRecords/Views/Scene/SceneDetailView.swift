@@ -172,6 +172,7 @@ struct SceneDetailView: View {
                         }
 
                         Divider()
+                            .padding(.vertical, 8)
 
                         // 场景标签
                         if !scene.tags.isEmpty {
@@ -186,10 +187,11 @@ struct SceneDetailView: View {
                                     }
                                 }
                             }
-                            .padding(.bottom, 8)
+                            .padding(.bottom, 16)
                         }
 
                         Divider()
+                            .padding(.vertical, 8)
 
                         // 相关角色
                         if !relatedCharacters.isEmpty {
@@ -206,7 +208,7 @@ struct SceneDetailView: View {
                                     }
                                 }
                             }
-                            .padding(.bottom, 8)
+                            .padding(.bottom, 16)
                         }
 
                         // 相关笔记

@@ -43,7 +43,7 @@ struct NoteBlockDetailView: View {
                                 editAction: { showEditor = true })
                 {
                     ScrollView {
-                        VStack(alignment: .leading, spacing: 20) {
+                        VStack(alignment: .leading, spacing: 24) {
                     // 笔记标题和日期
                     VStack(alignment: .leading, spacing: 8) {
                             Text(noteBlock.title)
@@ -62,6 +62,7 @@ struct NoteBlockDetailView: View {
                     .padding(.bottom, 8)
 
                     Divider()
+                        .padding(.vertical, 8)
 
                     // 关联角色
                     if !relatedCharacters.isEmpty {
@@ -78,7 +79,7 @@ struct NoteBlockDetailView: View {
                                 }
                             }
                         }
-                        .padding(.bottom, 8)
+                        .padding(.bottom, 16)
                     }
 
                     // 关联场景
@@ -96,7 +97,7 @@ struct NoteBlockDetailView: View {
                                 }
                             }
                         }
-                        .padding(.bottom, 8)
+                        .padding(.bottom, 16)
                     }
 
                     // 笔记标签
@@ -112,10 +113,11 @@ struct NoteBlockDetailView: View {
                                 }
                             }
                         }
-                        .padding(.bottom, 8)
+                        .padding(.bottom, 16)
                     }
 
                     Divider()
+                        .padding(.vertical, 8)
 
                     // 笔记内容
                     VStack(alignment: .leading, spacing: 12) {
