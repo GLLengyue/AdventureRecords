@@ -84,8 +84,8 @@ struct SettingsView: View {
                 Section(header: Text("云同步").foregroundColor(themeManager.secondaryTextColor)) {
                     Toggle("启用iCloud同步", isOn: $iCloudSync)
                         .toggleStyle(SwitchToggleStyle(tint: themeManager.accentColor(for: .character)))
-                        .onChange(of: iCloudSync) { newValue in
-                            CoreDataManager.shared.updateiCloudSync(newValue)
+                        .onChange(of: iCloudSync) {
+                            CoreDataManager.shared.updateiCloudSync(iCloudSync)
                         }
 
                     if iCloudSync {
