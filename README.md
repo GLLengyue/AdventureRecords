@@ -20,4 +20,7 @@ AdventureRecords 的目标是为用户提供一个平台，记录他们在冒险
 欢迎对 AdventureRecords 的贡献！您可以通过提交问题或拉取请求来帮助我们改进。有关更多信息，请访问我们的 [GitHub 仓库](https://github.com/GLLengyue/AdventureRecords)。
 如需支持或报告问题，请联系 [lifei.zhong@icloud.com](mailto:lifei.zhong@icloud.com)。
 
+## 发布指引
+正式上架前的检查与用户引导请参阅 [RELEASE_GUIDE.md](RELEASE_GUIDE.md)。
+
 感谢您使用 AdventureRecords！

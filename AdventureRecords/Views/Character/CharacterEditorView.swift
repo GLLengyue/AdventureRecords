@@ -444,7 +444,7 @@ struct CharacterEditorView: View {
                                                                         FileManager.default
                                                                         .fileExists(atPath: audioURL.path)
                                                                   else {
-                                                                      print("Audio file not found at \(audioURL.path)")
+                                                                      debugPrint("Audio file not found at \(audioURL.path)")
                                                                       return
                                                                   }
                                                                   audioPlayerManager.play(url: audioURL)
@@ -500,7 +500,7 @@ struct CharacterEditorView: View {
                     Button("保存") {
                         var recordingToUpdate = recordingToRename
                         recordingToUpdate.title = newRecordingName.trimmingCharacters(in: .whitespacesAndNewlines)
-                        print("new title: \(recordingToUpdate.title)")
+                        debugPrint("new title: \(recordingToUpdate.title)")
                         audioViewModel.updateRecording(recordingToUpdate)
                         recordingForRenameSheet = nil
                         newRecordingName = "" // Clear the name

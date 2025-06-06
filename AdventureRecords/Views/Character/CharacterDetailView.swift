@@ -176,7 +176,7 @@ struct CharacterDetailView: View {
                                                                     FileManager.default
                                                                     .fileExists(atPath: audioURL.path)
                                                               else {
-                                                                  print("Audio file not found at \(audioURL.path)")
+                                                                  debugPrint("Audio file not found at \(audioURL.path)")
                                                                   return
                                                               }
                                                               audioPlayerManager.play(url: audioURL)

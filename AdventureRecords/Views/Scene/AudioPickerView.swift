@@ -98,7 +98,7 @@ struct AudioPickerView: View {
                                                                includingPropertiesForKeys: nil)
             audioFiles = fileURLs.filter { $0.pathExtension == "m4a" }
         } catch {
-            print("Error loading audio files: \(error)")
+            debugPrint("Error loading audio files: \(error)")
         }
     }
 
@@ -117,7 +117,7 @@ struct AudioPickerView: View {
             audioRecorder?.record()
             isRecording = true
         } catch {
-            print("Could not start recording: \(error)")
+            debugPrint("Could not start recording: \(error)")
         }
     }
 
@@ -132,7 +132,7 @@ struct AudioPickerView: View {
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.play()
         } catch {
-            print("Could not play audio: \(error)")
+            debugPrint("Could not play audio: \(error)")
         }
     }
 

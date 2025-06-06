@@ -98,7 +98,7 @@ enum SampleDataGenerator {
     /// 清除所有数据（用于测试）
     static func clearAllData() {
         #if DEBUG
-            // TODO: 实现清除数据的逻辑
+        _ = shared.cleanupData(type: .all)
         #endif
     }
 }

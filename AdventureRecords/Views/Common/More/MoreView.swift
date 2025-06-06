@@ -227,7 +227,7 @@ extension AudioManagementView {
                 rootViewController.present(alert, animated: true)
             }
         } catch {
-            print("清除音频数据失败: \(error.localizedDescription)")
+            debugPrint("清除音频数据失败: \(error.localizedDescription)")
             
             // 显示错误提示
             let alert = UIAlertController(title: "错误", message: "清除音频数据失败: \(error.localizedDescription)", preferredStyle: .alert)
@@ -346,7 +346,7 @@ struct AudioManagementView: View {
                 return AudioRecording(id: id, title: title, recordingURL: audioURL, date: date)
             }
         } catch {
-            print("获取录音数据失败: \(error.localizedDescription)")
+            debugPrint("获取录音数据失败: \(error.localizedDescription)")
         }
     }
     
@@ -374,7 +374,7 @@ struct AudioManagementView: View {
                 }
             }
         } catch {
-            print("删除录音失败: \(error.localizedDescription)")
+            debugPrint("删除录音失败: \(error.localizedDescription)")
             
             // 显示错误提示
             let alert = UIAlertController(title: "错误", message: "删除录音失败: \(error.localizedDescription)", preferredStyle: .alert)

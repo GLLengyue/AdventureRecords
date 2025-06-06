@@ -99,7 +99,7 @@ struct AudioRecordingCreationView: View {
     private func saveRecording() {
         guard !title.isEmpty, let recordingToSave = viewModel.currentRecording else {
             // Optionally show an alert to the user
-            print("Cannot save: Title is empty or no recording available.")
+            debugPrint("Cannot save: Title is empty or no recording available.")
             return
         }
         var finalRecording = recordingToSave

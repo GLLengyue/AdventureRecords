@@ -18,7 +18,7 @@ class AudioPreviewController: NSObject, AVAudioPlayerDelegate, ObservableObject 
             audioPlayer?.play()
             isPlaying = true
         } catch {
-            print("播放预览失败: \(error)")
+            debugPrint("播放预览失败: \(error)")
         }
     }
 
@@ -39,7 +39,7 @@ class AudioPreviewController: NSObject, AVAudioPlayerDelegate, ObservableObject 
             let player = try AVAudioPlayer(contentsOf: url)
             return player.duration
         } catch {
-            print("无法获取音频时长: \(error)")
+            debugPrint("无法获取音频时长: \(error)")
             return nil
         }
     }
@@ -171,18 +171,18 @@ struct AudioFileImportView: View {
                         errorMessage = nil
                     } else {
                         errorMessage = "无法读取音频文件，文件格式可能不受支持"
-                        print("音频文件预览失败")
+                        debugPrint("音频文件预览失败")
                     }
                 } catch {
                     errorMessage = "无法读取文件: \(error.localizedDescription)"
-                    print("文件读取失败: \(error)")
+                    debugPrint("文件读取失败: \(error)")
                 }
             } else {
                 errorMessage = "无法获取文件访问权限"
             }
         } catch {
             errorMessage = "导入失败: \(error.localizedDescription)"
-            print("文件导入失败: \(error)")
+            debugPrint("文件导入失败: \(error)")
         }
     }
 

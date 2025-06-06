@@ -226,15 +226,15 @@ struct DataManagementView: View {
 
     func performCleanup(type: CleanupType) {
         // 实现数据清理逻辑
-        print("清理\(cleanupTypeText)")
+        debugPrint("清理\(cleanupTypeText)")
 
         // 调用DataManager进行数据清理
         let success = coreDataManager.cleanupData(type: type)
 
         if success {
-            print("\(cleanupTypeText)清理成功")
+            debugPrint("\(cleanupTypeText)清理成功")
         } else {
-            print("\(cleanupTypeText)清理失败")
+            debugPrint("\(cleanupTypeText)清理失败")
         }
     }
 }
@@ -543,7 +543,7 @@ struct RestoreView: View {
                 selectedBackup = nil
             }
         } catch {
-            print("删除备份文件失败: \(error.localizedDescription)")
+            debugPrint("删除备份文件失败: \(error.localizedDescription)")
         }
     }
 }
@@ -660,7 +660,7 @@ struct ExportView: View {
                     showShareSheet = true
                 } else {
                     // 导出失败处理
-                    print("导出失败")
+                    debugPrint("导出失败")
                 }
             }
         }

@@ -206,7 +206,7 @@ class CoreDataManager {
             do {
                 try viewContext.save()
             } catch {
-                print("保存 Core Data 上下文失败: \(error)")
+                debugPrint("保存 Core Data 上下文失败: \(error)")
             }
         }
     }
@@ -247,7 +247,7 @@ class CoreDataManager {
                           relatedNoteIDs: entity.relatedNoteIDs ?? [])
             }
         } catch {
-            print("获取角色数据失败: \(error)")
+            debugPrint("获取角色数据失败: \(error)")
             return []
         }
     }
@@ -268,7 +268,7 @@ class CoreDataManager {
                                       date: entity.date ?? Date())
             }
         } catch {
-            print("获取录音数据失败: \(error)")
+            debugPrint("获取录音数据失败: \(error)")
             return []
         }
     }
@@ -288,7 +288,7 @@ class CoreDataManager {
                           relatedNoteIDs: entity.relatedNoteIDs ?? [])
             }
         } catch {
-            print("获取角色数据失败: \(error)")
+            debugPrint("获取角色数据失败: \(error)")
             return []
         }
     }
@@ -300,7 +300,7 @@ class CoreDataManager {
             let entities = try viewContext.fetch(request)
             return entities.first
         } catch {
-            print("获取角色失败: \(error)")
+            debugPrint("获取角色失败: \(error)")
             return nil
         }
     }
@@ -314,7 +314,7 @@ class CoreDataManager {
             entity.relatedNoteIDs = character.relatedNoteIDs
             saveContext()
         } else {
-            print("角色未找到，无法更新")
+            debugPrint("角色未找到，无法更新")
         }
     }
 
@@ -338,7 +338,7 @@ class CoreDataManager {
                 try fileManager.createDirectory(at: backupDirectory, withIntermediateDirectories: true, attributes: nil)
             }
         } catch {
-            print("创建备份目录失败: \(error.localizedDescription)")
+            debugPrint("创建备份目录失败: \(error.localizedDescription)")
         }
     }
 
@@ -358,11 +358,11 @@ class CoreDataManager {
             let backupURL = backupDirectory.appendingPathComponent(fileName)
             try backupData.write(to: backupURL)
 
-            print("备份成功: \(backupURL.path)")
+            debugPrint("备份成功: \(backupURL.path)")
 
             return backupData
         } catch {
-            print("创建备份失败: \(error.localizedDescription)")
+            debugPrint("创建备份失败: \(error.localizedDescription)")
             return nil
         }
     }
@@ -372,14 +372,14 @@ class CoreDataManager {
         do {
             // 读取备份文件
             let backupData = try Data(contentsOf: backupFile.url)
-            print("备份数据: \(backupData)")
+            debugPrint("备份数据: \(backupData)")
             // 恢复数据
             try restoreFromBackupData(backupData)
 
-            print("恢复成功: \(backupFile.name)")
+            debugPrint("恢复成功: \(backupFile.name)")
             return true
         } catch {
-            print("恢复失败: \(error.localizedDescription)")
+            debugPrint("恢复失败: \(error.localizedDescription)")
             return false
         }
     }
@@ -406,7 +406,7 @@ class CoreDataManager {
                 return BackupFile(url: url, name: name, creationDate: creationDate)
             }.sorted { $0.creationDate > $1.creationDate } // 按创建时间降序排序
         } catch {
-            print("获取备份列表失败: \(error.localizedDescription)")
+            debugPrint("获取备份列表失败: \(error.localizedDescription)")
             return []
         }
     }
@@ -440,7 +440,7 @@ class CoreDataManager {
 
             return ExportDocument(data: exportData, filename: fileName, contentType: type.utType)
         } catch {
-            print("导出数据失败: \(error.localizedDescription)")
+            debugPrint("导出数据失败: \(error.localizedDescription)")
             return nil
         }
     }
@@ -471,7 +471,7 @@ class CoreDataManager {
             saveContext()
             return true
         } catch {
-            print("清理数据失败: \(error.localizedDescription)")
+            debugPrint("清理数据失败: \(error.localizedDescription)")
             return false
         }
     }
@@ -498,7 +498,7 @@ class CoreDataManager {
                 )
                 audioRecordingData.append(audioRecording)
             } catch {
-                print("读取音频文件失败: \(error.localizedDescription)")
+                debugPrint("读取音频文件失败: \(error.localizedDescription)")
                 continue
             }
         }
@@ -563,7 +563,7 @@ class CoreDataManager {
             
             // 确保音频目录存在
             let audioDirectory = getAudioDirectory()
-            print("音频目录: \(audioDirectory.path)")
+            debugPrint("音频目录: \(audioDirectory.path)")
             if !FileManager.default.fileExists(atPath: audioDirectory.path) {
                 try FileManager.default.createDirectory(at: audioDirectory, withIntermediateDirectories: true)
             }
@@ -615,7 +615,7 @@ class CoreDataManager {
                 }
             }
         } catch let error as NSError {
-            print("恢复失败: \(error), \(error.userInfo)")
+            debugPrint("恢复失败: \(error), \(error.userInfo)")
             throw error
         }
     }
@@ -872,7 +872,7 @@ class CoreDataManager {
                           tags: entity.tags ?? [])
             }
         } catch {
-            print("获取笔记数据失败: \(error)")
+            debugPrint("获取笔记数据失败: \(error)")
             return []
         }
     }
@@ -892,7 +892,7 @@ class CoreDataManager {
                           tags: entity.tags ?? [])
             }
         } catch {
-            print("获取笔记数据失败: \(error)")
+            debugPrint("获取笔记数据失败: \(error)")
             return []
         }
     }
@@ -904,7 +904,7 @@ class CoreDataManager {
             let entities = try viewContext.fetch(request)
             return entities.first
         } catch {
-            print("获取笔记失败: \(error)")
+            debugPrint("获取笔记失败: \(error)")
             return nil
         }
     }
@@ -919,7 +919,7 @@ class CoreDataManager {
             entity.tags = note.tags
             saveContext()
         } else {
-            print("笔记未找到，无法更新")
+            debugPrint("笔记未找到，无法更新")
         }
     }
 
@@ -930,7 +930,7 @@ class CoreDataManager {
             let entities = try viewContext.fetch(request)
             return entities.first
         } catch {
-            print("获取场景失败: \(error)")
+            debugPrint("获取场景失败: \(error)")
             return nil
         }
     }
@@ -945,7 +945,7 @@ class CoreDataManager {
             entity.tags = scene.tags
             saveContext()
         } else {
-            print("场景未找到，无法更新")
+            debugPrint("场景未找到，无法更新")
         }
     }
 
@@ -992,7 +992,7 @@ class CoreDataManager {
                                       tags: entity.tags ?? [])
             }
         } catch {
-            print("获取场景数据失败: \(error)")
+            debugPrint("获取场景数据失败: \(error)")
             return []
         }
     }
@@ -1018,7 +1018,7 @@ class CoreDataManager {
                                       tags: entity.tags ?? [])
             }
         } catch {
-            print("获取场景数据失败: \(error)")
+            debugPrint("获取场景数据失败: \(error)")
             return []
         }
     }
@@ -1070,7 +1070,7 @@ class CoreDataManager {
         do {
             return try viewContext.fetch(request).first
         } catch {
-            print("获取 AudioRecordingEntity 失败: \(error)")
+            debugPrint("获取 AudioRecordingEntity 失败: \(error)")
             return nil
         }
     }
@@ -1107,7 +1107,7 @@ class CoreDataManager {
                                       date: entity.date ?? Date())
             }
         } catch {
-            print("获取录音数据失败: \(error)")
+            debugPrint("获取录音数据失败: \(error)")
             return []
         }
     }
@@ -1145,7 +1145,7 @@ class CoreDataManager {
             entity.date = recording.date
             saveContext()
         } else {
-            print("录音未找到，无法更新")
+            debugPrint("录音未找到，无法更新")
         }
     }
 
@@ -1155,7 +1155,7 @@ class CoreDataManager {
             entities.forEach { viewContext.delete($0) }
             saveContext()
         } catch {
-            print("删除实体失败: \(error)")
+            debugPrint("删除实体失败: \(error)")
         }
     }
 
@@ -1181,7 +1181,7 @@ class CoreDataManager {
             do {
                 try FileManager.default.createDirectory(at: audioDirectory, withIntermediateDirectories: true)
             } catch {
-                print("创建音频目录失败: \(error)")
+                debugPrint("创建音频目录失败: \(error)")
             }
         }
 

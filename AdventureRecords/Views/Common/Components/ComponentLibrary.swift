@@ -19,7 +19,7 @@ enum ComponentLibrary {
 
     /// 打印组件库信息
     static func printInfo() {
-        print("\(description) v\(version)")
-        print("包含主题系统、按钮组件、卡片组件、输入组件和布局组件")
+        debugPrint("\(description) v\(version)")
+        debugPrint("包含主题系统、按钮组件、卡片组件、输入组件和布局组件")
     }
 }
