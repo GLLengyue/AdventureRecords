@@ -1,6 +1,7 @@
 import StoreKit
 import SwiftUI
 import CoreData
+import AVFoundation
 
 struct MoreView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -274,6 +275,7 @@ struct AudioManagementView: View {
                             
                             Button(action: {
                                 // 播放/停止音频
+                                playAudio(recording.recordingURL)
                             }) {
                                 Image(systemName: "play.circle.fill")
                                     .font(.title2)
@@ -325,7 +327,15 @@ struct AudioManagementView: View {
             }
         }
     }
-    
+    private func playAudio(_ url: URL) {
+        do {
+            let audioPlayer = try AVAudioPlayer(contentsOf: url)
+            audioPlayer.play()
+        } catch {
+            print("Could not play audio: \(error)")
+        }
+    }
+
     private func fetchAudioRecordings() {
         let fetchRequest: NSFetchRequest<AudioRecordingEntity> = AudioRecordingEntity.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \AudioRecordingEntity.date, ascending: false)]
@@ -760,9 +770,9 @@ struct PrivacyPolicyView: View {
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                        // .padding()
+                        // .background(Color(.systemGray6))
+                        // .cornerRadius(12)
                         
                         // 数据使用
                         VStack(alignment: .leading, spacing: 8) {
@@ -781,9 +791,9 @@ struct PrivacyPolicyView: View {
                             .font(.body)
                             .foregroundColor(.secondary)
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                        // .padding()
+                        // .background(Color(.systemGray6))
+                        // .cornerRadius(12)
                         
                         // 数据存储与安全
                         VStack(alignment: .leading, spacing: 8) {
@@ -797,9 +807,9 @@ struct PrivacyPolicyView: View {
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                        // .padding()
+                        // .background(Color(.systemGray6))
+                        // .cornerRadius(12)
                                                 
                         // 隐私政策变更
                         VStack(alignment: .leading, spacing: 8) {
@@ -809,9 +819,9 @@ struct PrivacyPolicyView: View {
                             Text("我们可能会不定期更新隐私政策。任何变更都会在本页面发布，并更新顶部的'更新日期'。建议您定期查看本隐私政策以了解变更。")
                                 .font(.body)
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                        // .padding()
+                        // .background(Color(.systemGray6))
+                        // .cornerRadius(12)
                         
                         // 联系我们
                         VStack(alignment: .leading, spacing: 8) {
@@ -835,9 +845,9 @@ struct PrivacyPolicyView: View {
                             }
                             .padding(.top, 4)
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                        // .padding()
+                        // .background(Color(.systemGray6))
+                        // .cornerRadius(12)
                     }
                     .padding(.top, 8)
                 }
@@ -888,9 +898,9 @@ struct TermsOfServiceView: View {
                             Text("本用户协议是您与冒险记录应用之间的法律协议，规定了您使用本应用的条件。通过下载、安装或使用本应用，即表示您同意受本协议的约束。")
                                 .font(.body)
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                        // .padding()
+                        // .background(Color(.systemGray6))
+                        // .cornerRadius(12)
                         
                         // 2. 数据所有权
                         VStack(alignment: .leading, spacing: 8) {
@@ -902,9 +912,9 @@ struct TermsOfServiceView: View {
                             Text("2.2 我们不会访问、收集或存储您在本应用中创建的任何内容。所有数据都仅存储在您的设备本地。")
                                 .padding(.top, 4)
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                        // .padding()
+                        // .background(Color(.systemGray6))
+                        // .cornerRadius(12)
                         
                         // 3. 使用限制
                         VStack(alignment: .leading, spacing: 8) {
@@ -916,9 +926,9 @@ struct TermsOfServiceView: View {
                             Text("3.2 您不得对本应用进行反向工程、反编译或试图提取源代码。")
                                 .padding(.top, 4)
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                        // .padding()
+                        // .background(Color(.systemGray6))
+                        // .cornerRadius(12)
                         
                         // 4. 免责声明
                         VStack(alignment: .leading, spacing: 8) {
@@ -930,9 +940,9 @@ struct TermsOfServiceView: View {
                             Text("4.2 对于因使用或无法使用本应用而导致的任何直接、间接、附带、特殊、后果性或惩罚性损害，我们概不负责。")
                                 .padding(.top, 4)
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                        // .padding()
+                        // .background(Color(.systemGray6))
+                        // .cornerRadius(12)
                         
                         // 5. 协议修改
                         VStack(alignment: .leading, spacing: 8) {
@@ -941,9 +951,9 @@ struct TermsOfServiceView: View {
                             
                             Text("我们保留随时修改本协议的权利。任何更改将在发布更新后的协议后立即生效。您继续使用本应用即表示您接受这些更改。")
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                        // .padding()
+                        // .background(Color(.systemGray6))
+                        // .cornerRadius(12)
                         
                         // 6. 适用法律
                         VStack(alignment: .leading, spacing: 8) {
@@ -952,9 +962,9 @@ struct TermsOfServiceView: View {
                             
                             Text("本协议应受中华人民共和国法律管辖并按其解释，不考虑其法律冲突条款。")
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                        // .padding()
+                        // .background(Color(.systemGray6))
+                        // .cornerRadius(12)
                         
                         // 7. 联系我们
                         VStack(alignment: .leading, spacing: 8) {
@@ -982,9 +992,9 @@ struct TermsOfServiceView: View {
                                 .foregroundColor(.secondary)
                                 .padding(.top, 8)
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                        // .padding()
+                        // .background(Color(.systemGray6))
+                        // .cornerRadius(12)
                     }
                     .padding(.top, 8)
                 }

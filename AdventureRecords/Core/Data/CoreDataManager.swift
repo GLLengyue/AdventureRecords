@@ -259,7 +259,7 @@ class CoreDataManager {
         do {
             let entities = try viewContext.fetch(request)
             return entities.map { entity in
-                let storedURL = entity.recordingURL ?? URL(fileURLWithPath: "")
+                let storedURL = entity.recordingURL ?? URL(fileURLWithPath: "unknown.m4a")
                 let audioURL = getAbsoluteAudioURL(from: storedURL)
 
                 return AudioRecording(id: entity.id ?? UUID(),
@@ -593,7 +593,8 @@ class CoreDataManager {
                     let entity = AudioRecordingEntity(context: tempContext)
                     entity.id = UUID(uuidString: audioData.id) ?? UUID()
                     entity.title = audioData.title
-                    entity.recordingURL = audioURL
+                    // 保存相对路径而不是绝对路径
+                    entity.recordingURL = getRelativeAudioURL(from: audioURL)
                     entity.date = audioData.date
                 }
 
@@ -825,7 +826,7 @@ class CoreDataManager {
     private func getAudioDirectory() -> URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         let documentsDirectory = paths[0]
-        let audioDirectory = documentsDirectory.appendingPathComponent("Recordings")
+        let audioDirectory = documentsDirectory.appendingPathComponent("AudioRecordings")
         return audioDirectory
     }
     
@@ -1098,7 +1099,7 @@ class CoreDataManager {
         do {
             let entities = try viewContext.fetch(request)
             return entities.map { entity in
-                let storedURL = entity.recordingURL ?? URL(fileURLWithPath: "")
+                let storedURL = entity.recordingURL ?? URL(fileURLWithPath: "unknown.m4a")
                 let audioURL = getAbsoluteAudioURL(from: storedURL)
 
                 return AudioRecording(id: entity.id ?? UUID(),
@@ -1169,22 +1170,39 @@ class CoreDataManager {
 
     // 辅助方法：从相对URL获取绝对URL
     private func getAbsoluteAudioURL(from url: URL) -> URL {
-        if url.path.starts(with: "/") && FileManager.default.fileExists(atPath: url.path) {
-            return url
+        // 如果是绝对路径且文件存在，直接返回
+        if url.path.starts(with: "/") {
+            if FileManager.default.fileExists(atPath: url.path) {
+                return url
+            } else {
+                // 绝对路径但文件不存在，尝试从文件名构建新路径
+                print("警告: 绝对路径文件不存在，尝试重新定位: \(url.path)")
+            }
         }
 
+        // 获取当前应用的AudioRecordings目录
         let audioDirectoryName = "AudioRecordings"
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let audioDirectory = documentsPath.appendingPathComponent(audioDirectoryName)
 
+        // 确保目录存在
         if !FileManager.default.fileExists(atPath: audioDirectory.path) {
             do {
                 try FileManager.default.createDirectory(at: audioDirectory, withIntermediateDirectories: true)
+                print("创建音频目录: \(audioDirectory.path)")
             } catch {
                 print("创建音频目录失败: \(error)")
             }
         }
 
-        return audioDirectory.appendingPathComponent(url.lastPathComponent)
+        // 使用文件名构建新的绝对路径
+        let newURL = audioDirectory.appendingPathComponent(url.lastPathComponent)
+        
+        // 如果新路径的文件不存在，记录警告
+        if !FileManager.default.fileExists(atPath: newURL.path) {
+            print("警告: 录音文件不存在: \(newURL.path)")
+        }
+        
+        return newURL
     }
 }

@@ -87,14 +87,12 @@ struct AudioPickerView: View {
     }
 
     private func loadAudioFiles() {
-        // 从文档目录加载音频文件
+        // 从AudioRecordings目录加载音频文件
         let fileManager = FileManager.default
-        guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            return
-        }
+        let audioDirectory = getAudioDirectory()
 
         do {
-            let fileURLs = try fileManager.contentsOfDirectory(at: documentsDirectory,
+            let fileURLs = try fileManager.contentsOfDirectory(at: audioDirectory,
                                                                includingPropertiesForKeys: nil)
             audioFiles = fileURLs.filter { $0.pathExtension == "m4a" }
         } catch {
@@ -103,7 +101,7 @@ struct AudioPickerView: View {
     }
 
     private func startRecording() {
-        let audioFilename = getDocumentsDirectory().appendingPathComponent("\(Date().timeIntervalSince1970).m4a")
+        let audioFilename = getAudioDirectory().appendingPathComponent("\(Date().timeIntervalSince1970).m4a")
 
         let settings = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
@@ -138,5 +136,23 @@ struct AudioPickerView: View {
 
     private func getDocumentsDirectory() -> URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    }
+    
+    // 获取音频文件目录，与AudioViewModel保持一致
+    private func getAudioDirectory() -> URL {
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let audioDirectory = documentsPath.appendingPathComponent("AudioRecordings")
+        
+        // 确保目录存在
+        if !FileManager.default.fileExists(atPath: audioDirectory.path) {
+            do {
+                try FileManager.default.createDirectory(at: audioDirectory, withIntermediateDirectories: true)
+                print("创建音频目录: \(audioDirectory.path)")
+            } catch {
+                print("创建音频目录失败: \(error)")
+            }
+        }
+        
+        return audioDirectory
     }
 }
