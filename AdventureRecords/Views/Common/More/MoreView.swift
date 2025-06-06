@@ -6,13 +6,11 @@ struct MoreView: View {
     @Environment(\.managedObjectContext) private var viewContext
     // 状态变量
     @State private var showSettings = false
-    @State private var showUserProfile = false
     @State private var showHelpCenter = false
     @State private var showAbout = false
     @State private var showFeedback = false
     @State private var showPrivacyPolicy = false
     @State private var showTermsOfService = false
-    @State private var showDonationSheet = false
     @State private var showResetConfirmation = false
     @State private var showDataManagement = false
     @State private var showDataManagerTest = false
@@ -38,33 +36,6 @@ struct MoreView: View {
             .padding(.top)
 
             List {
-                // 用户资料部分
-                Section {
-                    Button(action: { showUserProfile = true }) {
-                        HStack {
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .frame(width: 50, height: 50)
-                                .foregroundColor(themeManager.accentColor(for: .character))
-                                .padding(.trailing, 10)
-
-                            VStack(alignment: .leading) {
-                                Text("用户资料")
-                                    .font(.headline)
-                                Text("管理您的个人信息和偏好")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
-
-                            Spacer()
-
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.vertical, 8)
-                    }
-                }
-
                 // 功能部分
                 Section(header: Text("功能")) {
                     // 数据管理
@@ -89,14 +60,6 @@ struct MoreView: View {
                                     iconColor: themeManager.accentColor(for: .scene),
                                     title: "设置",
                                     subtitle: "应用设置和偏好")
-                    }
-
-                    // 捐赠
-                    Button(action: { showDonationSheet = true }) {
-                        MoreMenuRow(icon: "heart.circle",
-                                    iconColor: .pink,
-                                    title: "支持开发者",
-                                    subtitle: "感谢您的支持与鼓励")
                     }
 
                     // 帮助中心
@@ -193,9 +156,6 @@ struct MoreView: View {
         .sheet(isPresented: $showSettings) {
             SettingsView()
         }
-        .sheet(isPresented: $showUserProfile) {
-            UserProfileView()
-        }
         .sheet(isPresented: $showHelpCenter) {
             HelpCenterView()
         }
@@ -213,9 +173,6 @@ struct MoreView: View {
         }
         .sheet(isPresented: $showAudioManagement) {
             AudioManagementView()
-        }
-        .sheet(isPresented: $showDonationSheet) {
-            DonationView()
         }
         .sheet(isPresented: $showDataManagement) {
             DataManagementView()
@@ -460,21 +417,6 @@ struct MoreMenuRow: View {
                 .foregroundColor(.secondary)
         }
         .padding(.vertical, 8)
-    }
-}
-
-// 用户资料视图
-struct UserProfileView: View {
-    @Environment(\.presentationMode) var presentationMode
-
-    var body: some View {
-        NavigationView {
-            Text("用户资料")
-                .navigationTitle("用户资料")
-                .navigationBarItems(trailing: Button("完成") {
-                    presentationMode.wrappedValue.dismiss()
-                })
-        }
     }
 }
 
@@ -1061,95 +1003,3 @@ struct TermsOfServiceView: View {
     }
 }
 
-// 捐赠视图
-struct DonationView: View {
-    @Environment(\.presentationMode) var presentationMode
-    
-    // 捐赠选项
-    let donationOptions = [
-        (amount: 6, title: "请我喝杯咖啡", emoji: "☕️"),
-        (amount: 15, title: "请我吃顿午饭", emoji: "🍱"),
-        (amount: 30, title: "请我吃顿大餐", emoji: "🍽️"),
-        (amount: 66, title: "慷慨解囊", emoji: "🎁")
-    ]
-    
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                Image(systemName: "heart.circle.fill")
-                    .resizable()
-                    .frame(width: 100, height: 100)
-                    .foregroundColor(.pink)
-                    .padding(.top, 30)
-                
-                Text("支持开发者")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                
-                Text("感谢您考虑支持我的工作！您的每一份支持都是我继续开发的动力。")
-                    .font(.headline)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                
-                // 捐赠选项
-                VStack(spacing: 15) {
-                    ForEach(donationOptions, id: \.amount) { option in
-                        Button(action: {
-                            // 处理捐赠
-                            handleDonation(amount: option.amount)
-                        }) {
-                            HStack {
-                                Text(option.emoji)
-                                    .font(.title2)
-                                
-                                VStack(alignment: .leading) {
-                                    Text(option.title)
-                                        .font(.headline)
-                                    Text("\(option.amount)元")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-                                
-                                Spacer()
-                                
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding()
-                            .background(Color.gray.opacity(0.1))
-                            .cornerRadius(10)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                }
-                .padding(.horizontal)
-                
-                Text("您的支持将帮助我持续改进应用，添加新功能。")
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                
-                Spacer()
-            }
-            .padding()
-            .navigationTitle("支持开发者")
-            .navigationBarItems(trailing: Button("关闭") {
-                presentationMode.wrappedValue.dismiss()
-            })
-        }
-    }
-    
-    private func handleDonation(amount: Int) {
-        // 这里可以实现捐赠逻辑，比如跳转到支付页面或调用支付SDK
-        print("感谢您的捐赠：\(amount)元")
-        // 可以在这里添加感谢提示
-        let alert = UIAlertController(title: "感谢支持！", message: "感谢您的慷慨捐赠！您的支持是我继续开发的动力。", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "好的", style: .default))
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootViewController = windowScene.windows.first?.rootViewController {
-            rootViewController.present(alert, animated: true)
-        }
-    }
-}
