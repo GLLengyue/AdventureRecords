@@ -23,7 +23,7 @@ class AudioPlayerManager: ObservableObject {
             try audioSession.setCategory(.playback, mode: .default)
             // No need to activate session here, player will activate it on play.
         } catch {
-            print("Failed to set up audio session: \(error.localizedDescription)")
+            debugPrint("Failed to set up audio session: \(error.localizedDescription)")
         }
     }
 
@@ -45,9 +45,9 @@ class AudioPlayerManager: ObservableObject {
             isPlaying = true
             playbackDuration = audioPlayer?.duration ?? 0.0
             startProgressTimer()
-            print("AudioPlayerManager: Started playing \(url.lastPathComponent)")
+            debugPrint("AudioPlayerManager: Started playing \(url.lastPathComponent)")
         } catch {
-            print("Failed to play audio: \(error.localizedDescription)")
+            debugPrint("Failed to play audio: \(error.localizedDescription)")
             isPlaying = false
             currentlyPlayingURL = nil
             playbackDuration = 0.0
@@ -59,7 +59,7 @@ class AudioPlayerManager: ObservableObject {
         player.pause()
         isPlaying = false
         stopProgressTimer()
-        print("AudioPlayerManager: Paused \(currentlyPlayingURL?.lastPathComponent ?? "audio")")
+        debugPrint("AudioPlayerManager: Paused \(currentlyPlayingURL?.lastPathComponent ?? "audio")")
     }
 
     func resume() {
@@ -69,9 +69,9 @@ class AudioPlayerManager: ObservableObject {
             player.play()
             isPlaying = true
             startProgressTimer()
-            print("AudioPlayerManager: Resumed \(currentlyPlayingURL?.lastPathComponent ?? "audio")")
+            debugPrint("AudioPlayerManager: Resumed \(currentlyPlayingURL?.lastPathComponent ?? "audio")")
         } catch {
-            print("Failed to resume audio: \(error.localizedDescription)")
+            debugPrint("Failed to resume audio: \(error.localizedDescription)")
             isPlaying = false
         }
     }
@@ -84,7 +84,7 @@ class AudioPlayerManager: ObservableObject {
         playbackProgress = 0.0
         playbackDuration = 0.0
         stopProgressTimer()
-        print("AudioPlayerManager: Stopped audio")
+        debugPrint("AudioPlayerManager: Stopped audio")
         // Deactivate session when stopping if desired, or keep it active for quick resume
         // deactivateAudioSession() // Optional: if you want to release the session immediately
     }
@@ -92,14 +92,14 @@ class AudioPlayerManager: ObservableObject {
     func stopAndDeactivateSession() {
         stop()
         deactivateAudioSession()
-        print("AudioPlayerManager: Stopped audio and deactivated session")
+        debugPrint("AudioPlayerManager: Stopped audio and deactivated session")
     }
 
     private func deactivateAudioSession() {
         do {
             try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
         } catch {
-            print("Failed to deactivate audio session: \(error.localizedDescription)")
+            debugPrint("Failed to deactivate audio session: \(error.localizedDescription)")
         }
     }
 
@@ -123,7 +123,7 @@ class AudioPlayerManager: ObservableObject {
         playbackProgress = 0.0
         // Do not reset playbackDuration here, might be useful to see total duration
         stopProgressTimer()
-        print("AudioPlayerManager: Finished playing")
+        debugPrint("AudioPlayerManager: Finished playing")
         // Optional: Deactivate session after playback finishes
         // deactivateAudioSession()
     }
@@ -131,7 +131,7 @@ class AudioPlayerManager: ObservableObject {
     deinit {
         stopProgressTimer()
         audioPlayer?.delegate = nil // Clean up delegate
-        print("AudioPlayerManager deinitialized")
+        debugPrint("AudioPlayerManager deinitialized")
     }
 }
 
@@ -148,7 +148,7 @@ private class DelegateWrapper: NSObject, AVAudioPlayerDelegate {
     }
 
     func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
-        print("AudioPlayerManager: Decode error - \(error?.localizedDescription ?? "Unknown error")")
+        debugPrint("AudioPlayerManager: Decode error - \(error?.localizedDescription ?? "Unknown error")")
         manager?.audioDidFinishPlaying() // Treat as finished to reset state
     }
 }

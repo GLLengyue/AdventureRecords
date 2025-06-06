@@ -60,7 +60,7 @@ struct ImmersiveEditorView: View {
         .navigationViewStyle(StackNavigationViewStyle()) // 避免 iPad 上的侧边栏
         .onChange(of: content) {
             // 可以在这里实现自动保存逻辑，如果需要的话
-            // print("Content changed, auto-save triggered.")
+            // debugPrint("Content changed, auto-save triggered.")
         }
     }
 
