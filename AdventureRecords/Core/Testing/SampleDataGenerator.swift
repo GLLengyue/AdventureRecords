@@ -80,16 +80,16 @@ enum SampleDataGenerator {
     private static func initializeProductionData() {
         // 创建一个示例角色，引导用户了解应用功能
         var guide = shared.createCharacter(name: "冒险指南",
-                                           description: "这是示例角色，帮助你快速了解 AdventureRecords 的使用方法。",
+                                           description: "这是示例角色，帮助你快速了解 AdventureRecords 的使用方法。单击以查看详情，右滑以删除。",
                                            avatar: nil)
 
         // 创建示例场景
         var tutorial = shared.createScene(title: "开始你的冒险",
-                                          description: "在场景中记录地点、时间和氛围，并关联相关笔记。")
+                                          description: "在场景中记录地点，并新建相关的笔记。你还可以为场景上传封面图。")
 
         // 创建示例笔记，概述主要功能
         var welcome = shared.createNote(title: "快速上手指南",
-                                        content: "欢迎使用 AdventureRecords！\n\n1. 角色卡：创建角色并管理头像、标签和语音。\n2. 场景：记录地点、氛围与背景音乐。\n3. 笔记块：撰写故事，关联角色与场景。\n4. 三向链接：在角色、场景和笔记之间跳转。\n5. 沉浸模式：全屏查看或编辑内容。\n6. 数据管理：备份、恢复、导出或清理数据。\n7. 音频记录：录制或导入音频并附加到记录。\n\n删除或编辑这些示例，开始你的冒险吧！")
+                                        content: "欢迎使用 AdventureRecords！\n\n1. 角色卡：创建角色并管理头像、标签和语音。\n2. 场景：记录地点、氛围与背景音乐。\n3. 笔记块：撰写故事，关联角色与场景。\n4. 三向链接：在角色、场景和笔记之间跳转。\n5. 沉浸模式：全屏编辑内容。\n6. 数据管理：备份、恢复、导出或清理数据。\n7. 音频记录：录制或导入音频并附加到人物卡。\n8. 标签：为场景，笔记和人物分别添加标签，之后可在标签云中快速筛选出你想查看的内容。\n\n删除或编辑这些示例，开始你的冒险吧！")
 
         // 建立关联关系
         welcome.addRelatedCharacterID(guide.id)
