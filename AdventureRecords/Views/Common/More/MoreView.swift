@@ -17,6 +17,7 @@ struct MoreView: View {
     @State private var showDataManagerTest = false
     @State private var showAudioManagement = false
     @State private var showClearAllDataConfirmation = false
+    @State private var showSampleDataAlert = false
 
     // 应用设置
     @AppStorage("isDarkMode") private var isDarkMode = false
@@ -144,6 +145,16 @@ struct MoreView: View {
                     // }
 
 
+                    Button(action: {
+                        SampleDataGenerator.generateJourneyToWestSample()
+                        showSampleDataAlert = true
+                    }) {
+                        MoreMenuRow(icon: "sparkles",
+                                    iconColor: .orange,
+                                    title: "生成示例数据",
+                                    subtitle: "快速体验应用功能")
+                    }
+
                     Button(action: { showResetConfirmation = true }) {
                         MoreMenuRow(icon: "arrow.counterclockwise",
                                     iconColor: .red,
@@ -180,6 +191,9 @@ struct MoreView: View {
         }
         .sheet(isPresented: $showDataManagerTest) {
             DataManagerTestView()
+        }
+        .alert("示例数据已生成", isPresented: $showSampleDataAlert) {
+            Button("确定") {}
         }
         .alert(isPresented: $showResetConfirmation) {
             Alert(title: Text("重置所有设置"),
