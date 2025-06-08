@@ -200,8 +200,8 @@ class CoreDataManager {
         entity.name = name
         entity.characterDescription = description
         entity.avatar = avatar
-        entity.tags = []
-        entity.relatedNoteIDs = []
+        entity.tags = NSArray()
+        entity.relatedNoteIDs = NSArray()
 
         saveContext()
 
@@ -223,9 +223,9 @@ class CoreDataManager {
                           name: entity.name ?? "",
                           description: entity.characterDescription ?? "",
                           avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
-                          audioRecordings: fetchAudioRecordings(for: entity.audioIDs ?? []),
-                          tags: entity.tags ?? [],
-                          relatedNoteIDs: entity.relatedNoteIDs ?? [])
+                          audioRecordings: fetchAudioRecordings(for: (entity.audioIDs as? [UUID]) ?? []),
+                          tags: (entity.tags as? [String]) ?? [],
+                          relatedNoteIDs: (entity.relatedNoteIDs as? [UUID]) ?? [])
             }
         } catch {
             debugPrint("获取角色数据失败: \(error)")
@@ -264,9 +264,9 @@ class CoreDataManager {
                           name: entity.name ?? "",
                           description: entity.characterDescription ?? "",
                           avatar: entity.avatar != nil ? UIImage(data: entity.avatar!) : nil,
-                          audioRecordings: fetchAudioRecordings(for: entity.audioIDs ?? []),
-                          tags: entity.tags ?? [],
-                          relatedNoteIDs: entity.relatedNoteIDs ?? [])
+                          audioRecordings: fetchAudioRecordings(for: (entity.audioIDs as? [UUID]) ?? []),
+                          tags: (entity.tags as? [String]) ?? [],
+                          relatedNoteIDs: (entity.relatedNoteIDs as? [UUID]) ?? [])
             }
         } catch {
             debugPrint("获取角色数据失败: \(error)")
@@ -291,8 +291,8 @@ class CoreDataManager {
             entity.name = character.name
             entity.characterDescription = character.description
             entity.avatar = character.avatar?.pngData()
-            entity.tags = character.tags
-            entity.relatedNoteIDs = character.relatedNoteIDs
+            entity.tags = NSArray(array: character.tags)
+            entity.relatedNoteIDs = NSArray(array: character.relatedNoteIDs)
             saveContext()
         } else {
             debugPrint("角色未找到，无法更新")
@@ -767,9 +767,9 @@ class CoreDataManager {
             entity.name = characterData.name.isEmpty ? "未命名角色" : characterData.name
             entity.characterDescription = characterData.description
             entity.avatar = characterData.avatar
-            entity.tags = characterData.tags
-            entity.relatedNoteIDs = characterData.relatedNoteIDs.compactMap { UUID(uuidString: $0) }
-            entity.audioIDs = characterData.relatedAudioRecordingIDs.compactMap { UUID(uuidString: $0) }
+            entity.tags = NSArray(array: characterData.tags)
+            entity.relatedNoteIDs = NSArray(array: characterData.relatedNoteIDs.compactMap { UUID(uuidString: $0) })
+            entity.audioIDs = NSArray(array: characterData.relatedAudioRecordingIDs.compactMap { UUID(uuidString: $0) })
         }
     }
     
@@ -780,8 +780,8 @@ class CoreDataManager {
             entity.id = UUID(uuidString: sceneData.id) ?? UUID()
             entity.title = sceneData.name.isEmpty ? "未命名场景" : sceneData.name
             entity.sceneDescription = sceneData.description
-            entity.tags = sceneData.tags
-            entity.relatedNoteIDs = sceneData.relatedNoteIDs.compactMap { UUID(uuidString: $0) }
+            entity.tags = NSArray(array: sceneData.tags)
+            entity.relatedNoteIDs = NSArray(array: sceneData.relatedNoteIDs.compactMap { UUID(uuidString: $0) })
             entity.coverImage = sceneData.coverImage
         }
     }
@@ -793,9 +793,9 @@ class CoreDataManager {
             entity.id = UUID(uuidString: noteData.id) ?? UUID()
             entity.title = noteData.title.isEmpty ? "未命名笔记" : noteData.title
             entity.content = noteData.content
-            entity.tags = noteData.tags
-            entity.relatedCharacterIDs = noteData.relatedCharacterIDs.compactMap { UUID(uuidString: $0) }
-            entity.relatedSceneIDs = noteData.relatedSceneIDs.compactMap { UUID(uuidString: $0) }
+            entity.tags = NSArray(array: noteData.tags)
+            entity.relatedCharacterIDs = NSArray(array: noteData.relatedCharacterIDs.compactMap { UUID(uuidString: $0) })
+            entity.relatedSceneIDs = NSArray(array: noteData.relatedSceneIDs.compactMap { UUID(uuidString: $0) })
             // 设置必填的 date 字段，使用当前时间
             entity.date = Date()
         }
@@ -825,9 +825,9 @@ class CoreDataManager {
         entity.title = title
         entity.content = content
         entity.date = Date()
-        entity.relatedCharacterIDs = []
-        entity.relatedSceneIDs = []
-        entity.tags = []
+        entity.relatedCharacterIDs = NSArray()
+        entity.relatedSceneIDs = NSArray()
+        entity.tags = NSArray()
 
         saveContext()
 
@@ -848,10 +848,10 @@ class CoreDataManager {
                 NoteBlock(id: entity.id ?? UUID(),
                           title: entity.title ?? "",
                           content: entity.content ?? "",
-                          relatedCharacterIDs: entity.relatedCharacterIDs ?? [],
-                          relatedSceneIDs: entity.relatedSceneIDs ?? [],
+                          relatedCharacterIDs: (entity.relatedCharacterIDs as? [UUID]) ?? [],
+                          relatedSceneIDs: (entity.relatedSceneIDs as? [UUID]) ?? [],
                           date: entity.date ?? Date(),
-                          tags: entity.tags ?? [])
+                          tags: (entity.tags as? [String]) ?? [])
             }
         } catch {
             debugPrint("获取笔记数据失败: \(error)")
@@ -868,10 +868,10 @@ class CoreDataManager {
                 NoteBlock(id: entity.id ?? UUID(),
                           title: entity.title ?? "",
                           content: entity.content ?? "",
-                          relatedCharacterIDs: entity.relatedCharacterIDs ?? [],
-                          relatedSceneIDs: entity.relatedSceneIDs ?? [],
+                          relatedCharacterIDs: (entity.relatedCharacterIDs as? [UUID]) ?? [],
+                          relatedSceneIDs: (entity.relatedSceneIDs as? [UUID]) ?? [],
                           date: entity.date ?? Date(),
-                          tags: entity.tags ?? [])
+                          tags: (entity.tags as? [String]) ?? [])
             }
         } catch {
             debugPrint("获取笔记数据失败: \(error)")
@@ -896,9 +896,9 @@ class CoreDataManager {
             entity.title = note.title
             entity.content = note.content
             entity.date = note.date
-            entity.relatedCharacterIDs = note.relatedCharacterIDs
-            entity.relatedSceneIDs = note.relatedSceneIDs
-            entity.tags = note.tags
+            entity.relatedCharacterIDs = NSArray(array: note.relatedCharacterIDs)
+            entity.relatedSceneIDs = NSArray(array: note.relatedSceneIDs)
+            entity.tags = NSArray(array: note.tags)
             saveContext()
         } else {
             debugPrint("笔记未找到，无法更新")
@@ -921,10 +921,10 @@ class CoreDataManager {
         if let entity = fetchSceneEntity(by: scene.id) {
             entity.title = scene.title
             entity.sceneDescription = scene.description
-            entity.relatedNoteIDs = scene.relatedNoteIDs
+            entity.relatedNoteIDs = NSArray(array: scene.relatedNoteIDs)
             entity.coverImage = scene.coverImage?.pngData()
             entity.atmosphereData = try? JSONEncoder().encode(scene.atmosphere)
-            entity.tags = scene.tags
+            entity.tags = NSArray(array: scene.tags)
             saveContext()
         } else {
             debugPrint("场景未找到，无法更新")
@@ -938,8 +938,8 @@ class CoreDataManager {
         entity.id = UUID()
         entity.title = title
         entity.sceneDescription = description
-        entity.relatedNoteIDs = []
-        entity.tags = []
+        entity.relatedNoteIDs = NSArray()
+        entity.tags = NSArray()
         entity.atmosphereData = try? JSONEncoder().encode(SceneAtmosphere.default)
 
         saveContext()
@@ -967,11 +967,11 @@ class CoreDataManager {
                 return AdventureScene(id: entity.id ?? UUID(),
                                       title: entity.title ?? "",
                                       description: entity.sceneDescription ?? "",
-                                      relatedNoteIDs: entity.relatedNoteIDs ?? [],
+                                      relatedNoteIDs: (entity.relatedNoteIDs as? [UUID]) ?? [],
                                       coverImage: entity.coverImage != nil ? UIImage(data: entity.coverImage!) : nil,
                                       audioURL: nil,
                                       atmosphere: atmosphere,
-                                      tags: entity.tags ?? [])
+                                      tags: (entity.tags as? [String]) ?? [])
             }
         } catch {
             debugPrint("获取场景数据失败: \(error)")
@@ -993,11 +993,11 @@ class CoreDataManager {
                 return AdventureScene(id: entity.id ?? UUID(),
                                       title: entity.title ?? "",
                                       description: entity.sceneDescription ?? "",
-                                      relatedNoteIDs: entity.relatedNoteIDs ?? [],
+                                      relatedNoteIDs: (entity.relatedNoteIDs as? [UUID]) ?? [],
                                       coverImage: entity.coverImage != nil ? UIImage(data: entity.coverImage!) : nil,
                                       audioURL: nil,
                                       atmosphere: atmosphere,
-                                      tags: entity.tags ?? [])
+                                      tags: (entity.tags as? [String]) ?? [])
             }
         } catch {
             debugPrint("获取场景数据失败: \(error)")
@@ -1013,8 +1013,8 @@ class CoreDataManager {
         entity.name = character.name
         entity.characterDescription = character.description
         entity.avatar = character.avatar?.pngData()
-        entity.tags = character.tags
-        entity.relatedNoteIDs = character.relatedNoteIDs
+        entity.tags = NSArray(array: character.tags)
+            entity.relatedNoteIDs = NSArray(array: character.relatedNoteIDs)
         saveContext()
     }
 
@@ -1025,7 +1025,7 @@ class CoreDataManager {
         entity.id = scene.id
         entity.title = scene.title
         entity.sceneDescription = scene.description
-        entity.relatedNoteIDs = scene.relatedNoteIDs
+        entity.relatedNoteIDs = NSArray(array: scene.relatedNoteIDs)
         entity.coverImage = scene.coverImage?.pngData()
         entity.atmosphereData = try? JSONEncoder().encode(scene.atmosphere)
         saveContext()
@@ -1039,8 +1039,8 @@ class CoreDataManager {
         entity.title = note.title
         entity.content = note.content
         entity.date = note.date
-        entity.relatedCharacterIDs = note.relatedCharacterIDs
-        entity.relatedSceneIDs = note.relatedSceneIDs
+        entity.relatedCharacterIDs = NSArray(array: note.relatedCharacterIDs)
+            entity.relatedSceneIDs = NSArray(array: note.relatedSceneIDs)
         saveContext()
     }
 
@@ -1065,10 +1065,10 @@ class CoreDataManager {
         entity.date = recording.date
 
         if let charID = characterID, let characterEntity = fetchCharacterEntity(by: charID) {
-            var ids = characterEntity.audioIDs ?? []
+            var ids = (characterEntity.audioIDs as? [UUID]) ?? []
             if !ids.contains(recording.id) {
                 ids.append(recording.id)
-                characterEntity.audioIDs = ids
+                characterEntity.audioIDs = NSArray(array: ids)
             }
         }
 
