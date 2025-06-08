@@ -3,7 +3,6 @@ import Foundation
 import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
-import CloudKit
 
 // MARK: - 数据模型
 
@@ -155,7 +154,6 @@ class CoreDataManager {
     static let shared = CoreDataManager()
 
     private var persistentContainer: NSPersistentContainer!
-    private var useCloudKit = UserDefaults.standard.bool(forKey: "iCloudSync")
 
     private init() {
         setupPersistentContainer()
@@ -163,17 +161,7 @@ class CoreDataManager {
     }
 
     private func setupPersistentContainer() {
-        let container: NSPersistentContainer
-        if useCloudKit {
-            let cloudContainer = NSPersistentCloudKitContainer(name: "AdventureRecords")
-            if let description = cloudContainer.persistentStoreDescriptions.first {
-                description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
-                description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
-            }
-            container = cloudContainer
-        } else {
-            container = NSPersistentContainer(name: "AdventureRecords")
-        }
+        let container = NSPersistentContainer(name: "AdventureRecords")
 
         container.loadPersistentStores { _, error in
             if let error = error {
@@ -182,13 +170,6 @@ class CoreDataManager {
         }
         container.viewContext.automaticallyMergesChangesFromParent = true
         persistentContainer = container
-    }
-
-    func updateiCloudSync(_ enabled: Bool) {
-        guard enabled != useCloudKit else { return }
-        useCloudKit = enabled
-        UserDefaults.standard.set(enabled, forKey: "iCloudSync")
-        setupPersistentContainer()
     }
 
     func manualSync() {

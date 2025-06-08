@@ -9,8 +9,6 @@ struct SettingsView: View {
     @AppStorage("fontSize") private var fontSize: Double = 14
     @AppStorage("language") private var language = "简体中文"
     @AppStorage("recordingQuality") private var recordingQuality = "标准"
-    @AppStorage("iCloudSync") private var iCloudSync = true
-    @AppStorage("syncFrequency") private var syncFrequency = "自动"
 
     // 环境变量
     @Environment(\.presentationMode) var presentationMode
@@ -79,31 +77,6 @@ struct SettingsView: View {
                     // }
                 }
 
-                // MARK: - 2. 云同步
-
-                Section(header: Text("云同步").foregroundColor(themeManager.secondaryTextColor)) {
-                    Toggle("启用iCloud同步", isOn: $iCloudSync)
-                        .toggleStyle(SwitchToggleStyle(tint: themeManager.accentColor(for: .character)))
-                        .onChange(of: iCloudSync) {
-                            CoreDataManager.shared.updateiCloudSync(iCloudSync)
-                        }
-
-                    if iCloudSync {
-                        Picker("同步频率", selection: $syncFrequency) {
-                            Text("自动").tag("自动")
-                            Text("每小时").tag("每小时")
-                            Text("每天").tag("每天")
-                            Text("手动").tag("手动")
-                        }
-
-                        Button(action: {
-                            CoreDataManager.shared.manualSync()
-                        }) {
-                            Label("立即同步", systemImage: "arrow.clockwise")
-                                .foregroundColor(themeManager.accentColor(for: .character))
-                        }
-                    }
-                }
             }
             .listStyle(InsetGroupedListStyle())
         }

@@ -452,8 +452,7 @@ struct HelpCenterView: View {
         (question: "如何创建新故事？", answer: "在笔记标签页点击右上角的'+'按钮，开始记录您的冒险故事。"),
         (question: "如何关联角色和场景？", answer: "在笔记编辑页面，点击'关联'按钮，选择要关联的角色和场景。"),
         (question: "如何查看故事中的角色和场景？", answer: "在笔记详情页，可以查看该故事涉及的所有角色和场景。"),
-        (question: "如何备份和分享数据？", answer: "在'更多'→'数据管理'中，可以备份数据。长按备份文件可以分享给其他用户。"),
-        (question: "如何启用iCloud同步？", answer: "在'更多'→'设置'中，开启'iCloud同步'选项。")
+        (question: "如何备份和分享数据？", answer: "在'更多'→'数据管理'中，可以备份数据。长按备份文件可以分享给其他用户。")
     ]
     
     var body: some View {
@@ -815,11 +814,6 @@ struct PrivacyPolicyView: View {
                                 .font(.headline)
                             
                             Text("• 本地存储：所有数据默认存储在您的设备上。")
-                            Text("• iCloud同步：如果启用iCloud同步，您的数据将存储在您的iCloud账户中。")
-                            
-                            Text("您可以在设备的设置中管理iCloud同步选项。")
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
                         }
                         // .padding()
                         // .background(Color(.systemGray6))
