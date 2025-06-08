@@ -109,4 +109,105 @@ enum SampleDataGenerator {
         _ = shared.cleanupData(type: .all)
         #endif
     }
+
+    /// 西游记示例数据
+    static func generateJourneyToWestSample() {
+        var wukong = shared.createCharacter(name: "孙悟空",
+                                            description: "花果山美猴王",
+                                            avatar: nil)
+        var bodhi = shared.createCharacter(name: "菩提祖师",
+                                           description: "悟空的师父",
+                                           avatar: nil)
+        var tangseng = shared.createCharacter(name: "唐僧",
+                                              description: "东土取经人",
+                                              avatar: nil)
+        var baigujing = shared.createCharacter(name: "白骨精",
+                                              description: "善于变化的妖精",
+                                              avatar: nil)
+        var sixear = shared.createCharacter(name: "六耳猕猴",
+                                           description: "假冒孙悟空的妖猴",
+                                           avatar: nil)
+
+        wukong.tags = ["取经前", "取经后"]
+        bodhi.tags = ["取经前"]
+        tangseng.tags = ["取经后"]
+        baigujing.tags = ["取经后"]
+        sixear.tags = ["取经后"]
+
+        var fangcun = shared.createScene(title: "灵台方寸山",
+                                         description: "菩提祖师道场")
+        var palace = shared.createScene(title: "天宫",
+                                       description: "众神居所")
+        var cave = shared.createScene(title: "白骨洞",
+                                      description: "白骨精的巢穴")
+        var huaguo = shared.createScene(title: "花果山",
+                                       description: "美猴王的故乡")
+
+        fangcun.tags = ["取经前"]
+        palace.tags = ["取经前"]
+        cave.tags = ["取经后"]
+        huaguo.tags = ["取经前"]
+
+        var apprenticeship = shared.createNote(title: "拜师菩提祖师",
+                                                content: "悟空求仙学艺，拜菩提祖师为师。")
+        apprenticeship.tags = ["取经前"]
+
+        var havoc = shared.createNote(title: "大闹天宫",
+                                      content: "悟空大闹天宫，惊动诸神。")
+        havoc.tags = ["取经前"]
+
+        var bone = shared.createNote(title: "三打白骨精",
+                                     content: "悟空识破白骨精，三次将其打退。")
+        bone.tags = ["取经后"]
+
+        var fake = shared.createNote(title: "真假美猴王",
+                                     content: "六耳猕猴假冒悟空，如来辨真身。")
+        fake.tags = ["取经后"]
+
+        // 建立关联
+        apprenticeship.addRelatedCharacterID(wukong.id)
+        apprenticeship.addRelatedCharacterID(bodhi.id)
+        apprenticeship.addRelatedSceneID(fangcun.id)
+        wukong.addNoteID(apprenticeship.id)
+        bodhi.addNoteID(apprenticeship.id)
+        fangcun.addRelatedNoteID(apprenticeship.id)
+
+        havoc.addRelatedCharacterID(wukong.id)
+        havoc.addRelatedSceneID(palace.id)
+        wukong.addNoteID(havoc.id)
+        palace.addRelatedNoteID(havoc.id)
+
+        bone.addRelatedCharacterID(wukong.id)
+        bone.addRelatedCharacterID(tangseng.id)
+        bone.addRelatedCharacterID(baigujing.id)
+        bone.addRelatedSceneID(cave.id)
+        wukong.addNoteID(bone.id)
+        tangseng.addNoteID(bone.id)
+        baigujing.addNoteID(bone.id)
+        cave.addRelatedNoteID(bone.id)
+
+        fake.addRelatedCharacterID(wukong.id)
+        fake.addRelatedCharacterID(tangseng.id)
+        fake.addRelatedCharacterID(sixear.id)
+        fake.addRelatedSceneID(huaguo.id)
+        wukong.addNoteID(fake.id)
+        tangseng.addNoteID(fake.id)
+        sixear.addNoteID(fake.id)
+        huaguo.addRelatedNoteID(fake.id)
+
+        // 更新
+        shared.updateCharacter(wukong)
+        shared.updateCharacter(bodhi)
+        shared.updateCharacter(tangseng)
+        shared.updateCharacter(baigujing)
+        shared.updateCharacter(sixear)
+        shared.updateScene(fangcun)
+        shared.updateScene(palace)
+        shared.updateScene(cave)
+        shared.updateScene(huaguo)
+        shared.updateNote(apprenticeship)
+        shared.updateNote(havoc)
+        shared.updateNote(bone)
+        shared.updateNote(fake)
+    }
 }
