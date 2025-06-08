@@ -80,7 +80,7 @@ enum SampleDataGenerator {
     private static func initializeProductionData() {
         // 创建一个示例角色，引导用户了解应用功能
         var guide = shared.createCharacter(name: "冒险指南",
-                                           description: "这是示例角色，帮助你快速了解 AdventureRecords 的使用方法。单击以查看详情，右滑以删除。",
+                                           description: "这是示例角色，帮助你快速了解 AdventureRecords 的使用方法。单击以查看详情，右滑以删除。\n可在“更多”页最下点击“生成示例数据”按钮，生成《西游记》示例数据快速体验本应用功能。",
                                            avatar: nil)
 
         // 创建示例场景
